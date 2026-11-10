@@ -262,7 +262,7 @@
       <div class="space-y-1 pt-2 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスから複数選択（写真・動画）</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileCaptureOrSelect(event, false)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルを選択すると保存ボタンが有効になります。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400">※動画・写真ファイルを選択するとサムネイルが自動生成されます。</p>
       </div>
 
       <div class="pt-2">
@@ -460,7 +460,6 @@
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr;
 
-        // メディアのサムネイル（動画の場合は自動生成された静止画サムネイル優先）
         const firstCompletedMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.thumbnail || m.url);
         const themeImg = daySchedules[0]?.themeImage;
         const thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnail || firstCompletedMedia.url) : themeImg;
@@ -535,7 +534,8 @@
             const displayThumb = m.thumbnail || m.url;
             thumbnailDisplay += `
               <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/media bg-slate-900">
-                ${isVideo ? `<img src="${displayThumb}" class="w-full h-full object-cover"><div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : `<img src="${displayThumb}" class="w-full h-full object-cover">`}
+                <img src="${displayThumb}" class="w-full h-full object-cover">
+                ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : ''}
                 <button onclick="deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
                 </button>
@@ -703,7 +703,6 @@
       lucide.createIcons();
     }
 
-    // ===== 動画履歴の描画 =====
     function renderMovieHistory() {
       const listContainer = document.getElementById("movie-history-list");
       listContainer.innerHTML = "";
@@ -818,7 +817,6 @@
       confirmBtn.disabled = false;
       confirmBtn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer";
 
-      document.getElementById("checkin-modal").classList.add("hidden"); // 一旦クリア
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
 
@@ -828,7 +826,6 @@
       tempMediaList = [];
     }
 
-    // ===== 動画の静止画サムネイル自動抽出付きファイル読み込み =====
     async function handleFileCaptureOrSelect(event, isCamera) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -869,14 +866,13 @@
       statusText.innerText = `✅ ${tempMediaList.length}件のファイルの準備ができました。「決定して保存する」を押してください。`;
     }
 
-    // 動画の1フレーム目（静止画）をCanvasで切り出すヘルパー関数
     function extractThumbnailFromVideo(videoUrl) {
       return new Promise((resolve) => {
         const video = document.createElement('video');
         video.src = videoUrl;
         video.muted = true;
         video.playsInline = true;
-        video.currentTime = 0.5; // 0.5秒目のフレーム
+        video.currentTime = 0.5;
 
         video.onloadeddata = () => {
           video.currentTime = 0.5;
@@ -896,7 +892,7 @@
           resolve(null);
         };
 
-        setTimeout(() => resolve(null), 3000); // タイムアウト安全対策
+        setTimeout(() => resolve(null), 3000);
       });
     }
 
@@ -915,7 +911,6 @@
       renderLookbook();
     }
 
-    // ===== BGM & 映画風再生機能 =====
     const vlogPlaylist = [
       { name: "Avatar's Love", url: "7_BPM69.mp3" },
       { name: "異国のグルメ", url: "082_BPM97.mp3" },
