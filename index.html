@@ -103,8 +103,8 @@
               <option value="8">8月</option>
               <option value="9">9月</option>
               <option value="10">10月</option>
-              <option value="11" selected>11月</option>
-              <option value="12">12月</option>
+              <option value="11">11月</option>
+              <option value="12" selected>12月</option>
             </select>
           </div>
           <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">日付選択で予定挿入</span>
@@ -127,7 +127,7 @@
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span id="selected-date-title">2026-11-10 の予定</span>
+            <span id="selected-date-title">2026-12-01 の予定</span>
           </h3>
           <button onclick="openAddModal()" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
@@ -336,8 +336,8 @@
 
   <script>
     let currentYear = 2026;
-    let currentMonth = 11;
-    let selectedDate = "2026-11-10";
+    let currentMonth = 12;
+    let selectedDate = "2026-12-01";
 
     const categoryDict = [
       { name: "サッカー・スポーツ", keywords: ["サッカー", "フットサル", "試合", "バスケ", "テニス", "野球", "水泳", "プール", "スポーツ"], imageUrls: [
@@ -388,7 +388,7 @@
     let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v3')) || [
       { 
         id: 1, 
-        date: "2026-11-10", 
+        date: "2026-12-01", 
         time: "10:00", 
         title: "スタバで作業", 
         location: "野々市", 
@@ -399,7 +399,7 @@
       },
       { 
         id: 2, 
-        date: "2026-11-10", 
+        date: "2026-12-01", 
         time: "15:00", 
         title: "サッカーの練習", 
         location: "グラウンド", 
@@ -606,7 +606,7 @@
       return `${y}-${m}-${day}`;
     }
 
-    // ===== カレンダーの曜日（日曜〜土曜）に完全準拠した週リストを生成する関数 =====
+    // ===== カレンダーの曜日（日曜〜土曜）に完全準拠した週リストを生成する関数（バグ修正版） =====
     function updateRecapOptions() {
       const mode = document.getElementById("recap-mode").value;
       const labelEl = document.getElementById("recap-target-label");
@@ -625,11 +625,9 @@
       } else {
         labelEl.innerText = "対象の一週間 (日曜〜土曜)";
         
-        // 指定された年月の1日から末日までをカバーする「日曜〜土曜」の週ブロックをすべて洗い出す
         const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
         const lastDayOfMonth = new Date(currentYear, currentMonth, 0);
 
-        // 1日が含まれる週の日曜日を算出
         let currSunday = new Date(firstDayOfMonth);
         currSunday.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
 
@@ -642,21 +640,18 @@
 
           const opt = document.createElement("option");
           opt.value = `${startStr}_${endStr}`;
-          opt.innerText = `${currSunday.getMonth() + 1}月${currSunday.getDate}日(日) 〜 ${currSaturday.getMonth() + 1}月${currSaturday.getDate()}日(土)`;
+          // 修正点: 日付を正しく取得してスッキリした日本語表記に
+          opt.innerText = `${currSunday.getMonth() + 1}月${currSunday.getDate()}日(日) 〜 ${currSaturday.getMonth() + 1}月${currSaturday.getDate()}日(土)`;
           
-          // 今日の日付または現在の月を含む週をデフォルト選択
           const todayStr = formatDateString(new Date());
           if (startStr <= todayStr && todayStr <= endStr) {
             opt.selected = true;
           }
 
           selectEl.appendChild(opt);
-
-          // 次の週へ（+7日）
           currSunday.setDate(currSunday.getDate() + 7);
         }
 
-        // もし該当する週が生成されなかった場合のフォールバック
         if (selectEl.options.length === 0) {
           const opt = document.createElement("option");
           opt.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01_${currentYear}-${String(currentMonth).padStart(2, '0')}-${getDaysInMonth(currentYear, currentMonth)}`;
@@ -1083,7 +1078,7 @@
 
       } catch (err) {
         console.error("Recording error:", err);
-        alert("動画のエンコード中にエラーエラーが発生しました。");
+        alert("動画のエンコード中にエラーが発生しました。");
         btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存`;
         btn.disabled = false;
         lucide.createIcons();
