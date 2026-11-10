@@ -47,7 +47,6 @@
     .animate-zoom {
       animation: cinematicZoom 4s ease-out forwards;
     }
-    /* Vlog風リアルタイムフィルター */
     .vlog-filter-cinematic {
       filter: contrast(1.1) saturate(0.9) brightness(0.95);
     }
@@ -155,7 +154,6 @@
           </div>
         </div>
 
-        <!-- 期間選択セレクター（週間：日曜〜土曜 / 月間） -->
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
           <div>
             <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">対象期間モード</label>
@@ -187,9 +185,7 @@
           </h3>
           <span class="text-[10px] text-slate-400">ファイル保存時に自動追加</span>
         </div>
-        <div id="movie-history-list" class="space-y-2">
-          <!-- 動的生成 -->
-        </div>
+        <div id="movie-history-list" class="space-y-2"></div>
       </div>
 
       <div>
@@ -237,7 +233,7 @@
     </div>
   </div>
 
-  <!-- モーダル: メディア追加 ＆ アプリ内カメラ -->
+  <!-- モーダル: メディア追加 -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -258,7 +254,7 @@
         <div class="grid grid-cols-4 gap-2" id="theme-preset-picker"></div>
       </div>
 
-      <!-- 🎥 アプリ内フィルター付きカメラ起動ボタン -->
+      <!-- 🎥 アプリ内フィルター付きカメラ起動ボタン（押すとモーダルを隠してカメラ専有へ） -->
       <div class="bg-gradient-to-r from-pink-500 to-indigo-600 p-3.5 rounded-2xl text-white shadow-md flex items-center justify-between">
         <div>
           <p class="text-xs font-bold uppercase tracking-wide opacity-95">Vlog Filter Camera</p>
@@ -272,7 +268,7 @@
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスからファイル選択（写真・動画）</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルまたはカメラ撮影を行うとサムネイルが自動生成されます。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルを選択するとサムネイルが自動生成されます。</p>
       </div>
 
       <div class="pt-2">
@@ -283,50 +279,58 @@
     </div>
   </div>
 
-  <!-- 📸 アプリ内ライブカメラ＆フィルター撮影モーダル -->
-  <div id="inapp-camera-modal" class="fixed inset-0 z-60 bg-black flex flex-col justify-between p-4 hidden">
+  <!-- 📸 アプリ内ライブカメラ専用全画面（ウィンドウを閉じてカメラだけに） -->
+  <div id="inapp-camera-modal" class="fixed inset-0 z-70 bg-black flex flex-col justify-between p-4 hidden">
     <!-- カメラ上部ヘッダー -->
     <div class="flex items-center justify-between text-white pt-2">
       <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-        <span class="text-xs font-mono font-bold tracking-widest">VLOG REC</span>
+        <span id="camera-rec-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+        <span id="camera-mode-label" class="text-xs font-mono font-bold tracking-widest">PHOTO MODE</span>
       </div>
       <button onclick="closeInAppCamera()" class="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
 
-    <!-- カメラプレビュー画面（リアルタイムフィルター・タイムスタンプ・レターボックス付） -->
+    <!-- カメラプレビュー画面（フィルター・レターボックス付） -->
     <div class="relative w-full max-w-sm mx-auto aspect-[9/16] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center border border-white/20">
       <video id="camera-preview-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover vlog-filter-cinematic"></video>
       
-      <!-- 上下のシネマティックレターボックス -->
+      <!-- レターボックス -->
       <div class="absolute top-0 inset-x-0 h-10 bg-gradient-to-b from-black/80 to-transparent pointer-events-none"></div>
       <div class="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
 
-      <!-- デジタルVCRタイムスタンプ -->
+      <!-- VCRタイムスタンプ -->
       <div class="absolute top-4 right-4 z-10 pointer-events-none">
         <span id="camera-live-timestamp" class="vcr-timestamp text-sm font-bold">9:45 am</span>
       </div>
 
-      <!-- 撮影モードインジケーター -->
-      <div class="absolute top-4 left-4 z-10 pointer-events-none">
-        <span class="text-[10px] text-lime-300 font-mono bg-black/40 px-2 py-0.5 rounded border border-lime-400/30">FILM 4K 30fps</span>
+      <!-- 録画中のタイマー表示 -->
+      <div id="recording-timer-badge" class="absolute top-4 left-4 z-10 pointer-events-none hidden bg-rose-600 text-white text-xs font-mono px-2.5 py-0.5 rounded-full animate-pulse">
+        🔴 REC <span id="rec-seconds">0</span>s / 10s
       </div>
     </div>
 
-    <!-- カメラ下部コントロールパネル -->
-    <div class="flex items-center justify-around pb-6 pt-2 max-w-sm mx-auto w-full">
-      <button onclick="switchCameraFacing()" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-all" title="カメラ切替">
-        <i data-lucide="switch-camera" class="w-6 h-6"></i>
-      </button>
+    <!-- カメラ下部コントロール（写真 / 動画モード切替 ＆ シャッター） -->
+    <div class="flex flex-col items-center pb-6 pt-2 max-w-sm mx-auto w-full space-y-4">
+      <!-- モード切替タブ -->
+      <div class="flex bg-white/10 backdrop-blur rounded-full p-1 border border-white/20">
+        <button id="cam-mode-photo-btn" onclick="setCameraMode('photo')" class="px-4 py-1 text-xs font-bold rounded-full text-white bg-white/20 transition-all">写真</button>
+        <button id="cam-mode-video-btn" onclick="setCameraMode('video')" class="px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">動画 (10秒)</button>
+      </div>
 
-      <!-- シャッターボタン（タップで撮影） -->
-      <button onclick="capturePhotoFromCamera()" class="w-18 h-18 rounded-full border-4 border-white flex items-center justify-center p-1 hover:scale-105 transition-transform active:scale-95 shadow-lg">
-        <div class="w-14 h-14 bg-white rounded-full"></div>
-      </button>
+      <div class="flex items-center justify-around w-full px-4">
+        <button onclick="switchCameraFacing()" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-all" title="切替">
+          <i data-lucide="switch-camera" class="w-6 h-6"></i>
+        </button>
 
-      <div class="w-12"></div><!-- バランス用余白 -->
+        <!-- シャッター / 録画ボタン -->
+        <button id="shutter-btn" onclick="triggerShutterOrRecord()" class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center p-1 hover:scale-105 transition-transform active:scale-95 shadow-lg">
+          <div id="shutter-inner" class="w-16 h-16 bg-white rounded-full transition-all"></div>
+        </button>
+
+        <div class="w-12"></div>
+      </div>
     </div>
   </div>
 
@@ -453,6 +457,11 @@
     let tempMediaList = []; 
     let activeCameraStream = null;
     let useFrontCamera = false;
+    let currentCameraMode = 'photo'; // 'photo' or 'video'
+    let mediaRecorderInstance = null;
+    let recordedChunksArray = [];
+    let isRecordingVideo = false;
+    let recordingTimerInterval = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
@@ -870,28 +879,22 @@
       });
 
       tempMediaList = [];
-      
-      const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "決定して保存する";
-      confirmBtn.disabled = false;
-      confirmBtn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer";
-
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
 
     function closeCheckinModal() { 
       document.getElementById("checkin-modal").classList.add("hidden"); 
-      currentCheckinId = null;
-      tempMediaList = [];
     }
 
-    // ===== 📸 アプリ内ライブカメラ＆リアルタイムフィルター機能 =====
+    // ===== 📸 アプリ内ライブカメラ＆フィルター専用機能 =====
     async function openInAppCamera() {
+      // 背面のチェックインモーダルを完全に隠して、カメラだけに専有させる
+      document.getElementById("checkin-modal").classList.add("hidden");
+
       const modal = document.getElementById("inapp-camera-modal");
       const videoEl = document.getElementById("camera-preview-video");
       const timestampEl = document.getElementById("camera-live-timestamp");
 
-      // 現在時刻をVCR風に表示
       const now = new Date();
       timestampEl.innerText = formatVlogTime(`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
 
@@ -908,7 +911,7 @@
             width: { ideal: 1080 },
             height: { ideal: 1920 }
           },
-          audio: false
+          audio: currentCameraMode === 'video'
         };
 
         activeCameraStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -921,6 +924,9 @@
     }
 
     function closeInAppCamera() {
+      if (isRecordingVideo) {
+        stopVideoRecording();
+      }
       const modal = document.getElementById("inapp-camera-modal");
       modal.classList.add("hidden");
       if (activeCameraStream) {
@@ -934,10 +940,50 @@
       await openInAppCamera();
     }
 
-    // シャッターボタンタップでカメラ映像をCanvas経由で静止画としてキャプチャ
-    async function capturePhotoFromCamera() {
+    function setCameraMode(mode) {
+      if (isRecordingVideo) return;
+      currentCameraMode = mode;
+      const photoBtn = document.getElementById("cam-mode-photo-btn");
+      const videoBtn = document.getElementById("cam-mode-video-btn");
+      const modeLabel = document.getElementById("camera-mode-label");
+      const shutterInner = document.getElementById("shutter-inner");
+      const dot = document.getElementById("camera-rec-dot");
+
+      if (mode === 'photo') {
+        photoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-white bg-white/20 transition-all";
+        videoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all";
+        modeLabel.innerText = "PHOTO MODE";
+        shutterInner.className = "w-16 h-16 bg-white rounded-full transition-all";
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+      } else {
+        videoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-white bg-pink-600 transition-all";
+        photoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all";
+        modeLabel.innerText = "VIDEO MODE (10s)";
+        shutterInner.className = "w-10 h-10 bg-rose-600 rounded-lg transition-all animate-pulse";
+        dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping";
+      }
+      openInAppCamera(); // 音声トラックの有効化のために再接続
+    }
+
+    function triggerShutterOrRecord() {
+      if (currentCameraMode === 'photo') {
+        capturePhotoFromCamera();
+      } else {
+        if (!isRecordingVideo) {
+          startVideoRecording();
+        } else {
+          stopVideoRecording();
+        }
+      }
+    }
+
+    // 写真撮影の確実なキャプチャ処理
+    function capturePhotoFromCamera() {
       const videoEl = document.getElementById("camera-preview-video");
-      if (!videoEl.videoWidth) return;
+      if (!videoEl || !videoEl.videoWidth) {
+        alert("カメラの準備ができていません。");
+        return;
+      }
 
       const canvas = document.createElement('canvas');
       canvas.width = videoEl.videoWidth;
@@ -945,31 +991,116 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-      canvas.toBlob(async (blob) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert("写真の撮影に失敗しました。");
+          return;
+        }
         const blobUrl = URL.createObjectURL(blob);
         
-        tempMediaList.push({
+        const newMedia = {
           id: Math.random().toString(36).substring(2, 9),
           url: blobUrl,
           thumbnail: blobUrl,
           type: "image"
-        });
+        };
 
-        closeInAppCamera();
-        closeCheckinModal();
-
-        // 即座に保存処理へ反映
-        const item = schedules.find(s => s.id === currentCheckinId);
-        if (item) {
-          if (!item.mediaList) item.mediaList = [];
-          item.mediaList.push(...tempMediaList);
-          saveSchedules();
-          renderCalendar();
-          renderSchedules();
-          updateRecapOptions();
-          renderLookbook();
-        }
+        saveMediaToCurrentSchedule([newMedia]);
       }, 'image/jpeg', 0.9);
+    }
+
+    // 動画録画の制御（最大10秒制限）
+    function startVideoRecording() {
+      if (!activeCameraStream) return;
+      recordedChunksArray = [];
+
+      try {
+        let options = { mimeType: 'video/webm;codecs=vp8,opus' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options = { mimeType: 'video/webm' };
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options = {}; // デフォルトフォールバック
+          }
+        }
+
+        mediaRecorderInstance = new MediaRecorder(activeCameraStream, options);
+
+        mediaRecorderInstance.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedChunksArray.push(e.data);
+          }
+        };
+
+        mediaRecorderInstance.onstop = async () => {
+          const blob = new Blob(recordedChunksArray, { type: 'video/webm' });
+          const blobUrl = URL.createObjectURL(blob);
+          
+          let thumb = null;
+          try {
+            thumb = await extractThumbnailFromVideo(blobUrl);
+          } catch(e) {
+            thumb = null;
+          }
+
+          const newMedia = {
+            id: Math.random().toString(36).substring(2, 9),
+            url: blobUrl,
+            thumbnail: thumb || blobUrl,
+            type: "video"
+          };
+
+          saveMediaToCurrentSchedule([newMedia]);
+        };
+
+        mediaRecorderInstance.start();
+        isRecordingVideo = true;
+
+        // 録画中UI表示
+        document.getElementById("recording-timer-badge").classList.remove("hidden");
+        let sec = 0;
+        document.getElementById("rec-seconds").innerText = sec;
+        
+        recordingTimerInterval = setInterval(() => {
+          sec++;
+          document.getElementById("rec-seconds").innerText = sec;
+          if (sec >= 10) {
+            stopVideoRecording();
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.error("Video recording error:", err);
+        alert("お使いのブラウザはこの端末での動画録画に対応していません。");
+        isRecordingVideo = false;
+      }
+    }
+
+    function stopVideoRecording() {
+      if (!isRecordingVideo) return;
+      isRecordingVideo = false;
+      clearInterval(recordingTimerInterval);
+      document.getElementById("recording-timer-badge").classList.add("hidden");
+
+      if (mediaRecorderInstance && mediaRecorderInstance.state !== 'inactive') {
+        mediaRecorderInstance.stop();
+      }
+    }
+
+    // 撮影したメディアを現在のスケジュールに即座に保存して反映
+    function saveMediaToCurrentSchedule(mediaItems) {
+      closeInAppCamera();
+      closeCheckinModal();
+
+      const item = schedules.find(s => s.id === currentCheckinId);
+      if (item) {
+        if (!item.mediaList) item.mediaList = [];
+        item.mediaList.push(...mediaItems);
+        saveSchedules();
+        renderCalendar();
+        renderSchedules();
+        updateRecapOptions();
+        renderLookbook();
+      }
     }
 
     async function handleFileSelect(event) {
@@ -989,7 +1120,6 @@
         const blobUrl = URL.createObjectURL(file);
 
         let thumbnailData = null;
-
         if (isVideo) {
           try {
             thumbnailData = await extractThumbnailFromVideo(blobUrl);
