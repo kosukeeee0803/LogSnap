@@ -263,12 +263,13 @@
 
       <div class="space-y-1 pt-2 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスから複数選択（写真・動画）</label>
-        <input type="file" id="local-file-input" accept="image/*,video/mp4,video/quicktime,video/webm,video/m4v" multiple onchange="handleFileCaptureOrSelect(event, false)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p class="text-[10px] text-slate-400">※MP4, MOV, WebM等の形式に対応しています。</p>
+        <!-- acceptを広げてあらゆる動画・画像形式を確実にキャッチできるように改善 -->
+        <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileCaptureOrSelect(event, false)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        <p class="text-[10px] text-slate-400">※動画・写真ファイルを選択できます。</p>
       </div>
 
       <div class="pt-2">
-        <button onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
+        <button id="confirm-checkin-btn" onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
           決定して保存する
         </button>
       </div>
@@ -629,7 +630,7 @@
 
         while (currSunday <= lastDayOfMonth) {
           let currSaturday = new Date(currSunday);
-          currSaturday.setDate(currSaturday.getDate() + 6);
+          currSaturday.setDate(currSunday.getDate() + 6);
 
           const startStr = formatDateString(currSunday);
           const endStr = formatDateString(currSaturday);
@@ -833,23 +834,18 @@
       tempMediaList = [];
     }
 
-    // ===== 動画の非同期読込対応（フリーズ・ボタン無反応バグの解消） =====
+    // ===== 堅牢なファイル読み込み処理（あらゆる動画・画像に対応） =====
     async function handleFileCaptureOrSelect(event, isCamera) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
 
-      const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/webm', 'video/m4v', 'application/octet-stream'];
+      const confirmBtn = document.getElementById("confirm-checkin-btn");
+      confirmBtn.innerText = "⏳ 読み込み中...";
+      confirmBtn.disabled = true;
 
       for (const file of files) {
-        const isVideo = file.type.startsWith("video") || file.name.match(/\.(mp4|mov|webm|m4v|avi|mkv)$/i);
-        
-        if (isVideo) {
-          const extCheck = file.name.match(/\.(mp4|mov|webm|m4v|avi|mkv)$/i);
-          if (!extCheck && file.type && !validVideoTypes.includes(file.type)) {
-            alert("⚠️ 対応していない動画形式の可能性があります。MP4またはMOV形式の動画ファイルを選択してください。");
-            continue;
-          }
-        }
+        // 拡張子またはMIMEタイプで動画判定をより確実に行う
+        const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
 
         try {
           const base64Data = await readFileAsDataURL(file);
@@ -860,8 +856,12 @@
           });
         } catch (err) {
           console.error("File read error:", err);
+          alert("ファイルの読み込みに失敗しました。別のファイルを試してください。");
         }
       }
+
+      confirmBtn.innerText = "決定して保存する";
+      confirmBtn.disabled = false;
     }
 
     function readFileAsDataURL(file) {
