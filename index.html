@@ -47,9 +47,31 @@
     .animate-zoom {
       animation: cinematicZoom 3s ease-out forwards;
     }
+    /* スムーズなフェードイン＆スライド演出 */
+    .fade-in {
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-enter-left {
+      animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .slide-enter-right {
+      animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(25px); opacity: 0.2; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(-25px); opacity: 0.2; }
+      to { transform: translateX(0); opacity: 1; }
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-24 selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-28 selection:bg-indigo-500 selection:text-white">
 
   <!-- ヘッダー -->
   <header class="sticky top-0 z-35 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
@@ -61,7 +83,7 @@
         LogSnap
       </h1>
     </div>
-    <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20">
+    <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
       <i data-lucide="plus" class="w-4 h-4"></i>
       <span>予定を追加</span>
     </button>
@@ -70,21 +92,11 @@
   <!-- メインコンテンツ -->
   <main class="max-w-md mx-auto px-4 pt-4 space-y-6">
 
-    <!-- タブ切替 -->
-    <div class="flex bg-slate-200/80 p-1 rounded-xl border border-slate-300/60 shadow-inner">
-      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-sm">
-        カレンダー
-      </button>
-      <button id="tab-lookbook-btn" onclick="switchTab('lookbook')" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
-        LOOKBOOK（振り返り）
-      </button>
-    </div>
-
     <!-- ===== タブ1: カレンダービュー（スワイプ対応・月間グリッド ＆ 選択日詳細） ===== -->
-    <section id="tab-calendar" class="space-y-6">
+    <section id="tab-calendar" class="space-y-6 fade-in">
 
       <!-- 1ヶ月カレンダーグリッド（タッチスワイプエリア） -->
-      <div id="calendar-card" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm select-none">
+      <div id="calendar-card" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm select-none overflow-hidden">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <select id="select-year" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-500">
@@ -120,7 +132,7 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5"></div>
+        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5 transition-all"></div>
       </div>
 
       <!-- 選択された日の詳細スケジュール ＆ アルバム -->
@@ -141,7 +153,7 @@
     </section>
 
     <!-- ===== タブ2: LOOKBOOK（まとめ動画スタジオ＆ギャラリー） ===== -->
-    <section id="tab-lookbook" class="hidden space-y-6">
+    <section id="tab-lookbook" class="hidden space-y-6 fade-in">
       
       <!-- まとめ動画作成パネル -->
       <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -164,7 +176,7 @@
           </div>
         </div>
 
-        <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-pink-600/20">
+        <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-pink-600/20 active:scale-95">
           <i data-lucide="play" class="w-4 h-4"></i>
           <span>選択した期間のまとめ動画を再生・作成</span>
         </button>
@@ -190,9 +202,23 @@
 
   </main>
 
+  <!-- ===== 📱 ボトムナビゲーション（画面下部の親指が届きやすいメニュー） ===== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-slate-200 px-6 py-2 shadow-lg">
+    <div class="max-w-md mx-auto flex items-center justify-around">
+      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <span class="text-[11px]">カレンダー</span>
+      </button>
+      <button id="tab-lookbook-btn" onclick="switchTab('lookbook')" class="flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
+        <i data-lucide="book-open" class="w-5 h-5"></i>
+        <span class="text-[11px]">LOOKBOOK</span>
+      </button>
+    </div>
+  </nav>
+
   <!-- モーダル: 予定追加 -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl fade-in">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900">新しい予定を追加</h3>
         <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">
@@ -229,7 +255,7 @@
 
   <!-- モーダル: メディア追加 (写真フォルダ選択 ＆ アプリ内カメラ) -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto fade-in">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">写真・動画を追加</h3>
@@ -254,7 +280,7 @@
           <p class="text-xs font-bold uppercase tracking-wide opacity-95">Vlog Filter Camera</p>
           <p class="text-sm font-bold mt-0.5">✨ アプリ内カメラで撮影する</p>
         </div>
-        <button onclick="openInAppCamera()" class="bg-white text-indigo-600 hover:bg-slate-100 font-bold text-xs px-4 py-2 rounded-xl shadow transition-all flex items-center gap-1">
+        <button onclick="openInAppCamera()" class="bg-white text-indigo-600 hover:bg-slate-100 font-bold text-xs px-4 py-2 rounded-xl shadow transition-all flex items-center gap-1 active:scale-95">
           <i data-lucide="camera" class="w-4 h-4"></i> 起動
         </button>
       </div>
@@ -328,7 +354,7 @@
 
   <!-- モーダル: メディア詳細再生・確認用 -->
   <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden">
+    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden fade-in">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Memory Preview</span>
@@ -348,7 +374,7 @@
 
   <!-- モーダル: シネマティックまとめ動画再生 (写真約3秒、10秒動画フル尺) -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden">
+    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden fade-in">
       
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
@@ -377,10 +403,10 @@
       <audio id="bgm-player" loop></audio>
 
       <div class="flex gap-2 pt-1">
-        <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+        <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 最初から再生
         </button>
-        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5">
+        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 active:scale-95">
           <i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存
         </button>
       </div>
@@ -449,7 +475,7 @@
       setupCalendarSwipe();
     });
 
-    // 📱 タッチスワイプによる月移動の実装
+    // 📱 左右スワイプによる月移動 ＆ スライドアニメーション連動
     function setupCalendarSwipe() {
       const card = document.getElementById("calendar-card");
       let touchStartX = 0;
@@ -461,32 +487,28 @@
 
       card.addEventListener("touchend", (e) => {
         touchEndX = e.changedTouches[0].screenX;
-        handleSwipeGesture();
+        let diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 40) {
+          if (diff > 0) changeMonthOffset(-1, 'right'); // 右スワイプ＝前月へ
+          else changeMonthOffset(1, 'left');             // 左スワイプ＝次月へ
+        }
       }, { passive: true });
 
-      // マウスドラッグでもスワイプできるように対応
+      // マウスドラッグ対応
       let mouseStartX = 0;
       card.addEventListener("mousedown", (e) => {
         mouseStartX = e.clientX;
       });
       card.addEventListener("mouseup", (e) => {
         let diff = e.clientX - mouseStartX;
-        if (Math.abs(diff) > 50) {
-          if (diff > 0) changeMonthOffset(-1); // 右スワイプ＝前月
-          else changeMonthOffset(1);           // 左スワイプ＝次月
+        if (Math.abs(diff) > 40) {
+          if (diff > 0) changeMonthOffset(-1, 'right');
+          else changeMonthOffset(1, 'left');
         }
       });
-
-      function handleSwipeGesture() {
-        let diff = touchEndX - touchStartX;
-        if (Math.abs(diff) > 50) {
-          if (diff > 0) changeMonthOffset(-1); // 右スワイプ＝前月
-          else changeMonthOffset(1);           // 左スワイプ＝次月
-        }
-      }
     }
 
-    function changeMonthOffset(offset) {
+    function changeMonthOffset(offset, direction = 'left') {
       currentMonth += offset;
       if (currentMonth > 12) {
         currentMonth = 1;
@@ -497,11 +519,12 @@
       }
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
-      renderCalendar();
+      renderCalendarWithAnimation(direction);
       updateRecapOptions();
       renderAlbumGallery();
     }
 
+    // ✨ ボトムナビゲーションによる画面切り替え（スムーズなフェードイン付き）
     function switchTab(tab) {
       const calendarTab = document.getElementById("tab-calendar");
       const lookbookTab = document.getElementById("tab-lookbook");
@@ -511,13 +534,16 @@
       if (tab === 'calendar') {
         calendarTab.classList.remove("hidden");
         lookbookTab.classList.add("hidden");
-        calendarBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-sm";
-        lookbookBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900";
+        
+        calendarBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold";
+        lookbookBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
       } else {
         calendarTab.classList.add("hidden");
         lookbookTab.classList.remove("hidden");
-        lookbookBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-sm";
-        calendarBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900";
+        
+        lookbookBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold";
+        calendarBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
+
         updateRecapOptions();
         renderAlbumGallery();
         renderMovieHistory();
@@ -527,7 +553,7 @@
     function changeYearMonth() {
       currentYear = parseInt(document.getElementById("select-year").value, 10);
       currentMonth = parseInt(document.getElementById("select-month").value, 10);
-      renderCalendar();
+      renderCalendarWithAnimation('left');
       updateRecapOptions();
       renderAlbumGallery();
     }
@@ -536,11 +562,19 @@
       return new Date(year, month, 0).getDate();
     }
 
-    // カレンダー月間グリッド描画
     function renderCalendar() {
+      renderCalendarWithAnimation('left');
+    }
+
+    // ✨ スライドアニメーション付きのカレンダー描画関数
+    function renderCalendarWithAnimation(direction) {
       const grid = document.getElementById("calendar-days-grid");
       grid.innerHTML = "";
       
+      grid.className = "grid grid-cols-7 gap-1.5";
+      void grid.offsetWidth; 
+      grid.className = `grid grid-cols-7 gap-1.5 ${direction === 'right' ? 'slide-enter-left' : 'slide-enter-right'}`;
+
       const totalDays = getDaysInMonth(currentYear, currentMonth);
       const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
 
@@ -682,7 +716,7 @@
                 <p class="text-[10px] text-slate-400 font-bold">お気に入り・思い出写真</p>
                 <p class="text-xs text-slate-600">まだ写真が追加されていません</p>
               </div>
-              <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs">＋ 写真を追加</button>
+              <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ 写真を追加</button>
             </div>
           `;
         }
@@ -697,7 +731,7 @@
               </p>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all">
+              <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all active:scale-95">
                 <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
                 <span>追加</span>
               </button>
@@ -850,7 +884,7 @@
             </div>
           </div>
           <div class="flex items-center gap-1.5">
-            <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs">
+            <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-95">
               再生
             </button>
             <button onclick="deleteMovieHistory('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg">
