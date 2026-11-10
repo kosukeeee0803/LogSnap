@@ -47,31 +47,32 @@
     .animate-zoom {
       animation: cinematicZoom 3s ease-out forwards;
     }
-    /* スムーズなフェードイン＆スライド演出 */
-    .fade-in {
-      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    /* 全体タブ切り替え用のなめらかなクロスフェード演出 */
+    .tab-content {
+      animation: tabFadeIn 0.25s ease-out forwards;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .slide-enter-left {
-      animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    /* カレンダー月移動時のスムーズなスライド */
+    .slide-left {
+      animation: slideInLeft 0.2s ease-out forwards;
     }
-    .slide-enter-right {
-      animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .slide-right {
+      animation: slideInRight 0.2s ease-out forwards;
     }
     @keyframes slideInLeft {
-      from { transform: translateX(25px); opacity: 0.2; }
+      from { transform: translateX(15px); opacity: 0.4; }
       to { transform: translateX(0); opacity: 1; }
     }
     @keyframes slideInRight {
-      from { transform: translateX(-25px); opacity: 0.2; }
+      from { transform: translateX(-15px); opacity: 0.4; }
       to { transform: translateX(0); opacity: 1; }
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-28 selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-32 selection:bg-indigo-500 selection:text-white">
 
   <!-- ヘッダー -->
   <header class="sticky top-0 z-35 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
@@ -92,10 +93,8 @@
   <!-- メインコンテンツ -->
   <main class="max-w-md mx-auto px-4 pt-4 space-y-6">
 
-    <!-- ===== タブ1: カレンダービュー（スワイプ対応・月間グリッド ＆ 選択日詳細） ===== -->
-    <section id="tab-calendar" class="space-y-6 fade-in">
-
-      <!-- 1ヶ月カレンダーグリッド（タッチスワイプエリア） -->
+    <!-- ===== タブ1: カレンダービュー ===== -->
+    <section id="tab-calendar" class="tab-content space-y-6">
       <div id="calendar-card" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm select-none overflow-hidden">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
@@ -132,10 +131,9 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5 transition-all"></div>
+        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5"></div>
       </div>
 
-      <!-- 選択された日の詳細スケジュール ＆ アルバム -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
@@ -152,10 +150,38 @@
       </div>
     </section>
 
-    <!-- ===== タブ2: LOOKBOOK（まとめ動画スタジオ＆ギャラリー） ===== -->
-    <section id="tab-lookbook" class="hidden space-y-6 fade-in">
-      
-      <!-- まとめ動画作成パネル -->
+    <!-- ===== タブ2: 通知 (Notifications) ===== -->
+    <section id="tab-notifications" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold flex items-center gap-1.5">
+            <i data-lucide="bell" class="w-4 h-4"></i> お知らせ ＆ リマインダー
+          </h2>
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full">新着</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
+              <span class="text-[10px] text-slate-400 font-mono">今日</span>
+            </div>
+            <p class="text-xs text-slate-600">自分だけのシネマティックなライフログとVlog作成をお楽しみください。</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-900">💡 思い出を残そう</span>
+              <span class="text-[10px] text-slate-400 font-mono">12月1日</span>
+            </div>
+            <p class="text-xs text-slate-600">アプリ内カメラやフォルダから写真・動画を追加すると、まとめ動画スタジオでVlogを生成できます。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== タブ3: LOOKBOOK（まとめ動画スタジオ＆ギャラリー） ===== -->
+    <section id="tab-lookbook" class="tab-content hidden space-y-6">
       <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
           <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold">Cinematic Vlog Studio</h2>
@@ -182,7 +208,6 @@
         </button>
       </div>
 
-      <!-- 保存済みまとめ動画履歴（アーカイブ） -->
       <div class="space-y-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -200,25 +225,73 @@
       </div>
     </section>
 
+    <!-- ===== タブ4: アカウント (Account & Settings) ===== -->
+    <section id="tab-account" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-white text-lg shadow-md">
+            L
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">ゲストユーザー</h2>
+            <p class="text-xs text-slate-500 font-mono">オフラインモードで利用中</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="cloud" class="w-4 h-4 text-indigo-600"></i> クラウドバックアップ
+              </span>
+              <span class="text-[10px] bg-amber-50 text-amber-600 font-semibold px-2 py-0.5 rounded-full">準備中</span>
+            </div>
+            <p class="text-xs text-slate-600">Googleアカウントやメールアドレスでログインして、思い出のデータをクラウドに安全に保存・同期します。</p>
+            <button onclick="alert('まもなく実装予定です！お楽しみに。')" class="w-full mt-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-lg shadow-xs transition-all active:scale-95">
+              Googleアカウントでログイン
+            </button>
+          </div>
+
+          <div class="space-y-1.5 pt-2">
+            <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">アプリ設定</h3>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-xs font-medium text-slate-700">データストレージ初期化</span>
+              <button onclick="if(confirm('すべての予定とアルバムデータをリセットしますか？')){localStorage.clear();location.reload();}" class="text-xs text-rose-600 hover:underline font-semibold">
+                リセット
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- ===== 📱 ボトムナビゲーション（画面下部の親指が届きやすいメニュー） ===== -->
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-slate-200 px-6 py-2 shadow-lg">
+  <!-- ===== 📱 ボトムナビゲーション（ゆとりを持った高さ・パディング調整） ===== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 pb-6 shadow-2xl">
     <div class="max-w-md mx-auto flex items-center justify-around">
-      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold">
+      <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold">
         <i data-lucide="calendar" class="w-5 h-5"></i>
-        <span class="text-[11px]">カレンダー</span>
+        <span class="text-[10px]">カレンダー</span>
       </button>
-      <button id="tab-lookbook-btn" onclick="switchTab('lookbook')" class="flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
+      <button id="nav-notifications-btn" onclick="switchTab('notifications')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
+        <i data-lucide="bell" class="w-5 h-5"></i>
+        <span class="text-[10px]">通知</span>
+      </button>
+      <button id="nav-lookbook-btn" onclick="switchTab('lookbook')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
         <i data-lucide="book-open" class="w-5 h-5"></i>
-        <span class="text-[11px]">LOOKBOOK</span>
+        <span class="text-[10px]">LOOKBOOK</span>
+      </button>
+      <button id="nav-account-btn" onclick="switchTab('account')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span class="text-[10px]">アカウント</span>
       </button>
     </div>
   </nav>
 
-  <!-- モーダル: 予定追加 -->
+  <!-- モーダル各種 -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl fade-in">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900">新しい予定を追加</h3>
         <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">
@@ -253,9 +326,8 @@
     </div>
   </div>
 
-  <!-- モーダル: メディア追加 (写真フォルダ選択 ＆ アプリ内カメラ) -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto fade-in">
+    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">写真・動画を追加</h3>
@@ -266,7 +338,6 @@
         </button>
       </div>
 
-      <!-- テーマ写真変更セクション -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
         <label class="block text-xs font-bold text-indigo-600 flex items-center gap-1">
           <i data-lucide="image" class="w-3.5 h-3.5"></i> サムネイル・テーマ写真
@@ -274,7 +345,6 @@
         <div class="grid grid-cols-4 gap-2" id="theme-preset-picker"></div>
       </div>
 
-      <!-- 🎥 アプリ内フィルター付きカメラ起動ボタン -->
       <div class="bg-gradient-to-r from-pink-500 to-indigo-600 p-3.5 rounded-2xl text-white shadow-md flex items-center justify-between">
         <div>
           <p class="text-xs font-bold uppercase tracking-wide opacity-95">Vlog Filter Camera</p>
@@ -285,7 +355,6 @@
         </button>
       </div>
 
-      <!-- 📁 写真フォルダから一括追加 -->
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスの写真・動画ファイル選択</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
@@ -300,7 +369,6 @@
     </div>
   </div>
 
-  <!-- 📸 アプリ内ライブカメラ専用全画面 -->
   <div id="inapp-camera-modal" class="fixed inset-0 z-[9999] bg-black hidden overflow-hidden">
     <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
       <video id="camera-preview-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
@@ -352,9 +420,8 @@
     </div>
   </div>
 
-  <!-- モーダル: メディア詳細再生・確認用 -->
   <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden fade-in">
+    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Memory Preview</span>
@@ -372,10 +439,8 @@
     </div>
   </div>
 
-  <!-- モーダル: シネマティックまとめ動画再生 (写真約3秒、10秒動画フル尺) -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden fade-in">
-      
+    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <span class="text-[10px] uppercase font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">Selected Vlog Recap</span>
@@ -410,7 +475,6 @@
           <i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存
         </button>
       </div>
-
     </div>
   </div>
 
@@ -424,7 +488,7 @@
       "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&auto=format&fit=crop&q=80"
     ];
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v6')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v7')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -442,7 +506,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v6', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v7', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -475,7 +539,6 @@
       setupCalendarSwipe();
     });
 
-    // 📱 左右スワイプによる月移動 ＆ スライドアニメーション連動
     function setupCalendarSwipe() {
       const card = document.getElementById("calendar-card");
       let touchStartX = 0;
@@ -489,12 +552,11 @@
         touchEndX = e.changedTouches[0].screenX;
         let diff = touchEndX - touchStartX;
         if (Math.abs(diff) > 40) {
-          if (diff > 0) changeMonthOffset(-1, 'right'); // 右スワイプ＝前月へ
-          else changeMonthOffset(1, 'left');             // 左スワイプ＝次月へ
+          if (diff > 0) changeMonthOffset(-1, 'right');
+          else changeMonthOffset(1, 'left');
         }
       }, { passive: true });
 
-      // マウスドラッグ対応
       let mouseStartX = 0;
       card.addEventListener("mousedown", (e) => {
         mouseStartX = e.clientX;
@@ -524,26 +586,24 @@
       renderAlbumGallery();
     }
 
-    // ✨ ボトムナビゲーションによる画面切り替え（スムーズなフェードイン付き）
+    // ✨ 4つのタブ切り替え対応（カレンダー、通知、LOOKBOOK、アカウント）
     function switchTab(tab) {
-      const calendarTab = document.getElementById("tab-calendar");
-      const lookbookTab = document.getElementById("tab-lookbook");
-      const calendarBtn = document.getElementById("tab-calendar-btn");
-      const lookbookBtn = document.getElementById("tab-lookbook-btn");
+      const tabs = ['calendar', 'notifications', 'lookbook', 'account'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`nav-${t}-btn`);
+        if (t === tab) {
+          el.classList.remove("hidden");
+          btn.className = "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold";
+        } else {
+          el.classList.add("hidden");
+          btn.className = "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
+        }
+      });
 
       if (tab === 'calendar') {
-        calendarTab.classList.remove("hidden");
-        lookbookTab.classList.add("hidden");
-        
-        calendarBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold";
-        lookbookBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
-      } else {
-        calendarTab.classList.add("hidden");
-        lookbookTab.classList.remove("hidden");
-        
-        lookbookBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-indigo-600 font-bold";
-        calendarBtn.className = "flex flex-col items-center gap-1 py-1 px-6 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
-
+        renderCalendar();
+      } else if (tab === 'lookbook') {
         updateRecapOptions();
         renderAlbumGallery();
         renderMovieHistory();
@@ -553,7 +613,7 @@
     function changeYearMonth() {
       currentYear = parseInt(document.getElementById("select-year").value, 10);
       currentMonth = parseInt(document.getElementById("select-month").value, 10);
-      renderCalendarWithAnimation('left');
+      renderCalendar();
       updateRecapOptions();
       renderAlbumGallery();
     }
@@ -563,18 +623,21 @@
     }
 
     function renderCalendar() {
-      renderCalendarWithAnimation('left');
+      const grid = document.getElementById("calendar-days-grid");
+      grid.className = "grid grid-cols-7 gap-1.5";
+      fillCalendarGrid(grid);
     }
 
-    // ✨ スライドアニメーション付きのカレンダー描画関数
     function renderCalendarWithAnimation(direction) {
       const grid = document.getElementById("calendar-days-grid");
-      grid.innerHTML = "";
-      
       grid.className = "grid grid-cols-7 gap-1.5";
       void grid.offsetWidth; 
-      grid.className = `grid grid-cols-7 gap-1.5 ${direction === 'right' ? 'slide-enter-left' : 'slide-enter-right'}`;
+      grid.className = `grid grid-cols-7 gap-1.5 ${direction === 'right' ? 'slide-left' : 'slide-right'}`;
+      fillCalendarGrid(grid);
+    }
 
+    function fillCalendarGrid(grid) {
+      grid.innerHTML = "";
       const totalDays = getDaysInMonth(currentYear, currentMonth);
       const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
 
@@ -969,7 +1032,6 @@
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
-    // ===== 📸 アプリ内ライブカメラ =====
     async function openInAppCamera() {
       document.getElementById("checkin-modal").classList.add("hidden");
       const modal = document.getElementById("inapp-camera-modal");
@@ -1187,7 +1249,6 @@
       renderAlbumGallery();
     }
 
-    // ===== 🎥 シネマティックまとめ動画 (写真3秒、10秒動画フル尺) =====
     const vlogPlaylist = [
       { name: "Avatar's Love", url: "7_BPM69.mp3" },
       { name: "異国のグルメ", url: "082_BPM97.mp3" },
@@ -1195,14 +1256,12 @@
       { name: "Velvet Mood", url: "velvet.mp3" }
     ];
     let currentTrackIdx = 0;
-    let trackPlayDuration = 0;
 
     function startAutoBgm() {
       const player = document.getElementById("bgm-player");
       currentTrackIdx = Math.floor(Math.random() * vlogPlaylist.length);
       player.src = vlogPlaylist[currentTrackIdx].url;
       player.volume = 0.35;
-      trackPlayDuration = 0;
       player.play().catch(() => {});
     }
 
