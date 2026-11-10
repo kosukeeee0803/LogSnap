@@ -149,12 +149,12 @@
           </div>
         </div>
 
-        <!-- 期間選択セレクター（週間 / 月間） -->
+        <!-- 期間選択セレクター（週間：日曜〜土曜 / 月間） -->
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
           <div>
             <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">対象期間モード</label>
             <select id="recap-mode" onchange="updateRecapOptions()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500">
-              <option value="week">特定の一週間 (Weekly)</option>
+              <option value="week">特定の一週間 (日曜〜土曜)</option>
               <option value="month" selected>1ヶ月間 (Monthly)</option>
             </select>
           </div>
@@ -339,7 +339,6 @@
     let currentMonth = 11;
     let selectedDate = "2026-11-10";
 
-    // 豊富なカテゴリ辞書（サッカーとジムなどが被らないようバリエーションを強化）
     const categoryDict = [
       { name: "サッカー・スポーツ", keywords: ["サッカー", "フットサル", "試合", "バスケ", "テニス", "野球", "水泳", "プール", "スポーツ"], imageUrls: [
         "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
@@ -386,7 +385,6 @@
       return defaultImages[0];
     }
 
-    // ===== データ管理（themeImage と mediaList を完全に分離） =====
     let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v3')) || [
       { 
         id: 1, 
@@ -465,7 +463,7 @@
       grid.innerHTML = "";
       
       const totalDays = getDaysInMonth(currentYear, currentMonth);
-      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay(); // 日曜(0)〜土曜(6)の正しい位置
+      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay(); // 日曜(0)〜土曜(6)
 
       for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement("div");
@@ -480,7 +478,6 @@
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr;
 
-        // サムネイル表示ロジック：完了時(mediaListあり)は思い出写真、未完了時はテーマ画像
         const firstCompletedMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.url);
         const themeImg = daySchedules[0]?.themeImage;
         const thumbnail = firstCompletedMedia ? firstCompletedMedia.url : themeImg;
@@ -547,7 +544,6 @@
           ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>COMPLETED (${mediaCount}件の思い出)</span></div>`
           : `<div class="flex items-center gap-1.5 text-xs text-indigo-500 font-bold"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>THEME PHOTO (未完了)</span></div>`;
 
-        // テーマ写真のプレビューまたは思い出ギャラリー
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
           thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
@@ -564,7 +560,6 @@
           });
           thumbnailDisplay += `</div>`;
         } else {
-          // 未完了時はテーマ写真を表示
           thumbnailDisplay = `
             <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
               <img src="${item.themeImage || defaultImages[0]}" class="w-16 h-16 object-cover rounded-lg shadow-sm">
@@ -603,6 +598,15 @@
       lucide.createIcons();
     }
 
+    // ===== 日付を YYYY-MM-DD 文字列にするヘルパー =====
+    function formatDateString(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // ===== カレンダーの曜日（日曜〜土曜）に完全準拠した週リストを生成する関数 =====
     function updateRecapOptions() {
       const mode = document.getElementById("recap-mode").value;
       const labelEl = document.getElementById("recap-target-label");
@@ -619,15 +623,44 @@
           selectEl.appendChild(opt);
         }
       } else {
-        labelEl.innerText = "対象の一週間 (Weekly)";
-        const totalDays = getDaysInMonth(currentYear, currentMonth);
-        for (let startDay = 1; startDay <= totalDays; startDay += 7) {
-          const endDay = Math.min(startDay + 6, totalDays);
-          const startStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
-          const endStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+        labelEl.innerText = "対象の一週間 (日曜〜土曜)";
+        
+        // 指定された年月の1日から末日までをカバーする「日曜〜土曜」の週ブロックをすべて洗い出す
+        const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
+        const lastDayOfMonth = new Date(currentYear, currentMonth, 0);
+
+        // 1日が含まれる週の日曜日を算出
+        let currSunday = new Date(firstDayOfMonth);
+        currSunday.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
+
+        while (currSunday <= lastDayOfMonth) {
+          let currSaturday = new Date(currSunday);
+          currSaturday.setDate(currSunday.getDate() + 6);
+
+          const startStr = formatDateString(currSunday);
+          const endStr = formatDateString(currSaturday);
+
           const opt = document.createElement("option");
           opt.value = `${startStr}_${endStr}`;
-          opt.innerText = `${currentMonth}月 ${startDay}日 〜 ${endDay}日`;
+          opt.innerText = `${currSunday.getMonth() + 1}月${currSunday.getDate}日(日) 〜 ${currSaturday.getMonth() + 1}月${currSaturday.getDate()}日(土)`;
+          
+          // 今日の日付または現在の月を含む週をデフォルト選択
+          const todayStr = formatDateString(new Date());
+          if (startStr <= todayStr && todayStr <= endStr) {
+            opt.selected = true;
+          }
+
+          selectEl.appendChild(opt);
+
+          // 次の週へ（+7日）
+          currSunday.setDate(currSunday.getDate() + 7);
+        }
+
+        // もし該当する週が生成されなかった場合のフォールバック
+        if (selectEl.options.length === 0) {
+          const opt = document.createElement("option");
+          opt.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01_${currentYear}-${String(currentMonth).padStart(2, '0')}-${getDaysInMonth(currentYear, currentMonth)}`;
+          opt.innerText = `${currentMonth}月全体`;
           selectEl.appendChild(opt);
         }
       }
@@ -717,8 +750,8 @@
         time, 
         title, 
         location: location || "野々市", 
-        themeImage: autoImageUrl, // キーワード分析で自動設定されたテーマ写真
-        mediaList: [] // 完了時の思い出写真は最初は空（テーマ写真とは完全分離）
+        themeImage: autoImageUrl,
+        mediaList: [] 
       });
 
       saveSchedules();
@@ -734,16 +767,14 @@
       document.getElementById("checkin-target-title").innerText = item.title;
       document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || '野々市'}`;
 
-      // テーマ写真の変更用ピッカーを描画
       const themePicker = document.getElementById("theme-preset-picker");
       themePicker.innerHTML = "";
       
-      // カテゴリからいくつかのプリセット候補を表示
       const presetCandidates = [
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80", // サッカー
-        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80", // ジム
-        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80", // カフェ
-        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80"  // 勉強
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80"
       ];
 
       presetCandidates.forEach(url => {
@@ -755,7 +786,7 @@
         btn.onclick = () => {
           item.themeImage = url;
           saveSchedules();
-          openCheckinModal(id); // 再描画
+          openCheckinModal(id);
           renderCalendar();
           renderSchedules();
         };
@@ -772,7 +803,6 @@
       tempMediaList = [];
     }
 
-    // 動画形式の幅広い対応 ＆ 非対応時のエラー案内バリデーション
     function handleFileCaptureOrSelect(event, isCamera) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -783,7 +813,6 @@
         const isVideo = file.type.startsWith("video") || file.name.match(/\.(mp4|mov|webm|m4v)$/i);
         
         if (isVideo) {
-          // 動画の形式チェック（広く許容しつつ、極端な非対応形式はアラート）
           const extCheck = file.name.match(/\.(mp4|mov|webm|m4v|avi|mkv)$/i);
           if (!extCheck && file.type && !validVideoTypes.includes(file.type)) {
             alert("⚠️ 対応していない動画形式の可能性があります。MP4またはMOV形式の動画ファイルを選択してください。");
@@ -1054,7 +1083,7 @@
 
       } catch (err) {
         console.error("Recording error:", err);
-        alert("動画のエンコード中にエラーが発生しました。");
+        alert("動画のエンコード中にエラーエラーが発生しました。");
         btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存`;
         btn.disabled = false;
         lucide.createIcons();
