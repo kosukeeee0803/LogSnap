@@ -47,7 +47,6 @@
     .animate-zoom {
       animation: cinematicZoom 3s ease-out forwards;
     }
-    /* 全体タブ切り替え用のなめらかなクロスフェード演出 */
     .tab-content {
       animation: tabFadeIn 0.25s ease-out forwards;
     }
@@ -55,7 +54,6 @@
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* カレンダー月移動時のスムーズなスライド */
     .slide-left {
       animation: slideInLeft 0.2s ease-out forwards;
     }
@@ -74,7 +72,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pt-16 pb-32 selection:bg-indigo-500 selection:text-white">
 
-  <!-- ヘッダー（完全固定：スクロールしても隠れません） -->
+  <!-- ヘッダー（完全固定） -->
   <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm max-w-md mx-auto">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-500/30">
@@ -91,19 +89,20 @@
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="max-w-md mx-auto px-4 pt-2 space-y-6">
+  <main class="max-w-md mx-auto px-4 pt-3 space-y-6">
 
     <!-- ===== タブ1: カレンダービュー ===== -->
     <section id="tab-calendar" class="tab-content space-y-6">
-      <div id="calendar-card" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm select-none overflow-hidden touch-pan-y">
+      <!-- カレンダーカード（大きく見やすいサイズ感 ＆ 指追従スワイプ対応） -->
+      <div id="calendar-card" class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm select-none overflow-hidden touch-pan-y transition-transform duration-100">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <select id="select-year" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-500">
+            <select id="select-year" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500">
               <option value="2025">2025年</option>
               <option value="2026" selected>2026年</option>
               <option value="2027">2027年</option>
             </select>
-            <select id="select-month" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-500">
+            <select id="select-month" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500">
               <option value="1">1月</option>
               <option value="2">2月</option>
               <option value="3">3月</option>
@@ -118,10 +117,10 @@
               <option value="12" selected>12月</option>
             </select>
           </div>
-          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">左右スワイプで月移動</span>
+          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full font-medium">左右スワイプで月移動</span>
         </div>
 
-        <div class="grid grid-cols-7 text-center text-[11px] font-semibold text-slate-500 mb-2">
+        <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-500 mb-3">
           <span class="text-rose-500">日</span>
           <span>月</span>
           <span>火</span>
@@ -131,9 +130,10 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5 transition-transform duration-200"></div>
+        <div id="calendar-days-grid" class="grid grid-cols-7 gap-2"></div>
       </div>
 
+      <!-- 選択された日の詳細スケジュール ＆ アルバム -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
@@ -267,7 +267,7 @@
 
   </main>
 
-  <!-- ===== 📱 ボトムナビゲーション（ゆとりを持った高さ・パディング調整） ===== -->
+  <!-- ===== 📱 ボトムナビゲーション ===== -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 pb-6 shadow-2xl max-w-md mx-auto">
     <div class="flex items-center justify-around">
       <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold">
@@ -291,7 +291,6 @@
 
   <!-- ===== モーダル: フルスクリーン型・予定作成画面 ===== -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-100 flex flex-col hidden tab-content overflow-y-auto">
-    <!-- フルスクリーン用ヘッダー -->
     <div class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3.5 flex items-center justify-between shadow-xs">
       <button onclick="closeAddModal()" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-full">
         <i data-lucide="x" class="w-6 h-6"></i>
@@ -302,17 +301,13 @@
       </button>
     </div>
 
-    <!-- フォーム本体（画面全体に余裕を持ったiOS風レイアウト） -->
     <div class="max-w-md w-full mx-auto p-4 flex-1">
       <form id="add-schedule-form" onsubmit="handleAddSchedule(event)" class="space-y-4">
-        
-        <!-- タイトルカード -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
           <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1">予定タイトル</label>
           <input type="text" id="input-title" required placeholder="例: カフェで作業、ジムで筋トレ" class="w-full text-base font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent">
         </div>
 
-        <!-- 日時・時間カード -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-4">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
@@ -328,12 +323,11 @@
           </div>
         </div>
 
-        <!-- 場所（スポット）カード -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
           <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5">
             <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-600"></i> 場所（スポット）
           </label>
-          <input type="text" id="input-location" placeholder="例: カフェ・お出かけ先など" class="w-full text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none bg-transparent">
+          <input type="text" id="input-location" placeholder="例: お気に入りのカフェ" class="w-full text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none bg-transparent">
         </div>
 
         <div class="pt-4">
@@ -341,7 +335,6 @@
             保存する
           </button>
         </div>
-
       </form>
     </div>
   </div>
@@ -509,7 +502,7 @@
       "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&auto=format&fit=crop&q=80"
     ];
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v8')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v9')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -527,7 +520,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v8', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v9', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -557,11 +550,11 @@
       updateRecapOptions();
       renderAlbumGallery();
       renderMovieHistory();
-      setupCalendarDragSwipe();
+      setupCalendarSmoothSwipe();
     });
 
-    // 📱 指の動きにリアルタイムで追従するカレンダー・ドラッグスワイプ
-    function setupCalendarDragSwipe() {
+    // 📱 動画のような極上の指追従・慣性スワイプ
+    function setupCalendarSmoothSwipe() {
       const card = document.getElementById("calendar-card");
       let startX = 0;
       let currentX = 0;
@@ -570,19 +563,22 @@
       card.addEventListener("touchstart", (e) => {
         startX = e.touches[0].clientX;
         isDragging = true;
+        card.style.transition = 'none';
       }, { passive: true });
 
       card.addEventListener("touchmove", (e) => {
         if (!isDragging) return;
         currentX = e.touches[0].clientX;
         let diff = currentX - startX;
-        card.style.transform = `translateX(${diff * 0.4}px)`;
+        card.style.transform = `translateX(${diff * 0.6}px)`;
       }, { passive: true });
 
       card.addEventListener("touchend", (e) => {
         if (!isDragging) return;
         isDragging = false;
         let diff = (e.changedTouches[0].clientX) - startX;
+        
+        card.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
         card.style.transform = 'translateX(0px)';
 
         if (Math.abs(diff) > 50) {
@@ -591,21 +587,24 @@
         }
       }, { passive: true });
 
-      // マウスドラッグ対応
+      // マウス対応
       card.addEventListener("mousedown", (e) => {
         startX = e.clientX;
         isDragging = true;
+        card.style.transition = 'none';
       });
       window.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
         currentX = e.clientX;
         let diff = currentX - startX;
-        card.style.transform = `translateX(${diff * 0.4}px)`;
+        card.style.transform = `translateX(${diff * 0.6}px)`;
       });
       window.addEventListener("mouseup", (e) => {
         if (!isDragging) return;
         isDragging = false;
         let diff = e.clientX - startX;
+
+        card.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
         card.style.transform = 'translateX(0px)';
 
         if (Math.abs(diff) > 50) {
@@ -668,29 +667,43 @@
 
     function renderCalendar() {
       const grid = document.getElementById("calendar-days-grid");
-      grid.className = "grid grid-cols-7 gap-1.5";
+      grid.className = "grid grid-cols-7 gap-2";
       fillCalendarGrid(grid);
     }
 
     function renderCalendarWithAnimation(direction) {
       const grid = document.getElementById("calendar-days-grid");
-      grid.className = "grid grid-cols-7 gap-1.5";
+      grid.className = "grid grid-cols-7 gap-2";
       void grid.offsetWidth; 
-      grid.className = `grid grid-cols-7 gap-1.5 ${direction === 'right' ? 'slide-left' : 'slide-right'}`;
+      grid.className = `grid grid-cols-7 gap-2 ${direction === 'right' ? 'slide-left' : 'slide-right'}`;
       fillCalendarGrid(grid);
     }
 
+    // ✨ 前月・翌月のパディング日を薄く表示するTimeTree風ロジック
     function fillCalendarGrid(grid) {
       grid.innerHTML = "";
-      const totalDays = getDaysInMonth(currentYear, currentMonth);
       const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
+      const totalDays = getDaysInMonth(currentYear, currentMonth);
+      
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
 
-      for (let i = 0; i < firstDayIndex; i++) {
-        const emptyCell = document.createElement("div");
-        emptyCell.className = "aspect-[4/5] rounded-xl bg-transparent border border-transparent";
-        grid.appendChild(emptyCell);
+      // 前月の余白日（薄く表示）
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const dayNum = daysInPrevMonth - i;
+        const mm = String(prevMonth).padStart(2, '0');
+        const dd = String(dayNum).padStart(2, '0');
+        const dateStr = `${prevYear}-${mm}-${dd}`;
+        
+        const cell = document.createElement("div");
+        cell.onclick = () => { changeMonthOffset(currentMonth === 1 ? -1 : -1); selectDate(dateStr); };
+        cell.className = "relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer border border-slate-100 bg-slate-50/60 opacity-40 hover:opacity-70 transition-all";
+        cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${dayNum}</span>`;
+        grid.appendChild(cell);
       }
 
+      // 当月の日付
       for (let day = 1; day <= totalDays; day++) {
         const mm = String(currentMonth).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
@@ -704,18 +717,36 @@
 
         const cell = document.createElement("div");
         cell.onclick = () => selectDate(dateStr);
-        cell.className = `relative aspect-[4/5] rounded-xl p-1.5 flex flex-col justify-between items-center cursor-pointer transition-all border overflow-hidden shadow-xs ${
+        cell.className = `relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer transition-all border overflow-hidden shadow-xs ${
           isSelected ? 'border-indigo-600 ring-2 ring-indigo-500/30 bg-indigo-50/40' : 'border-slate-200 bg-white hover:border-slate-300'
         }`;
 
-        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-60 rounded-xl">` : '';
+        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-65 rounded-2xl">` : '';
         let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-600 z-10 shadow-sm"></span>` : '';
 
         cell.innerHTML = `
           ${bgHtml}
-          <span class="text-xs font-bold z-10 ${thumbnail ? 'text-white photo-stamp' : 'text-slate-700'} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
+          <span class="text-xs font-bold z-10 ${thumbnail ? 'text-white photo-stamp' : 'text-slate-800'} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
           <div class="z-10">${dotHtml}</div>
         `;
+        grid.appendChild(cell);
+      }
+
+      // 翌月の余白日（薄く表示）を足してグリッドを綺麗に埋める
+      const totalCellsSoFar = firstDayIndex + totalDays;
+      const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
+      const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+      const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+
+      for (let day = 1; day <= remainingCells; day++) {
+        const mm = String(nextMonth).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+        const dateStr = `${nextYear}-${mm}-${dd}`;
+
+        const cell = document.createElement("div");
+        cell.onclick = () => { changeMonthOffset(currentMonth === 12 ? 1 : 1); selectDate(dateStr); };
+        cell.className = "relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer border border-slate-100 bg-slate-50/60 opacity-40 hover:opacity-70 transition-all";
+        cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${day}</span>`;
         grid.appendChild(cell);
       }
     }
