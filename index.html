@@ -80,11 +80,11 @@
       </button>
     </div>
 
-    <!-- ===== タブ1: カレンダービュー（画面いっぱいの月間グリッド ＆ 選択日詳細） ===== -->
+    <!-- ===== タブ1: カレンダービュー（スワイプ対応・月間グリッド ＆ 選択日詳細） ===== -->
     <section id="tab-calendar" class="space-y-6">
 
-      <!-- 1ヶ月カレンダーグリッド -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+      <!-- 1ヶ月カレンダーグリッド（タッチスワイプエリア） -->
+      <div id="calendar-card" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm select-none">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <select id="select-year" onchange="changeYearMonth()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-500">
@@ -107,7 +107,7 @@
               <option value="12" selected>12月</option>
             </select>
           </div>
-          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">日付選択で予定＆思い出表示</span>
+          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">左右スワイプで月移動</span>
         </div>
 
         <div class="grid grid-cols-7 text-center text-[11px] font-semibold text-slate-500 mb-2">
@@ -446,7 +446,61 @@
       updateRecapOptions();
       renderAlbumGallery();
       renderMovieHistory();
+      setupCalendarSwipe();
     });
+
+    // 📱 タッチスワイプによる月移動の実装
+    function setupCalendarSwipe() {
+      const card = document.getElementById("calendar-card");
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      card.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      card.addEventListener("touchend", (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+      }, { passive: true });
+
+      // マウスドラッグでもスワイプできるように対応
+      let mouseStartX = 0;
+      card.addEventListener("mousedown", (e) => {
+        mouseStartX = e.clientX;
+      });
+      card.addEventListener("mouseup", (e) => {
+        let diff = e.clientX - mouseStartX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) changeMonthOffset(-1); // 右スワイプ＝前月
+          else changeMonthOffset(1);           // 左スワイプ＝次月
+        }
+      });
+
+      function handleSwipeGesture() {
+        let diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) changeMonthOffset(-1); // 右スワイプ＝前月
+          else changeMonthOffset(1);           // 左スワイプ＝次月
+        }
+      }
+    }
+
+    function changeMonthOffset(offset) {
+      currentMonth += offset;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      } else if (currentMonth < 1) {
+        currentMonth = 12;
+        currentYear--;
+      }
+      document.getElementById("select-year").value = currentYear;
+      document.getElementById("select-month").value = currentMonth;
+      renderCalendar();
+      updateRecapOptions();
+      renderAlbumGallery();
+    }
 
     function switchTab(tab) {
       const calendarTab = document.getElementById("tab-calendar");
