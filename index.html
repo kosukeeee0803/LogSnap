@@ -233,7 +233,7 @@
     </div>
   </div>
 
-  <!-- モーダル: メディア追加（複数選択・カメラ撮影・テーマ写真変更対応） -->
+  <!-- モーダル: メディア追加 -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -246,14 +246,12 @@
         </button>
       </div>
 
-      <!-- 未完了時のテーマ写真の自由変更セクション -->
+      <!-- テーマ写真変更セクション -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
         <label class="block text-xs font-bold text-indigo-600 flex items-center gap-1">
-          <i data-lucide="image" class="w-3.5 h-3.5"></i> テーマ写真（自由に変更可能・コンプリートに影響しません）
+          <i data-lucide="image" class="w-3.5 h-3.5"></i> テーマ写真（自由に変更可能）
         </label>
-        <div class="grid grid-cols-4 gap-2" id="theme-preset-picker">
-          <!-- 動的生成 -->
-        </div>
+        <div class="grid grid-cols-4 gap-2" id="theme-preset-picker"></div>
       </div>
 
       <div class="space-y-1">
@@ -263,20 +261,19 @@
 
       <div class="space-y-1 pt-2 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスから複数選択（写真・動画）</label>
-        <!-- acceptを広げてあらゆる動画・画像形式を確実にキャッチできるように改善 -->
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileCaptureOrSelect(event, false)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p class="text-[10px] text-slate-400">※動画・写真ファイルを選択できます。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400">※動画・写真ファイルを選択できます。</p>
       </div>
 
       <div class="pt-2">
-        <button id="confirm-checkin-btn" onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
-          決定して保存する
+        <button id="confirm-checkin-btn" onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all opacity-50 cursor-not-allowed" disabled>
+          ファイルを読み込み中...
         </button>
       </div>
     </div>
   </div>
 
-  <!-- モーダル: 週間ハイライトムービー再生 ＆ 動画ファイル保存対応 -->
+  <!-- モーダル: 動画再生 -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden">
       
@@ -290,7 +287,6 @@
         </button>
       </div>
 
-      <!-- プレビューコンテナ -->
       <div id="movie-screen" class="relative aspect-[16/9] w-full bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
         <img id="movie-slide-img" src="" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 hidden">
         <video id="movie-slide-video" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 hidden" playsinline muted></video>
@@ -306,23 +302,6 @@
       </div>
 
       <audio id="bgm-player" loop></audio>
-
-      <div class="bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl flex items-center justify-between text-xs text-indigo-900">
-        <span class="font-medium flex items-center gap-1.5">
-          <i data-lucide="music" class="w-3.5 h-3.5 text-indigo-600 animate-pulse"></i> 
-          BGMクロスフェード再生中
-        </span>
-        <span id="current-track-name" class="font-bold text-[10px] text-pink-600 bg-white px-2 py-0.5 rounded-full shadow-sm">7_BPM69.mp3</span>
-      </div>
-
-      <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600">
-        <span class="font-medium flex items-center gap-1"><i data-lucide="gauge" class="w-3.5 h-3.5 text-indigo-600"></i> 再生テンポ</span>
-        <div class="flex gap-1.5">
-          <button onclick="setSpeed(4000)" id="speed-slow" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 transition-all">のんびり (4s)</button>
-          <button onclick="setSpeed(2200)" id="speed-normal" class="px-2.5 py-1 rounded-lg border-2 border-indigo-600 bg-indigo-50 font-semibold text-indigo-900 transition-all">標準 (2.2s)</button>
-          <button onclick="setSpeed(1400)" id="speed-fast" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 transition-all">テンポ良 (1.4s)</button>
-        </div>
-      </div>
 
       <div class="flex gap-2 pt-1">
         <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
@@ -630,7 +609,7 @@
 
         while (currSunday <= lastDayOfMonth) {
           let currSaturday = new Date(currSunday);
-          currSaturday.setDate(currSunday.getDate() + 6);
+          currSaturday.setDate(currSaturday.getDate() + 6);
 
           const startStr = formatDateString(currSunday);
           const endStr = formatDateString(currSaturday);
@@ -825,6 +804,13 @@
       });
 
       tempMediaList = [];
+      
+      // モーダルを開いたときは初期状態でボタンをロック
+      const confirmBtn = document.getElementById("confirm-checkin-btn");
+      confirmBtn.innerText = "ファイルを選択してください";
+      confirmBtn.disabled = true;
+      confirmBtn.className = "w-full bg-slate-300 text-slate-500 font-medium py-2.5 rounded-lg text-sm transition-all cursor-not-allowed";
+
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
 
@@ -834,17 +820,22 @@
       tempMediaList = [];
     }
 
-    // ===== 堅牢なファイル読み込み処理（あらゆる動画・画像に対応） =====
+    // ===== 堅牢なファイル読み込みとボタン制御 =====
     async function handleFileCaptureOrSelect(event, isCamera) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
 
       const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "⏳ 読み込み中...";
+      const statusText = document.getElementById("file-loading-status");
+      
+      confirmBtn.innerText = "⏳ 動画を読み込み中...";
       confirmBtn.disabled = true;
+      confirmBtn.className = "w-full bg-slate-300 text-slate-500 font-medium py-2.5 rounded-lg text-sm transition-all cursor-not-allowed";
+      statusText.innerText = "⏳ 選択されたファイルをメモリに読み込んでいます...";
+
+      tempMediaList = [];
 
       for (const file of files) {
-        // 拡張子またはMIMEタイプで動画判定をより確実に行う
         const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
 
         try {
@@ -856,12 +847,17 @@
           });
         } catch (err) {
           console.error("File read error:", err);
-          alert("ファイルの読み込みに失敗しました。別のファイルを試してください。");
+          alert("ファイルの読み込みに失敗しました。");
         }
       }
 
-      confirmBtn.innerText = "決定して保存する";
-      confirmBtn.disabled = false;
+      // 読み込み完了後にボタンを有効化
+      if (tempMediaList.length > 0) {
+        confirmBtn.innerText = "決定して保存する";
+        confirmBtn.disabled = false;
+        confirmBtn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer";
+        statusText.innerText = `✅ ${tempMediaList.length}件のファイルの準備ができました。「決定して保存する」を押してください。`;
+      }
     }
 
     function readFileAsDataURL(file) {
