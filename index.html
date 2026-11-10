@@ -45,7 +45,7 @@
       100% { transform: scale(1.08); }
     }
     .animate-zoom {
-      animation: cinematicZoom 4s ease-out forwards;
+      animation: cinematicZoom 3s ease-out forwards;
     }
   </style>
 </head>
@@ -276,17 +276,13 @@
     </div>
   </div>
 
-  <!-- 📸 アプリ内ライブカメラ専用全画面（カメラ背景＋操作ボタン完全オーバーレイ配置） -->
+  <!-- 📸 アプリ内ライブカメラ専用全画面 -->
   <div id="inapp-camera-modal" class="fixed inset-0 z-[9999] bg-black hidden overflow-hidden">
-    <!-- カメラ映像プレビュー（画面いっぱいに背景としてフルサイズ描画） -->
     <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
       <video id="camera-preview-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
     </div>
 
-    <!-- オーバーレイUIレイヤー（縦横回転・スマホの向きに完全追従） -->
     <div class="absolute inset-0 z-20 flex flex-col justify-between p-4 pointer-events-none">
-      
-      <!-- 上部ヘッダー（操作は pointer-events-auto） -->
       <div class="flex items-center justify-between text-white pt-2 pointer-events-auto">
         <div class="flex items-center gap-2 bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10">
           <span id="camera-rec-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
@@ -297,32 +293,26 @@
         </button>
       </div>
 
-      <!-- 画面中央：大きく見やすいVCRタイムスタンプ（例: 2026/11/10 20:17） -->
       <div class="absolute top-16 right-6 z-10 pointer-events-none">
         <span id="camera-live-timestamp" class="vcr-timestamp text-xl sm:text-2xl font-bold">2026/11/10 20:17</span>
       </div>
 
-      <!-- 録画中のタイマー表示 -->
       <div id="recording-timer-badge" class="absolute top-16 left-6 z-10 pointer-events-none hidden bg-rose-600 text-white text-xs sm:text-sm font-mono px-3 py-1 rounded-full animate-pulse shadow-lg">
         🔴 REC <span id="rec-seconds">0</span>s / 10s
       </div>
 
-      <!-- 下部コントロールパネル（完全オーバーレイ配置・操作は pointer-events-auto） -->
       <div class="flex flex-col items-center pb-4 pt-2 w-full max-w-md mx-auto space-y-3 pointer-events-auto">
-        <!-- 倍率変更ボタン -->
         <div class="flex bg-black/50 backdrop-blur-md rounded-full p-1 border border-white/20 gap-1 shadow-lg">
           <button onclick="setCameraZoom(1)" id="zoom-btn-1" class="px-3 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all">0.5x</button>
           <button onclick="setCameraZoom(2)" id="zoom-btn-2" class="px-3 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">1.0x</button>
           <button onclick="setCameraZoom(3)" id="zoom-btn-3" class="px-3 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">2.0x</button>
         </div>
 
-        <!-- モード切替タブ -->
         <div class="flex bg-black/50 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-lg">
           <button id="cam-mode-photo-btn" onclick="setCameraMode('photo')" class="px-4 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all">写真</button>
           <button id="cam-mode-video-btn" onclick="setCameraMode('video')" class="px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">動画 (10秒)</button>
         </div>
 
-        <!-- シャッター・カメラ切替ボタン -->
         <div class="flex items-center justify-around w-full px-6">
           <button onclick="switchCameraFacing()" class="p-3.5 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-black/70 transition-all shadow-lg" title="切替">
             <i data-lucide="switch-camera" class="w-6 h-6"></i>
@@ -335,11 +325,30 @@
           <div class="w-12"></div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- モーダル: 動画再生 -->
+  <!-- モーダル: メディア詳細再生・確認用 -->
+  <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Media Preview</span>
+          <h3 id="viewer-title" class="text-base font-bold text-slate-900 mt-0.5">タイトル</h3>
+        </div>
+        <button onclick="closeMediaViewer()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <div class="relative aspect-[9/16] max-h-[60vh] w-full bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
+        <img id="viewer-img" src="" class="absolute inset-0 w-full h-full object-contain hidden">
+        <video id="viewer-video" src="" class="absolute inset-0 w-full h-full object-contain hidden" controls playsinline></video>
+      </div>
+      <p id="viewer-meta" class="text-xs text-slate-500 font-mono text-center">場所・日付</p>
+    </div>
+  </div>
+
+  <!-- モーダル: まとめ動画再生 -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden">
       
@@ -462,8 +471,8 @@
     let tempMediaList = []; 
     let activeCameraStream = null;
     let useFrontCamera = false;
-    let currentCameraMode = 'photo'; // 'photo' or 'video'
-    let currentZoomLevel = 2; // 1: 0.5x, 2: 1.0x, 3: 2.0x
+    let currentCameraMode = 'photo';
+    let currentZoomLevel = 2;
     let mediaRecorderInstance = null;
     let recordedChunksArray = [];
     let isRecordingVideo = false;
@@ -547,7 +556,7 @@
         let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-40">` : '';
         let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 z-10"></span>` : '';
 
-        cell.innerHTML = `${bgHtml}<span class="text-xs font-semibold z-10 ${isSelected ? 'text-indigo-600 font-bold' : 'text-slate-700'}">${day}</span><div class="z-10">${dotHtml}</div>`;
+        cell.innerHTML = `${bgHtml}<span class="text-xs font-semibold z-10 ${isSelected ? 'text-indigo-600 font-bold' : 'text-slate-700'} ${thumbnail ? 'photo-stamp' : ''}">${day}</span><div class="z-10">${dotHtml}</div>`;
         grid.appendChild(cell);
       }
     }
@@ -581,6 +590,36 @@
       }
     }
 
+    function openMediaViewer(url, type, title, meta) {
+      const modal = document.getElementById("media-viewer-modal");
+      const imgEl = document.getElementById("viewer-img");
+      const videoEl = document.getElementById("viewer-video");
+      document.getElementById("viewer-title").innerText = title;
+      document.getElementById("viewer-meta").innerText = meta;
+
+      if (type === 'video') {
+        imgEl.classList.add("hidden");
+        videoEl.classList.remove("hidden");
+        videoEl.src = url;
+        videoEl.play();
+      } else {
+        videoEl.classList.add("hidden");
+        videoEl.pause();
+        videoEl.src = "";
+        imgEl.classList.remove("hidden");
+        imgEl.src = url;
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function closeMediaViewer() {
+      const modal = document.getElementById("media-viewer-modal");
+      const videoEl = document.getElementById("viewer-video");
+      videoEl.pause();
+      videoEl.src = "";
+      modal.classList.add("hidden");
+    }
+
     function renderSchedules() {
       const container = document.getElementById("schedule-list");
       container.innerHTML = "";
@@ -607,10 +646,10 @@
             const isVideo = m.type === 'video' || m.url.startsWith('blob:');
             const displayThumb = m.thumbnail || m.url;
             thumbnailDisplay += `
-              <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/media bg-slate-900">
+              <div onclick="openMediaViewer('${m.url}', '${isVideo ? 'video' : 'image'}', '${item.title}', '${item.date} ${item.time}')" class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer">
                 <img src="${displayThumb}" class="w-full h-full object-cover">
                 ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : ''}
-                <button onclick="deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
+                <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
                 </button>
               </div>
@@ -764,6 +803,7 @@
         const isVideo = m.type === 'video' || m.url.startsWith('blob:');
         const displayThumb = m.thumbnail || m.url;
         
+        itemEl.onclick = () => openMediaViewer(m.url, isVideo ? 'video' : 'image', m.title, `${m.date} / ${m.location}`);
         itemEl.innerHTML = `
           <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
           ${isVideo ? `<div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono"><i data-lucide="video" class="w-3 h-3 text-pink-400"></i>VLOG</div>` : ''}
@@ -892,7 +932,7 @@
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
-    // ===== 📸 アプリ内ライブカメラ＆シームレスズーム・タイムスタンプ焼き込み機能 =====
+    // ===== 📸 アプリ内ライブカメラ =====
     async function openInAppCamera() {
       document.getElementById("checkin-modal").classList.add("hidden");
 
@@ -935,9 +975,9 @@
 
     function applyZoomScale(videoEl) {
       let scaleVal = 1;
-      if (currentZoomLevel === 1) scaleVal = 0.8;  // 0.5x
-      else if (currentZoomLevel === 2) scaleVal = 1.0; // 1.0x
-      else if (currentZoomLevel === 3) scaleVal = 1.8; // 2.0x
+      if (currentZoomLevel === 1) scaleVal = 0.8;
+      else if (currentZoomLevel === 2) scaleVal = 1.0;
+      else if (currentZoomLevel === 3) scaleVal = 1.8;
       videoEl.style.transform = `scale(${scaleVal})`;
     }
 
@@ -1012,7 +1052,6 @@
       }
     }
 
-    // 写真撮影時、タイムスタンプを映像に焼き込んでCanvas生成
     function capturePhotoFromCamera() {
       const videoEl = document.getElementById("camera-preview-video");
       const timestampEl = document.getElementById("camera-live-timestamp");
@@ -1027,7 +1066,6 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-      // タイムスタンプを焼き込む
       const stampText = timestampEl.innerText;
       ctx.font = "italic bold 36px 'Courier New', Courier, monospace";
       ctx.fillStyle = "#bef264";
@@ -1234,7 +1272,6 @@
     ];
 
     let currentTrackIdx = 0;
-    let slideSpeed = 2200;
     let trackPlayDuration = 0;
 
     function fadeToNextTrack() {
@@ -1290,9 +1327,9 @@
       player.currentTime = 0;
     }
 
-    let movieTimer = null;
-    let currentSlideIdx = 0;
     let activeMovieMediaItems = [];
+    let currentSlideIdx = 0;
+    let activeSlideTimeout = null;
     let mediaRecorder = null;
     let recordedChunks = [];
     let currentMovieTitle = "";
@@ -1310,7 +1347,7 @@
       document.getElementById("movie-modal").classList.remove("hidden");
       currentSlideIdx = 0;
       startAutoBgm();
-      startSlideShow(activeMovieMediaItems);
+      runSlideShowSequence();
     }
 
     function playArchivedMovie(historyId) {
@@ -1323,12 +1360,12 @@
       document.getElementById("movie-modal").classList.remove("hidden");
       currentSlideIdx = 0;
       startAutoBgm();
-      startSlideShow(activeMovieMediaItems);
+      runSlideShowSequence();
     }
 
     function closeMovieModal() {
       document.getElementById("movie-modal").classList.add("hidden");
-      if (movieTimer) clearInterval(movieTimer);
+      if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
       stopBgmAudio();
       const videoEl = document.getElementById("movie-slide-video");
       videoEl.pause();
@@ -1338,56 +1375,69 @@
       }
     }
 
-    function startSlideShow(items) {
-      if (movieTimer) clearInterval(movieTimer);
+    // まぜこぜ再生シーケンス（写真は約3秒、動画はフル尺10秒間すべて再生）
+    function runSlideShowSequence() {
+      if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
 
+      if (currentSlideIdx >= activeMovieMediaItems.length) {
+        currentSlideIdx = 0; // ループ再生
+      }
+
+      const m = activeMovieMediaItems[currentSlideIdx];
       const imgEl = document.getElementById("movie-slide-img");
       const videoEl = document.getElementById("movie-slide-video");
       const titleEl = document.getElementById("movie-slide-title");
       const metaEl = document.getElementById("movie-slide-meta");
       const timestampEl = document.getElementById("movie-timestamp");
 
-      function showNext() {
-        const m = items[currentSlideIdx];
-        
-        imgEl.style.opacity = 0;
-        videoEl.style.opacity = 0;
-        videoEl.pause();
+      imgEl.style.opacity = 0;
+      videoEl.style.opacity = 0;
+      videoEl.pause();
 
-        setTimeout(() => {
-          const isVideo = m.type === 'video' || m.url.startsWith('blob:');
+      setTimeout(() => {
+        const isVideo = m.type === 'video' || m.url.startsWith('blob:');
 
-          if (isVideo) {
-            imgEl.classList.add("hidden");
-            videoEl.classList.remove("hidden");
-            videoEl.src = m.url;
-            videoEl.currentTime = 0;
-            videoEl.volume = 0.8;
-            videoEl.play().catch(e => console.log("Video play error:", e));
-            videoEl.style.opacity = 1;
-          } else {
-            videoEl.classList.add("hidden");
-            imgEl.classList.remove("hidden");
-            imgEl.src = m.url;
-            imgEl.classList.add("animate-zoom");
-            imgEl.style.opacity = 1;
-          }
+        titleEl.innerText = m.title;
+        metaEl.innerText = `${m.location} / ${m.date}`;
+        timestampEl.innerText = formatVlogTime(m.time);
 
-          titleEl.innerText = m.title;
-          metaEl.innerText = `${m.location} / ${m.date}`;
-          timestampEl.innerText = formatVlogTime(m.time);
-        }, 200);
+        if (isVideo) {
+          imgEl.classList.add("hidden");
+          videoEl.classList.remove("hidden");
+          videoEl.src = m.url;
+          videoEl.currentTime = 0;
+          videoEl.volume = 0.8;
+          videoEl.play().catch(e => console.log("Video play error:", e));
+          videoEl.style.opacity = 1;
 
-        trackPlayDuration += slideSpeed;
-        if (trackPlayDuration >= 30000) {
-          fadeToNextTrack();
+          // 動画の実際の長さ（最大10秒フル尺）を取得して再生完了を待つ
+          videoEl.onloadedmetadata = () => {
+            const duration = Math.min(videoEl.duration || 10, 10) * 1000;
+            currentSlideIdx++;
+            activeSlideTimeout = setTimeout(runSlideShowSequence, duration);
+          };
+          // メタデータ取得エラー時のフォールバック（10秒）
+          videoEl.onerror = () => {
+            currentSlideIdx++;
+            activeSlideTimeout = setTimeout(runSlideShowSequence, 10000);
+          };
+        } else {
+          videoEl.classList.add("hidden");
+          imgEl.classList.remove("hidden");
+          imgEl.src = m.url;
+          imgEl.classList.add("animate-zoom");
+          imgEl.style.opacity = 1;
+
+          // 写真は約3秒で次へ切り替え
+          currentSlideIdx++;
+          activeSlideTimeout = setTimeout(runSlideShowSequence, 3000);
         }
+      }, 200);
 
-        currentSlideIdx = (currentSlideIdx + 1) % items.length;
+      trackPlayDuration += 3000;
+      if (trackPlayDuration >= 30000) {
+        fadeToNextTrack();
       }
-
-      showNext();
-      movieTimer = setInterval(showNext, slideSpeed);
     }
 
     function formatVlogTime(timeStr) {
@@ -1405,7 +1455,7 @@
       if (activeMovieMediaItems.length > 0) {
         currentSlideIdx = 0;
         startAutoBgm();
-        startSlideShow(activeMovieMediaItems);
+        runSlideShowSequence();
       }
     }
 
@@ -1465,16 +1515,15 @@
 
         mediaRecorder.start();
 
-        const totalDuration = activeMovieMediaItems.length * slideSpeed;
         setTimeout(() => {
           if (mediaRecorder && mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
           }
-        }, totalDuration);
+        }, 20000); // 20秒後に録画完了
 
       } catch (err) {
         console.error("Recording error:", err);
-        alert("動画のエンコード中にエラーが発生しました。");
+        alert("動画のエンコード中にエラーエラーが発生しました。");
         btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存`;
         btn.disabled = false;
         lucide.createIcons();
