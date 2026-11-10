@@ -139,8 +139,10 @@
       </div>
     </section>
 
-    <!-- ===== タブ2: LOOKBOOK（振り返り＆期間指定まとめ動画生成） ===== -->
+    <!-- ===== タブ2: LOOKBOOK（振り返り＆期間指定まとめ動画生成・履歴） ===== -->
     <section id="tab-lookbook" class="hidden space-y-6">
+      
+      <!-- まとめ動画作成パネル（すっきりと整理） -->
       <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <div>
@@ -170,20 +172,19 @@
           <i data-lucide="play" class="w-4 h-4"></i>
           <span>選択した期間のまとめ動画を再生・作成</span>
         </button>
+      </div>
 
-        <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
-          <div>
-            <p class="text-xs text-slate-500">総スケジュール数</p>
-            <p class="text-base font-bold text-slate-800" id="stat-completed-count">0</p>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500">訪れたスポット</p>
-            <p class="text-base font-bold text-slate-800" id="stat-spots-count">0</p>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500">メディア総数</p>
-            <p class="text-base font-bold text-emerald-600" id="stat-rate">0個</p>
-          </div>
+      <!-- 保存済みまとめ動画履歴（アーカイブ） -->
+      <div class="space-y-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <i data-lucide="film" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span>作成済みまとめ動画の履歴</span>
+          </h3>
+          <span class="text-[10px] text-slate-400">ファイル保存時に自動追加</span>
+        </div>
+        <div id="movie-history-list" class="space-y-2">
+          <!-- 動的生成 -->
         </div>
       </div>
 
@@ -340,30 +341,28 @@
     let selectedDate = "2026-12-01";
 
     const categoryDict = [
-      { name: "サッカー・スポーツ", keywords: ["サッカー", "フットサル", "試合", "バスケ", "テニス", "野球", "水泳", "プール", "スポーツ"], imageUrls: [
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&auto=format&fit=crop&q=80"
+      { name: "仕事・学校", keywords: ["会議", "打ち合わせ", "商談", "出張", "残業", "締め切り", "納期", "飲み会", "歓送迎会", "試験", "テスト", "提出期限", "面談", "授業", "pta"], imageUrls: [
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80"
       ]},
-      { name: "ジム・筋トレ", keywords: ["ジム", "筋トレ", "ランニング", "運動", "ワークアウト", "トレーニング", "ボウリング"], imageUrls: [
+      { name: "生活・家事", keywords: ["ゴミ出し", "家賃", "光熱費", "引き落とし", "荷物", "宅配", "病院", "歯医者", "健康診断", "予防接種", "美容院", "ネイル", "クリーニング"], imageUrls: [
+        "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "人付き合い", keywords: ["ランチ", "友人", "結婚式", "二次会", "お葬式", "法事", "誕生日", "記念日", "お中元", "お歳暮", "年賀状", "同窓会", "町内会", "ママ友"], imageUrls: [
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "趣味・娯楽・運動", keywords: ["ライブ", "コンサート", "推し活", "チケット", "映画", "舞台", "旅行", "温泉", "習い事", "ヨガ", "英会話", "ピアノ", "ジム", "筋トレ", "ランニング", "サッカー", "スポーツ", "ゲーム", "ps5"], imageUrls: [
         "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80"
-      ]},
-      { name: "カフェ", keywords: ["カフェ", "コーヒー", "スタバ", "珈琲", "ドトール", "コメダ", "お茶"], imageUrls: [
-        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop&q=80"
-      ]},
-      { name: "勉強・作業", keywords: ["勉強", "作業", "大学", "講義", "テスト", "ゼミ", "レポート", "プログラミング", "金沢工大", "kit"], imageUrls: [
-        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80"
-      ]},
-      { name: "旅行・お出かけ", keywords: ["旅行", "観光", "お出かけ", "ドライブ", "デート", "ショッピング", "買い物", "金沢駅"], imageUrls: [
         "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=600&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80"
       ]},
-      { name: "お祭り・イベント", keywords: ["祭り", "夏祭り", "花火", "フェス", "イベント", "屋台", "ライブ", "結婚式", "水族館"], imageUrls: [
-        "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80"
+      { name: "季節・行事", keywords: ["花見", "花火", "初詣", "お盆", "帰省", "運動会", "文化祭", "卒業式", "入学式", "祭り", "屋台"], imageUrls: [
+        "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&auto=format&fit=crop&q=80"
       ]},
-      { name: "ラーメン・食事", keywords: ["ラーメン", "油そば", "ランチ", "ディナー", "ごはん", "外食", "居酒屋", "寿司", "焼肉"], imageUrls: [
+      { name: "食事・グルメ", keywords: ["ラーメン", "油そば", "つけ麺", "うどん", "パスタ", "そば", "ごはん", "外食", "ディナー", "居酒屋", "寿司", "焼肉", "カフェ", "スタバ"], imageUrls: [
         "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80",
         "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80"
       ]}
@@ -385,7 +384,7 @@
       return defaultImages[0];
     }
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v3')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v4')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -396,20 +395,18 @@
         mediaList: [
           { id: "m1", url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=80", type: "image" }
         ] 
-      },
-      { 
-        id: 2, 
-        date: "2026-12-01", 
-        time: "15:00", 
-        title: "サッカーの練習", 
-        location: "グラウンド", 
-        themeImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
-        mediaList: [] 
       }
     ];
 
+    // 保存済みまとめ動画履歴の管理
+    let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
+
     function saveSchedules() {
-      localStorage.setItem('logsnap_user_schedules_v3', JSON.stringify(schedules));
+      localStorage.setItem('logsnap_user_schedules_v4', JSON.stringify(schedules));
+    }
+
+    function saveMovieHistory() {
+      localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory));
     }
 
     let currentCheckinId = null;
@@ -423,6 +420,7 @@
       renderSchedules();
       updateRecapOptions();
       renderLookbook();
+      renderMovieHistory();
     });
 
     function switchTab(tab) {
@@ -443,6 +441,7 @@
         scheduleBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900";
         updateRecapOptions();
         renderLookbook();
+        renderMovieHistory();
       }
     }
 
@@ -463,7 +462,7 @@
       grid.innerHTML = "";
       
       const totalDays = getDaysInMonth(currentYear, currentMonth);
-      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay(); // 日曜(0)〜土曜(6)
+      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
 
       for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement("div");
@@ -598,7 +597,6 @@
       lucide.createIcons();
     }
 
-    // ===== 日付を YYYY-MM-DD 文字列にするヘルパー =====
     function formatDateString(d) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -606,7 +604,6 @@
       return `${y}-${m}-${day}`;
     }
 
-    // ===== カレンダーの曜日（日曜〜土曜）に完全準拠した週リストを生成する関数（バグ修正版） =====
     function updateRecapOptions() {
       const mode = document.getElementById("recap-mode").value;
       const labelEl = document.getElementById("recap-target-label");
@@ -640,7 +637,6 @@
 
           const opt = document.createElement("option");
           opt.value = `${startStr}_${endStr}`;
-          // 修正点: 日付を正しく取得してスッキリした日本語表記に
           opt.innerText = `${currSunday.getMonth() + 1}月${currSunday.getDate()}日(日) 〜 ${currSaturday.getMonth() + 1}月${currSaturday.getDate()}日(土)`;
           
           const todayStr = formatDateString(new Date());
@@ -698,11 +694,6 @@
       const grid = document.getElementById("mosaic-grid");
       grid.innerHTML = "";
 
-      const uniqueSpots = new Set(schedules.map(s => s.location)).size;
-      document.getElementById("stat-completed-count").innerText = schedules.length;
-      document.getElementById("stat-spots-count").innerText = uniqueSpots;
-      document.getElementById("stat-rate").innerText = `${filteredMedia.length}個`;
-
       if (filteredMedia.length === 0) {
         grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">選択した期間の写真・動画ログがありません。</p>`;
         return;
@@ -723,6 +714,51 @@
         `;
         grid.appendChild(itemEl);
       });
+    }
+
+    // ===== 動画履歴の描画 =====
+    function renderMovieHistory() {
+      const listContainer = document.getElementById("movie-history-list");
+      listContainer.innerHTML = "";
+
+      if (movieHistory.length === 0) {
+        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">まだ保存されたまとめ動画の履歴はありません。</p>`;
+        return;
+      }
+
+      movieHistory.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-indigo-50/50 rounded-xl border border-slate-200 transition-all";
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+              <i data-lucide="film" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">${item.title}</p>
+              <p class="text-[10px] text-slate-400 font-mono">作成日時: ${item.createdAt} (${item.mediaCount}件のメディア)</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs">
+              再生
+            </button>
+            <button onclick="deleteMovieHistory('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+        listContainer.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    function deleteMovieHistory(id) {
+      if (confirm("この動画履歴を削除しますか？")) {
+        movieHistory = movieHistory.filter(h => h.id !== id);
+        saveMovieHistory();
+        renderMovieHistory();
+      }
     }
 
     function openAddModal() { 
@@ -766,10 +802,10 @@
       themePicker.innerHTML = "";
       
       const presetCandidates = [
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80",
         "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&auto=format&fit=crop&q=80"
       ];
 
       presetCandidates.forEach(url => {
@@ -912,6 +948,7 @@
     let activeMovieMediaItems = [];
     let mediaRecorder = null;
     let recordedChunks = [];
+    let currentMovieTitle = "";
 
     function playHighlightMovie() {
       activeMovieMediaItems = getAllFilteredMediaItems();
@@ -919,6 +956,22 @@
         alert("選択した期間に完了した思い出の写真・動画がありません。");
         return;
       }
+
+      const selectEl = document.getElementById("recap-target-select");
+      currentMovieTitle = selectEl.options[selectEl.selectedIndex].text;
+
+      document.getElementById("movie-modal").classList.remove("hidden");
+      currentSlideIdx = 0;
+      startAutoBgm();
+      startSlideShow(activeMovieMediaItems);
+    }
+
+    function playArchivedMovie(historyId) {
+      const historyItem = movieHistory.find(h => h.id === historyId);
+      if (!historyItem) return;
+
+      activeMovieMediaItems = historyItem.mediaItems;
+      currentMovieTitle = historyItem.title;
 
       document.getElementById("movie-modal").classList.remove("hidden");
       currentSlideIdx = 0;
@@ -1061,10 +1114,22 @@
             URL.revokeObjectURL(url);
           }, 100);
 
+          // 履歴に自動追加
+          const nowStr = new Date().toLocaleString();
+          movieHistory.unshift({
+            id: 'mov_' + Date.now(),
+            title: currentMovieTitle || "まとめ動画",
+            createdAt: nowStr,
+            mediaCount: activeMovieMediaItems.length,
+            mediaItems: activeMovieMediaItems
+          });
+          saveMovieHistory();
+          renderMovieHistory();
+
           btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存`;
           btn.disabled = false;
           lucide.createIcons();
-          alert("シネマティックまとめ動画の保存が完了しました！");
+          alert("シネマティックまとめ動画の保存と履歴への追加が完了しました！");
         };
 
         mediaRecorder.start();
