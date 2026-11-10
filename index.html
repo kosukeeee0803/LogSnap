@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LogSnap - 予定×写真達成ログ</title>
+  <title>LogSnap - 予定×写真複数達成ログ</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -145,7 +145,7 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold">Cinematic Vlog Studio</h2>
-            <p class="text-lg font-bold text-slate-900" id="weekly-title">まとめ動画の作成</p>
+            <p class="text-lg font-bold text-slate-900">まとめ動画の作成</p>
           </div>
         </div>
 
@@ -173,7 +173,7 @@
 
         <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
           <div>
-            <p class="text-xs text-slate-500">対象の達成数</p>
+            <p class="text-xs text-slate-500">保存メディア数</p>
             <p class="text-base font-bold text-slate-800" id="stat-completed-count">0</p>
           </div>
           <div>
@@ -181,14 +181,14 @@
             <p class="text-base font-bold text-slate-800" id="stat-spots-count">0</p>
           </div>
           <div>
-            <p class="text-xs text-slate-500">期間達成率</p>
-            <p class="text-base font-bold text-emerald-600" id="stat-rate">0%</p>
+            <p class="text-xs text-slate-500">メディア総数</p>
+            <p class="text-base font-bold text-emerald-600" id="stat-rate">0個</p>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider">Gallery</h3>
+        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider">Gallery（複数メディア一覧）</h3>
         <div id="mosaic-grid" class="mosaic-grid"></div>
       </div>
     </section>
@@ -211,7 +211,7 @@
         </div>
         <div>
           <label class="block text-xs text-slate-600 mb-1 font-medium">予定タイトル</label>
-          <input type="text" id="input-title" required placeholder="例: カフェで作業" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500">
+          <input type="text" id="input-title" required placeholder="例: 金沢旅行・カフェ作業など" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -232,33 +232,34 @@
     </div>
   </div>
 
-  <!-- モーダル: チェックイン -->
+  <!-- モーダル: メディア追加（複数選択・カメラ撮影対応） -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">予定達成チェックイン</h3>
+          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">写真・動画を追加</h3>
           <p class="text-xs text-slate-500" id="checkin-target-meta">場所・時間</p>
         </div>
         <button onclick="closeCheckinModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="text-xs text-slate-600">サンプルから選ぶか、デバイスから写真・動画を選択:</p>
+
+      <p class="text-xs text-slate-600 font-medium">サンプルから選ぶか、デバイスから複数の写真・動画を追加してください:</p>
       <div class="grid grid-cols-2 gap-2" id="sample-photo-picker"></div>
 
       <div class="pt-2 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 mb-1 font-medium">その場でカメラで撮影して追加</label>
-        <input type="file" id="camera-file-input" accept="image/*" capture="environment" onchange="handleCameraCapture(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-500 cursor-pointer">
+        <label class="block text-xs text-slate-600 mb-1 font-medium">📷 その場でカメラで撮影して追加</label>
+        <input type="file" id="camera-file-input" accept="image/*,video/*" capture="environment" onchange="handleCameraCapture(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-500 cursor-pointer">
       </div>
 
       <div class="pt-2 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 mb-1 font-medium">デバイスから画像・動画を選択</label>
-        <input type="file" id="local-file-input" accept="image/*,video/*" onchange="handleLocalFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        <label class="block text-xs text-slate-600 mb-1 font-medium">📁 デバイスから複数選択（写真・動画）</label>
+        <input type="file" id="local-file-input" accept="image/*,video/*" multiple onchange="handleLocalFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
       </div>
       <div class="pt-2">
         <button onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
-          この写真・動画で記録完了（Check-in）
+          決定して保存する
         </button>
       </div>
     </div>
@@ -349,14 +350,34 @@
       return matched ? matched.imageUrl : defaultImage;
     }
 
-    // ===== ローカルストレージを活用した個別データ管理 ＆ 自動保存 =====
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules')) || [
-      { id: 1, date: "2026-11-10", time: "10:00", title: "金沢工大で課題消化", location: "野々市キャンパス", completed: true, photoUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80", completedAt: "2026.11.10 10:15" },
-      { id: 2, date: "2026-11-10", time: "18:00", title: "夏祭りで屋台巡り", location: "野々市広場", completed: false, photoUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80", completedAt: null }
+    // ===== ローカルストレージを活用したデータ管理（mediaListで複数保持に対応） =====
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v2')) || [
+      { 
+        id: 1, 
+        date: "2026-11-10", 
+        time: "10:00", 
+        title: "金沢工大で課題消化", 
+        location: "野々市キャンパス", 
+        mediaList: [
+          { id: "m1", url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80", type: "image" }
+        ], 
+        completedAt: "2026.11.10 10:15" 
+      },
+      { 
+        id: 2, 
+        date: "2026-11-10", 
+        time: "18:00", 
+        title: "夏祭りで屋台巡り", 
+        location: "野々市広場", 
+        mediaList: [
+          { id: "m2", url: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80", type: "image" }
+        ], 
+        completedAt: null 
+      }
     ];
 
     function saveSchedules() {
-      localStorage.setItem('logsnap_user_schedules', JSON.stringify(schedules));
+      localStorage.setItem('logsnap_user_schedules_v2', JSON.stringify(schedules));
     }
 
     const samplePhotos = [
@@ -367,7 +388,7 @@
     ];
 
     let currentCheckinId = null;
-    let tempSelectedPhotoUrl = null;
+    let tempMediaList = []; // 選択中の複数メディア一時保存
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
@@ -430,7 +451,8 @@
         const dd = String(day).padStart(2, '0');
         const dateStr = `${currentYear}-${mm}-${dd}`;
         const daySchedules = schedules.filter(s => s.date === dateStr);
-        const hasCompletedPhoto = daySchedules.find(s => s.completed && s.photoUrl);
+        // メディアが1枚以上ある最初のものをサムネイル表示
+        const hasMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.url);
         const isSelected = selectedDate === dateStr;
 
         const cell = document.createElement("div");
@@ -439,8 +461,8 @@
           isSelected ? 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-500/20' : 'bg-slate-50 border-slate-200 hover:border-slate-300'
         }`;
 
-        let bgHtml = hasCompletedPhoto ? `<img src="${hasCompletedPhoto.photoUrl}" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-40">` : '';
-        let dotHtml = daySchedules.filter(s => !s.completed).length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse z-10"></span>` : '';
+        let bgHtml = hasMedia ? `<img src="${hasMedia.url}" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-40">` : '';
+        let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 z-10"></span>` : '';
 
         cell.innerHTML = `${bgHtml}<span class="text-xs font-semibold z-10 ${isSelected ? 'text-indigo-600 font-bold' : 'text-slate-700'}">${day}</span><div class="z-10">${dotHtml}</div>`;
         grid.appendChild(cell);
@@ -457,10 +479,21 @@
     function deleteSchedule(id) {
       if (confirm("この予定をキャンセル（削除）しますか？")) {
         schedules = schedules.filter(s => s.id !== id);
-        saveSchedules(); // 自動保存
+        saveSchedules();
         renderCalendar();
         renderSchedules();
         updateRecapOptions();
+        renderLookbook();
+      }
+    }
+
+    function deleteMediaFromSchedule(scheduleId, mediaId) {
+      const item = schedules.find(s => s.id === scheduleId);
+      if (item && item.mediaList) {
+        item.mediaList = item.mediaList.filter(m => m.id !== mediaId);
+        saveSchedules();
+        renderCalendar();
+        renderSchedules();
         renderLookbook();
       }
     }
@@ -477,45 +510,53 @@
 
       currentDaySchedules.forEach(item => {
         const card = document.createElement("div");
-        card.className = "bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-md relative group";
+        card.className = "bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all p-4 space-y-3 relative group";
 
-        const isCompleted = item.completed;
-        const statusBadge = isCompleted 
-          ? `<div class="flex items-center gap-1.5 text-xs text-pink-500 font-bold mb-0.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>COMPLETED</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-indigo-400 font-bold mb-0.5"><i data-lucide="clock" class="w-3.5 h-3.5"></i><span>SCHEDULED (${item.time}) - 未達成</span></div>`;
+        const mediaCount = (item.mediaList || []).length;
+        const statusBadge = mediaCount > 0 
+          ? `<div class="flex items-center gap-1.5 text-xs text-pink-500 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>MEMORY SNAP (${mediaCount}件)</span></div>`
+          : `<div class="flex items-center gap-1.5 text-xs text-indigo-400 font-bold"><i data-lucide="clock" class="w-3.5 h-3.5"></i><span>SCHEDULED (${item.time}) - 未記録</span></div>`;
 
-        const checkinButton = isCompleted ? '' : `
-          <button onclick="openCheckinModal(${item.id})" class="mt-3 flex items-center gap-1.5 bg-indigo-600 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md backdrop-blur-sm">
-            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-            <span>写真を取って達成</span>
-          </button>
-        `;
-
-        const isVideo = item.photoUrl && (item.photoUrl.startsWith('data:video') || item.photoUrl.includes('.mov') || item.photoUrl.includes('.mp4') || item.photoUrl.includes('video'));
-        const mediaPreview = isVideo
-          ? `<video src="${item.photoUrl}" class="w-full h-full object-cover opacity-85" muted></video>`
-          : `<img src="${item.photoUrl}" alt="${item.title}" class="w-full h-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105">`;
+        // メディアギャラリー部分のHTML生成
+        let galleryHtml = '';
+        if (mediaCount > 0) {
+          galleryHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
+          item.mediaList.forEach(m => {
+            const isVideo = m.type === 'video' || m.url.startsWith('data:video');
+            galleryHtml += `
+              <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/media bg-slate-900">
+                ${isVideo ? `<video src="${m.url}" class="w-full h-full object-cover" muted></video>` : `<img src="${m.url}" class="w-full h-full object-cover">`}
+                <button onclick="deleteMediaFromSchedule(${item.id}, '${m.id}')" title="この写真を削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
+                  <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+              </div>
+            `;
+          });
+          galleryHtml += `</div>`;
+        } else {
+          galleryHtml = `<p class="text-[11px] text-slate-400 italic">まだ写真や動画が追加されていません。</p>`;
+        }
 
         card.innerHTML = `
-          <div class="relative h-44 w-full bg-slate-900 overflow-hidden">
-            ${mediaPreview}
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent"></div>
-            
-            <button onclick="deleteSchedule(${item.id})" title="予定をキャンセル" class="absolute top-2.5 right-2.5 z-20 p-1.5 bg-black/50 hover:bg-rose-600 text-white rounded-full backdrop-blur-md transition-all">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>
-
-            <div class="absolute bottom-3 left-3 right-3 photo-stamp flex justify-between items-end">
-              <div>
-                ${statusBadge}
-                <h4 class="text-base font-bold text-white leading-tight">${item.title}</h4>
-                <p class="text-[10px] text-slate-300 flex items-center gap-1 mt-1 font-mono">
-                  <i data-lucide="map-pin" class="w-3 h-3 text-indigo-400"></i> ${item.location || '野々市'} &bull; ${item.time}
-                </p>
-              </div>
-              ${checkinButton}
+          <div class="flex justify-between items-start">
+            <div>
+              ${statusBadge}
+              <h4 class="text-base font-bold text-slate-900 mt-1">${item.title}</h4>
+              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
+                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || '野々市'} &bull; ${item.time}
+              </p>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all">
+                <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                <span>追加</span>
+              </button>
+              <button onclick="deleteSchedule(${item.id})" title="予定を削除" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
+          ${galleryHtml}
         `;
         container.appendChild(card);
       });
@@ -553,48 +594,65 @@
       renderLookbook();
     }
 
-    function getFilteredCompletedItems() {
+    function getAllFilteredMediaItems() {
       const mode = document.getElementById("recap-mode").value;
       const targetVal = document.getElementById("recap-target-select").value;
-      const completedItems = schedules.filter(s => s.completed);
-
-      if (!targetVal) return completedItems;
-
-      if (mode === 'month') {
-        return completedItems.filter(item => item.date.startsWith(targetVal));
-      } else {
-        const [startStr, endStr] = targetVal.split('_');
-        return completedItems.filter(item => item.date >= startStr && item.date <= endStr);
+      
+      // 期間に該当する予定を抽出
+      let targetSchedules = schedules;
+      if (targetVal) {
+        if (mode === 'month') {
+          targetSchedules = schedules.filter(s => s.date.startsWith(targetVal));
+        } else {
+          const [startStr, endStr] = targetVal.split('_');
+          targetSchedules = schedules.filter(s => s.date >= startStr && s.date <= endStr);
+        }
       }
+
+      // 該当予定に紐づくすべてのメディアを展開して返す
+      const allMedia = [];
+      targetSchedules.forEach(item => {
+        if (item.mediaList && item.mediaList.length > 0) {
+          item.mediaList.forEach(m => {
+            allMedia.push({
+              ...m,
+              title: item.title,
+              location: item.location,
+              date: item.date,
+              time: item.time
+            });
+          });
+        }
+      });
+      return allMedia;
     }
 
     function renderLookbook() {
-      const filteredItems = getFilteredCompletedItems();
+      const filteredMedia = getAllFilteredMediaItems();
       const grid = document.getElementById("mosaic-grid");
       grid.innerHTML = "";
 
-      document.getElementById("stat-completed-count").innerText = filteredItems.length;
-      document.getElementById("stat-spots-count").innerText = new Set(filteredItems.map(i => i.location)).size;
-      const totalSchedules = schedules.length;
-      const rate = totalSchedules > 0 ? Math.round((filteredItems.length / totalSchedules) * 100) : 0;
-      document.getElementById("stat-rate").innerText = `${rate}%`;
+      const uniqueSpots = new Set(filteredMedia.map(m => m.location)).size;
+      document.getElementById("stat-completed-count").innerText = schedules.length;
+      document.getElementById("stat-spots-count").innerText = uniqueSpots;
+      document.getElementById("stat-rate").innerText = `${filteredMedia.length}個`;
 
-      if (filteredItems.length === 0) {
-        grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">選択した期間の達成ログがありません。</p>`;
+      if (filteredMedia.length === 0) {
+        grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">選択した期間の写真・動画ログがありません。</p>`;
         return;
       }
 
-      filteredItems.forEach(item => {
+      filteredMedia.forEach(m => {
         const itemEl = document.createElement("div");
-        itemEl.className = "relative aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer";
-        const isVideo = item.photoUrl && (item.photoUrl.startsWith('data:video') || item.photoUrl.includes('.mov') || item.photoUrl.includes('.mp4') || item.photoUrl.includes('video'));
-        const mediaHtml = isVideo ? `<video src="${item.photoUrl}" class="w-full h-full object-cover" muted></video>` : `<img src="${item.photoUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">`;
+        itemEl.className = "relative aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer bg-slate-900";
+        const isVideo = m.type === 'video' || m.url.startsWith('data:video');
+        const mediaHtml = isVideo ? `<video src="${m.url}" class="w-full h-full object-cover" muted></video>` : `<img src="${m.url}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">`;
 
         itemEl.innerHTML = `
           ${mediaHtml}
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
-            <p class="text-[9px] font-bold text-white truncate">${item.title}</p>
-            <p class="text-[8px] text-slate-300 font-mono">${item.location}</p>
+            <p class="text-[9px] font-bold text-white truncate">${m.title}</p>
+            <p class="text-[8px] text-slate-300 font-mono">${m.date} / ${m.location}</p>
           </div>
         `;
         grid.appendChild(itemEl);
@@ -613,7 +671,7 @@
       const title = document.getElementById("input-title").value;
       const time = document.getElementById("input-time").value;
       const location = document.getElementById("input-location").value;
-      const autoImage = await getAutoImageForTitle(title);
+      const autoImageUrl = await getAutoImageForTitle(title);
 
       schedules.push({ 
         id: Date.now(), 
@@ -621,12 +679,13 @@
         time, 
         title, 
         location: location || "野々市", 
-        completed: false, 
-        photoUrl: autoImage, 
+        mediaList: [
+          { id: Math.random().toString(36).substring(2,9), url: autoImageUrl, type: "image" }
+        ], 
         completedAt: null 
       });
 
-      saveSchedules(); // 自動保存
+      saveSchedules();
       closeAddModal();
       document.getElementById("add-schedule-form").reset();
       selectDate(date);
@@ -642,21 +701,23 @@
       const picker = document.getElementById("sample-photo-picker");
       picker.innerHTML = "";
       
-      tempSelectedPhotoUrl = item.photoUrl || samplePhotos[0].url;
+      tempMediaList = [];
 
-      samplePhotos.forEach((photo, idx) => {
+      samplePhotos.forEach((photo) => {
         const btn = document.createElement("button");
-        const isSelected = tempSelectedPhotoUrl === photo.url;
-        
-        btn.className = `relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-          isSelected ? 'border-indigo-600 ring-2 ring-indigo-600/30' : 'border-slate-200 opacity-70'
-        }`;
+        btn.type = "button";
+        btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70 hover:opacity-100 transition-all";
         btn.innerHTML = `<img src="${photo.url}" class="w-full h-full object-cover"><span class="absolute bottom-1 left-1 text-[9px] bg-black/70 text-white px-1.5 py-0.5 rounded">${photo.label}</span>`;
         
         btn.onclick = () => {
-          Array.from(picker.children).forEach(c => c.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70");
-          btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-indigo-600 ring-2 ring-indigo-600/30";
-          tempSelectedPhotoUrl = photo.url;
+          const exists = tempMediaList.some(m => m.url === photo.url);
+          if (!exists) {
+            tempMediaList.push({ id: Math.random().toString(36).substring(2,9), url: photo.url, type: "image" });
+            btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-indigo-600 ring-2 ring-indigo-600/30";
+          } else {
+            tempMediaList = tempMediaList.filter(m => m.url !== photo.url);
+            btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70";
+          }
         };
         picker.appendChild(btn);
       });
@@ -667,19 +728,23 @@
     function closeCheckinModal() { 
       document.getElementById("checkin-modal").classList.add("hidden"); 
       currentCheckinId = null;
-      tempSelectedPhotoUrl = null;
+      tempMediaList = [];
     }
 
     function handleLocalFileSelect(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        tempSelectedPhotoUrl = e.target.result;
-        const picker = document.getElementById("sample-photo-picker");
-        Array.from(picker.children).forEach(c => c.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70");
-      };
-      reader.readAsDataURL(file);
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempMediaList.push({
+            id: Math.random().toString(36).substring(2,9),
+            url: e.target.result,
+            type: file.type.startsWith("video") ? "video" : "image"
+          });
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
     function handleCameraCapture(event) {
@@ -687,7 +752,11 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        tempSelectedPhotoUrl = e.target.result;
+        tempMediaList.push({
+          id: Math.random().toString(36).substring(2,9),
+          url: e.target.result,
+          type: file.type.startsWith("video") ? "video" : "image"
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -695,13 +764,11 @@
     function confirmCheckin() {
       if (!currentCheckinId) return;
       const item = schedules.find(s => s.id === currentCheckinId);
-      if (item && tempSelectedPhotoUrl) {
-        item.completed = true;
-        item.photoUrl = tempSelectedPhotoUrl;
-        const now = new Date();
-        item.completedAt = `${item.date} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      if (item && tempMediaList.length > 0) {
+        if (!item.mediaList) item.mediaList = [];
+        item.mediaList.push(...tempMediaList);
       }
-      saveSchedules(); // 自動保存
+      saveSchedules();
       closeCheckinModal();
       renderCalendar();
       renderSchedules();
@@ -709,7 +776,7 @@
       renderLookbook();
     }
 
-    // ===== ローカルBGMプレイリスト（4曲） =====
+    // ===== BGM & 映画風再生機能 =====
     const vlogPlaylist = [
       { name: "Avatar's Love", url: "7_BPM69.mp3" },
       { name: "異国のグルメ", url: "082_BPM97.mp3" },
@@ -776,21 +843,21 @@
 
     let movieTimer = null;
     let currentSlideIdx = 0;
-    let activeMovieItems = [];
+    let activeMovieMediaItems = [];
     let mediaRecorder = null;
     let recordedChunks = [];
 
     function playHighlightMovie() {
-      activeMovieItems = getFilteredCompletedItems();
-      if (activeMovieItems.length === 0) {
-        alert("選択した期間に達成済みの写真・動画がありません。");
+      activeMovieMediaItems = getAllFilteredMediaItems();
+      if (activeMovieMediaItems.length === 0) {
+        alert("選択した期間に写真・動画の記録がありません。");
         return;
       }
 
       document.getElementById("movie-modal").classList.remove("hidden");
       currentSlideIdx = 0;
       startAutoBgm();
-      startSlideShow(activeMovieItems);
+      startSlideShow(activeMovieMediaItems);
     }
 
     function closeMovieModal() {
@@ -815,19 +882,19 @@
       const timestampEl = document.getElementById("movie-timestamp");
 
       function showNext() {
-        const item = items[currentSlideIdx];
+        const m = items[currentSlideIdx];
         
         imgEl.style.opacity = 0;
         videoEl.style.opacity = 0;
         videoEl.pause();
 
         setTimeout(() => {
-          const isVideo = item.photoUrl && (item.photoUrl.startsWith('data:video') || item.photoUrl.includes('.mov') || item.photoUrl.includes('.mp4') || item.photoUrl.includes('video'));
+          const isVideo = m.type === 'video' || m.url.startsWith('data:video');
 
           if (isVideo) {
             imgEl.classList.add("hidden");
             videoEl.classList.remove("hidden");
-            videoEl.src = item.photoUrl;
+            videoEl.src = m.url;
             videoEl.currentTime = 0;
             videoEl.volume = 0.8;
             videoEl.play().catch(e => console.log("Video play error:", e));
@@ -835,14 +902,14 @@
           } else {
             videoEl.classList.add("hidden");
             imgEl.classList.remove("hidden");
-            imgEl.src = item.photoUrl;
+            imgEl.src = m.url;
             imgEl.classList.add("animate-zoom");
             imgEl.style.opacity = 1;
           }
 
-          titleEl.innerText = item.title;
-          metaEl.innerText = `${item.location} • ${item.date}`;
-          timestampEl.innerText = formatVlogTime(item.time);
+          titleEl.innerText = m.title;
+          metaEl.innerText = `${m.location} / ${m.date}`;
+          timestampEl.innerText = formatVlogTime(m.time);
         }, 200);
 
         trackPlayDuration += slideSpeed;
@@ -869,10 +936,10 @@
     }
 
     function restartMovie() {
-      if (activeMovieItems.length > 0) {
+      if (activeMovieMediaItems.length > 0) {
         currentSlideIdx = 0;
         startAutoBgm();
-        startSlideShow(activeMovieItems);
+        startSlideShow(activeMovieMediaItems);
       }
     }
 
@@ -886,8 +953,8 @@
           btn.className = "px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 transition-all";
         }
       });
-      if (activeMovieItems.length > 0 && !document.getElementById("movie-modal").classList.contains("hidden")) {
-        startSlideShow(activeMovieItems);
+      if (activeMovieMediaItems.length > 0 && !document.getElementById("movie-modal").classList.contains("hidden")) {
+        startSlideShow(activeMovieMediaItems);
       }
     }
 
@@ -936,7 +1003,7 @@
 
         mediaRecorder.start();
 
-        const totalDuration = activeMovieItems.length * slideSpeed;
+        const totalDuration = activeMovieMediaItems.length * slideSpeed;
         setTimeout(() => {
           if (mediaRecorder && mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
