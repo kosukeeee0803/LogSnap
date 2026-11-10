@@ -79,7 +79,6 @@
 
     <!-- ===== タブ1: カレンダービュー ===== -->
     <section id="tab-calendar" class="tab-content space-y-6">
-      <!-- 横スライド対応カルーセルカード -->
       <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm select-none overflow-hidden relative">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
@@ -116,20 +115,16 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <!-- カレンダーカルーセル本体（指追従 ＆ スナップ対応） -->
+        <!-- カレンダーカルーセル本体 -->
         <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
-            <!-- 過去月パネル -->
             <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
-            <!-- 当月パネル -->
             <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
-            <!-- 未来月パネル -->
             <div id="panel-next" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
           </div>
         </div>
       </div>
 
-      <!-- 選択された日の詳細スケジュール ＆ アルバム -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
@@ -146,7 +141,7 @@
       </div>
     </section>
 
-    <!-- ===== タブ2: 通知 (Notifications) ===== -->
+    <!-- ===== タブ2: 通知 ===== -->
     <section id="tab-notifications" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -155,7 +150,6 @@
           </h2>
           <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full">新着</span>
         </div>
-
         <div class="space-y-2.5">
           <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
             <div class="flex justify-between items-center">
@@ -164,19 +158,11 @@
             </div>
             <p class="text-xs text-slate-600">自分だけのシネマティックなライフログとVlog作成をお楽しみください。</p>
           </div>
-
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-slate-900">💡 思い出を残そう</span>
-              <span class="text-[10px] text-slate-400 font-mono">12月1日</span>
-            </div>
-            <p class="text-xs text-slate-600">アプリ内カメラやフォルダから写真・動画を追加すると、まとめ動画スタジオでVlogを生成できます。</p>
-          </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== タブ3: LOOKBOOK（まとめ動画スタジオ＆ギャラリー） ===== -->
+    <!-- ===== タブ3: LOOKBOOK ===== -->
     <section id="tab-lookbook" class="tab-content hidden space-y-6">
       <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
@@ -210,7 +196,6 @@
             <i data-lucide="film" class="w-3.5 h-3.5 text-indigo-600"></i>
             <span>作成済みまとめ動画の履歴</span>
           </h3>
-          <span class="text-[10px] text-slate-400">ファイル保存時に自動追加</span>
         </div>
         <div id="movie-history-list" class="space-y-2"></div>
       </div>
@@ -221,7 +206,7 @@
       </div>
     </section>
 
-    <!-- ===== タブ4: アカウント (Account & Settings) ===== -->
+    <!-- ===== タブ4: アカウント ===== -->
     <section id="tab-account" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
         <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
@@ -233,37 +218,12 @@
             <p class="text-xs text-slate-500 font-mono">オフラインモードで利用中</p>
           </div>
         </div>
-
-        <div class="space-y-3">
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <i data-lucide="cloud" class="w-4 h-4 text-indigo-600"></i> クラウドバックアップ
-              </span>
-              <span class="text-[10px] bg-amber-50 text-amber-600 font-semibold px-2 py-0.5 rounded-full">準備中</span>
-            </div>
-            <p class="text-xs text-slate-600">Googleアカウントやメールアドレスでログインして、思い出のデータをクラウドに安全に保存・同期します。</p>
-            <button onclick="alert('まもなく実装予定です！お楽しみに。')" class="w-full mt-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-lg shadow-xs transition-all active:scale-95">
-              Googleアカウントでログイン
-            </button>
-          </div>
-
-          <div class="space-y-1.5 pt-2">
-            <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">アプリ設定</h3>
-            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span class="text-xs font-medium text-slate-700">データストレージ初期化</span>
-              <button onclick="if(confirm('すべての予定とアルバムデータをリセットしますか？')){localStorage.clear();location.reload();}" class="text-xs text-rose-600 hover:underline font-semibold">
-                リセット
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ===== 📱 ボトムナビゲーション ===== -->
+  <!-- 📱 ボトムナビゲーション -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 pb-6 shadow-2xl max-w-md mx-auto">
     <div class="flex items-center justify-around">
       <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold">
@@ -285,7 +245,7 @@
     </div>
   </nav>
 
-  <!-- ===== モーダル: フルスクリーン型・予定作成画面 ===== -->
+  <!-- 予定作成モーダル -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-100 flex flex-col hidden tab-content overflow-y-auto">
     <div class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3.5 flex items-center justify-between shadow-xs">
       <button onclick="closeAddModal()" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-full">
@@ -335,7 +295,7 @@
     </div>
   </div>
 
-  <!-- その他のモーダル類 -->
+  <!-- 写真・動画追加モーダル -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -355,16 +315,6 @@
         <div class="grid grid-cols-4 gap-2" id="theme-preset-picker"></div>
       </div>
 
-      <div class="bg-gradient-to-r from-pink-500 to-indigo-600 p-3.5 rounded-2xl text-white shadow-md flex items-center justify-between">
-        <div>
-          <p class="text-xs font-bold uppercase tracking-wide opacity-95">Vlog Filter Camera</p>
-          <p class="text-sm font-bold mt-0.5">✨ アプリ内カメラで撮影する</p>
-        </div>
-        <button onclick="openInAppCamera()" class="bg-white text-indigo-600 hover:bg-slate-100 font-bold text-xs px-4 py-2 rounded-xl shadow transition-all flex items-center gap-1 active:scale-95">
-          <i data-lucide="camera" class="w-4 h-4"></i> 起動
-        </button>
-      </div>
-
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスの写真・動画ファイル選択</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
@@ -379,57 +329,7 @@
     </div>
   </div>
 
-  <div id="inapp-camera-modal" class="fixed inset-0 z-[9999] bg-black hidden overflow-hidden">
-    <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
-      <video id="camera-preview-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
-    </div>
-
-    <div class="absolute inset-0 z-20 flex flex-col justify-between p-4 pointer-events-none">
-      <div class="flex items-center justify-between text-white pt-2 pointer-events-auto">
-        <div class="flex items-center gap-2 bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10">
-          <span id="camera-rec-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-          <span id="camera-mode-label" class="text-xs font-mono font-bold tracking-widest">PHOTO MODE</span>
-        </div>
-        <button onclick="closeInAppCamera()" class="p-2.5 bg-black/50 backdrop-blur rounded-full text-white hover:bg-black/70 shadow-lg">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
-
-      <div class="absolute top-16 right-6 z-10 pointer-events-none">
-        <span id="camera-live-timestamp" class="vcr-timestamp text-xl sm:text-2xl font-bold">2026/11/10 20:17</span>
-      </div>
-
-      <div id="recording-timer-badge" class="absolute top-16 left-6 z-10 pointer-events-none hidden bg-rose-600 text-white text-xs sm:text-sm font-mono px-3 py-1 rounded-full animate-pulse shadow-lg">
-        🔴 REC <span id="rec-seconds">0</span>s / 10s
-      </div>
-
-      <div class="flex flex-col items-center pb-4 pt-2 w-full max-w-md mx-auto space-y-3 pointer-events-auto">
-        <div class="flex bg-black/50 backdrop-blur-md rounded-full p-1 border border-white/20 gap-1 shadow-lg">
-          <button onclick="setCameraZoom(1)" id="zoom-btn-1" class="px-3 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all">0.5x</button>
-          <button onclick="setCameraZoom(2)" id="zoom-btn-2" class="px-3 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">1.0x</button>
-          <button onclick="setCameraZoom(3)" id="zoom-btn-3" class="px-3 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">2.0x</button>
-        </div>
-
-        <div class="flex bg-black/50 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-lg">
-          <button id="cam-mode-photo-btn" onclick="setCameraMode('photo')" class="px-4 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all">写真</button>
-          <button id="cam-mode-video-btn" onclick="setCameraMode('video')" class="px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all">動画 (10秒)</button>
-        </div>
-
-        <div class="flex items-center justify-around w-full px-6">
-          <button onclick="switchCameraFacing()" class="p-3.5 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-black/70 transition-all shadow-lg" title="切替">
-            <i data-lucide="switch-camera" class="w-6 h-6"></i>
-          </button>
-
-          <button id="shutter-btn" onclick="triggerShutterOrRecord()" class="w-20 h-20 rounded-full border-4 border-white/90 flex items-center justify-center p-1 hover:scale-105 transition-transform active:scale-95 shadow-2xl bg-black/30 backdrop-blur-sm">
-            <div id="shutter-inner" class="w-16 h-16 bg-white rounded-full transition-all shadow-md"></div>
-          </button>
-
-          <div class="w-12"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- メディアビューアモーダル -->
   <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -449,6 +349,7 @@
     </div>
   </div>
 
+  <!-- シネマティックまとめ動画再生モーダル -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -498,7 +399,7 @@
       "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&auto=format&fit=crop&q=80"
     ];
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v10')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v11')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -516,7 +417,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v10', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v11', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -528,14 +429,6 @@
 
     let currentCheckinId = null;
     let tempMediaList = []; 
-    let activeCameraStream = null;
-    let useFrontCamera = false;
-    let currentCameraMode = 'photo';
-    let currentZoomLevel = 2;
-    let mediaRecorderInstance = null;
-    let recordedChunksArray = [];
-    let isRecordingVideo = false;
-    let recordingTimerInterval = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
@@ -550,14 +443,13 @@
       setupCarouselSwipe();
     });
 
-    // 📱 カルーセル型・横スクロール＆スレッシールド（閾値）付きスナップ機構
     function setupCarouselSwipe() {
       const viewport = document.getElementById("calendar-viewport");
       const track = document.getElementById("calendar-track");
       let startX = 0;
       let currentX = 0;
       let isDragging = false;
-      let currentTranslate = -100; // 初期位置は中央パネル（当月）
+      let currentTranslate = -100;
 
       viewport.addEventListener("touchstart", (e) => {
         startX = e.touches[0].clientX;
@@ -582,22 +474,17 @@
         
         track.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
 
-        // 画面幅の25%以上しっかり引っ張った場合のみ月に切り替え（スレッシールド判定）
         if (diff < -pxWidth * 0.25) {
-          // 次の月へ
           track.style.transform = 'translateX(-200%)';
           setTimeout(() => shiftMonth(1), 300);
         } else if (diff > pxWidth * 0.25) {
-          // 前の月へ
           track.style.transform = 'translateX(0%)';
           setTimeout(() => shiftMonth(-1), 300);
         } else {
-          // 中途半端な場合は元の位置にスルスル戻る（スナップバック）
           track.style.transform = `translateX(${currentTranslate}%)`;
         }
       }, { passive: true });
 
-      // マウス対応
       viewport.addEventListener("mousedown", (e) => {
         startX = e.clientX;
         isDragging = true;
@@ -670,21 +557,17 @@
     }
 
     function renderAllPanels() {
-      // 過去月
       let pY = currentMonth === 1 ? currentYear - 1 : currentYear;
       let pM = currentMonth === 1 ? 12 : currentMonth - 1;
       fillCalendarGrid(document.getElementById("panel-prev"), pY, pM, false);
 
-      // 当月
       fillCalendarGrid(document.getElementById("panel-curr"), currentYear, currentMonth, true);
 
-      // 未来月
       let nY = currentMonth === 12 ? currentYear + 1 : currentYear;
       let nM = currentMonth === 12 ? 1 : currentMonth + 1;
       fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
     }
 
-    // 🗓 TimeTree風・前月・翌月のパディング日を含むグリッド構築
     function fillCalendarGrid(grid, year, month, isCurrentPanel) {
       grid.innerHTML = "";
       const firstDayIndex = new Date(year, month - 1, 1).getDay();
@@ -694,7 +577,6 @@
       const prevMonth = month === 1 ? 12 : month - 1;
       const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
 
-      // 前月の余白日（薄く表示）
       for (let i = firstDayIndex - 1; i >= 0; i--) {
         const dayNum = daysInPrevMonth - i;
         const mm = String(prevMonth).padStart(2, '0');
@@ -708,7 +590,6 @@
         grid.appendChild(cell);
       }
 
-      // 当月の日付
       for (let day = 1; day <= totalDays; day++) {
         const mm = String(month).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
@@ -732,7 +613,7 @@
           isSelected ? 'border-indigo-600 ring-2 ring-indigo-500/30 bg-indigo-50/40' : 'border-slate-200 bg-white hover:border-slate-300'
         }`;
 
-        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-65 rounded-2xl">` : '';
+        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-65 rounded-2xl" loading="lazy">` : '';
         let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-600 z-10 shadow-sm"></span>` : '';
 
         cell.innerHTML = `
@@ -743,7 +624,6 @@
         grid.appendChild(cell);
       }
 
-      // 翌月の余白日（薄く表示）
       const totalCellsSoFar = firstDayIndex + totalDays;
       const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
       const nextYear = month === 12 ? year + 1 : year;
@@ -848,7 +728,7 @@
             const displayThumb = m.thumbnail || m.url;
             thumbnailDisplay += `
               <div onclick="openMediaViewer('${m.url}', '${isVideo ? 'video' : 'image'}', '${item.title}', '${item.date} ${item.time}')" class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
-                <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105">
+                <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
                 ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : ''}
                 <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
@@ -860,7 +740,7 @@
         } else {
           thumbnailDisplay = `
             <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-              <img src="${item.themeImage || defaultImages[0]}" class="w-14 h-14 object-cover rounded-lg shadow-sm">
+              <img src="${item.themeImage || defaultImages[0]}" class="w-14 h-14 object-cover rounded-lg shadow-sm" loading="lazy">
               <div class="flex-1">
                 <p class="text-[10px] text-slate-400 font-bold">お気に入り・思い出写真</p>
                 <p class="text-xs text-slate-600">まだ写真が追加されていません</p>
@@ -1022,7 +902,7 @@
         
         itemEl.onclick = () => openMediaViewer(m.url, isVideo ? 'video' : 'image', m.title, `${m.date} / ${m.location}`);
         itemEl.innerHTML = `
-          <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+          <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy">
           ${isVideo ? `<div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono"><i data-lucide="video" class="w-3 h-3 text-pink-400"></i>VLOG</div>` : ''}
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2.5 flex flex-col justify-end">
             <p class="text-[10px] font-bold text-white truncate">${m.title}</p>
@@ -1123,7 +1003,7 @@
         btn.type = "button";
         const isCurrent = item.themeImage === url;
         btn.className = `relative aspect-video rounded-lg overflow-hidden border-2 ${isCurrent ? 'border-indigo-600 ring-2 ring-indigo-600/30' : 'border-slate-200 opacity-70 hover:opacity-100'}`;
-        btn.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+        btn.innerHTML = `<img src="${url}" class="w-full h-full object-cover" loading="lazy">`;
         btn.onclick = () => {
           item.themeImage = url;
           saveSchedules();
@@ -1140,171 +1020,6 @@
 
     function closeCheckinModal() { 
       document.getElementById("checkin-modal").classList.add("hidden"); 
-    }
-
-    async function openInAppCamera() {
-      document.getElementById("checkin-modal").classList.add("hidden");
-      const modal = document.getElementById("inapp-camera-modal");
-      const videoEl = document.getElementById("camera-preview-video");
-      const timestampEl = document.getElementById("camera-live-timestamp");
-
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      timestampEl.innerText = `${yyyy}/${mm}/${dd} ${hh}:${min}`;
-      
-      modal.classList.remove("hidden");
-
-      try {
-        if (!activeCameraStream) {
-          activeCameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: useFrontCamera ? "user" : "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
-            audio: true
-          });
-          videoEl.srcObject = activeCameraStream;
-        }
-        applyZoomScale(videoEl);
-      } catch (err) {
-        alert("カメラの起動に失敗しました。");
-        closeInAppCamera();
-      }
-    }
-
-    function applyZoomScale(videoEl) {
-      let scale = currentZoomLevel === 1 ? 0.8 : currentZoomLevel === 2 ? 1.0 : 1.8;
-      videoEl.style.transform = `scale(${scale})`;
-    }
-
-    function setCameraZoom(level) {
-      currentZoomLevel = level;
-      for (let i = 1; i <= 3; i++) {
-        const btn = document.getElementById(`zoom-btn-${i}`);
-        btn.className = i === level ? "px-3 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all" : "px-3 py-1 text-xs font-bold rounded-full text-slate-300 transition-all";
-      }
-      applyZoomScale(document.getElementById("camera-preview-video"));
-    }
-
-    function closeInAppCamera() {
-      if (isRecordingVideo) stopVideoRecording();
-      document.getElementById("inapp-camera-modal").classList.add("hidden");
-      if (activeCameraStream) {
-        activeCameraStream.getTracks().forEach(t => t.stop());
-        activeCameraStream = null;
-      }
-    }
-
-    async function switchCameraFacing() {
-      useFrontCamera = !useFrontCamera;
-      if (activeCameraStream) {
-        activeCameraStream.getTracks().forEach(t => t.stop());
-        activeCameraStream = null;
-      }
-      await openInAppCamera();
-    }
-
-    function setCameraMode(mode) {
-      if (isRecordingVideo) return;
-      currentCameraMode = mode;
-      const photoBtn = document.getElementById("cam-mode-photo-btn");
-      const videoBtn = document.getElementById("cam-mode-video-btn");
-      const modeLabel = document.getElementById("camera-mode-label");
-      const shutterInner = document.getElementById("shutter-inner");
-
-      if (mode === 'photo') {
-        photoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-white bg-white/25 transition-all";
-        videoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all";
-        modeLabel.innerText = "PHOTO MODE";
-        shutterInner.className = "w-16 h-16 bg-white rounded-full transition-all shadow-md";
-      } else {
-        videoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-white bg-pink-600 transition-all";
-        photoBtn.className = "px-4 py-1 text-xs font-bold rounded-full text-slate-300 transition-all";
-        modeLabel.innerText = "VIDEO MODE (10s)";
-        shutterInner.className = "w-10 h-10 bg-rose-600 rounded-lg transition-all animate-pulse";
-      }
-    }
-
-    function triggerShutterOrRecord() {
-      if (currentCameraMode === 'photo') {
-        capturePhotoFromCamera();
-      } else {
-        if (!isRecordingVideo) startVideoRecording();
-        else stopVideoRecording();
-      }
-    }
-
-    function capturePhotoFromCamera() {
-      const videoEl = document.getElementById("camera-preview-video");
-      const timestampEl = document.getElementById("camera-live-timestamp");
-      const canvas = document.createElement('canvas');
-      canvas.width = videoEl.videoWidth || 1280;
-      canvas.height = videoEl.videoHeight || 720;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-
-      ctx.font = "italic bold 36px 'Courier New', Courier, monospace";
-      ctx.fillStyle = "#bef264";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-      ctx.shadowBlur = 10;
-      ctx.fillText(timestampEl.innerText, canvas.width - 320, canvas.height - 50);
-
-      canvas.toBlob((blob) => {
-        const blobUrl = URL.createObjectURL(blob);
-        saveMediaToCurrentSchedule([{ id: Math.random().toString(36).substring(2, 9), url: blobUrl, thumbnail: blobUrl, type: "image" }]);
-      }, 'image/jpeg', 0.92);
-    }
-
-    function startVideoRecording() {
-      if (!activeCameraStream) return;
-      recordedChunksArray = [];
-      try {
-        mediaRecorderInstance = new MediaRecorder(activeCameraStream, { mimeType: 'video/webm' });
-        mediaRecorderInstance.ondataavailable = e => { if (e.data.size > 0) recordedChunksArray.push(e.data); };
-        mediaRecorderInstance.onstop = async () => {
-          const blob = new Blob(recordedChunksArray, { type: 'video/webm' });
-          const blobUrl = URL.createObjectURL(blob);
-          let thumb = await extractThumbnailFromVideo(blobUrl).catch(() => null);
-          saveMediaToCurrentSchedule([{ id: Math.random().toString(36).substring(2, 9), url: blobUrl, thumbnail: thumb || blobUrl, type: "video" }]);
-        };
-        mediaRecorderInstance.start();
-        isRecordingVideo = true;
-        document.getElementById("recording-timer-badge").classList.remove("hidden");
-        let sec = 0;
-        document.getElementById("rec-seconds").innerText = sec;
-        recordingTimerInterval = setInterval(() => {
-          sec++;
-          document.getElementById("rec-seconds").innerText = sec;
-          if (sec >= 10) stopVideoRecording();
-        }, 1000);
-      } catch (err) {
-        alert("動画録画に対応していません。");
-        isRecordingVideo = false;
-      }
-    }
-
-    function stopVideoRecording() {
-      if (!isRecordingVideo) return;
-      isRecordingVideo = false;
-      clearInterval(recordingTimerInterval);
-      document.getElementById("recording-timer-badge").classList.add("hidden");
-      if (mediaRecorderInstance && mediaRecorderInstance.state !== 'inactive') mediaRecorderInstance.stop();
-    }
-
-    function saveMediaToCurrentSchedule(mediaItems) {
-      closeInAppCamera();
-      closeCheckinModal();
-      const item = schedules.find(s => s.id === currentCheckinId);
-      if (item) {
-        if (!item.mediaList) item.mediaList = [];
-        item.mediaList.push(...mediaItems);
-        saveSchedules();
-        renderAllPanels();
-        renderSchedules();
-        updateRecapOptions();
-        renderAlbumGallery();
-      }
     }
 
     async function handleFileSelect(event) {
@@ -1365,12 +1080,11 @@
       { name: "Sunday Chill", url: "sunday.mp3" },
       { name: "Velvet Mood", url: "velvet.mp3" }
     ];
-    let currentTrackIdx = 0;
 
     function startAutoBgm() {
       const player = document.getElementById("bgm-player");
-      currentTrackIdx = Math.floor(Math.random() * vlogPlaylist.length);
-      player.src = vlogPlaylist[currentTrackIdx].url;
+      let trackIdx = Math.floor(Math.random() * vlogPlaylist.length);
+      player.src = vlogPlaylist[trackIdx].url;
       player.volume = 0.35;
       player.play().catch(() => {});
     }
@@ -1384,6 +1098,7 @@
     let activeMovieMediaItems = [];
     let currentSlideIdx = 0;
     let activeSlideTimeout = null;
+    let currentMovieTitle = "";
 
     function playHighlightMovie() {
       activeMovieMediaItems = getAllFilteredMediaItems();
@@ -1414,16 +1129,23 @@
       document.getElementById("movie-modal").classList.add("hidden");
       if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
       stopBgmAudio();
-      document.getElementById("movie-slide-video").pause();
+      const videoEl = document.getElementById("movie-slide-video");
+      videoEl.pause();
+      videoEl.onended = null;
     }
 
+    // 🎬 堅牢化されたスライドショー＆動画再生ループ（黒画面フリーズ防止対応）
     function runSlideShowSequence() {
       if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
-      if (currentSlideIdx >= activeMovieMediaItems.length) currentSlideIdx = 0;
+      const videoEl = document.getElementById("movie-slide-video");
+      videoEl.onended = null; // 以前のイベントをクリア
+
+      if (currentSlideIdx >= activeMovieMediaItems.length) {
+        currentSlideIdx = 0; // ループ再生
+      }
 
       const m = activeMovieMediaItems[currentSlideIdx];
       const imgEl = document.getElementById("movie-slide-img");
-      const videoEl = document.getElementById("movie-slide-video");
       const titleEl = document.getElementById("movie-slide-title");
       const metaEl = document.getElementById("movie-slide-meta");
       const timestampEl = document.getElementById("movie-timestamp");
@@ -1432,34 +1154,42 @@
       videoEl.style.opacity = 0;
       videoEl.pause();
 
-      setTimeout(() => {
-        const isVideo = m.type === 'video' || m.url.startsWith('blob:');
-        titleEl.innerText = m.title;
-        metaEl.innerText = `${m.location} / ${m.date}`;
-        timestampEl.innerText = formatVlogTime(m.time);
+      const isVideo = m.type === 'video' || m.url.startsWith('blob:');
+      titleEl.innerText = m.title;
+      metaEl.innerText = `${m.location} / ${m.date}`;
+      timestampEl.innerText = formatVlogTime(m.time);
 
+      setTimeout(() => {
         if (isVideo) {
           imgEl.classList.add("hidden");
           videoEl.classList.remove("hidden");
           videoEl.src = m.url;
           videoEl.currentTime = 0;
           videoEl.volume = 0.8;
-          videoEl.play().catch(() => {});
           videoEl.style.opacity = 1;
 
-          videoEl.onloadedmetadata = () => {
-            const dur = Math.min(videoEl.duration || 10, 10) * 1000;
+          let hasAdvanced = false;
+          const advanceSlide = () => {
+            if (hasAdvanced) return;
+            hasAdvanced = true;
             currentSlideIdx++;
-            activeSlideTimeout = setTimeout(runSlideShowSequence, dur);
+            runSlideShowSequence();
           };
-          videoEl.onerror = () => {
-            currentSlideIdx++;
-            activeSlideTimeout = setTimeout(runSlideShowSequence, 10000);
-          };
+
+          // 動画の再生終了時、または安全のためのタイムアウト（最大10秒）で次のスライドへ進む
+          videoEl.onended = advanceSlide;
+          activeSlideTimeout = setTimeout(advanceSlide, 10500);
+
+          videoEl.play().catch(() => {
+            // 自動再生ブロックやエラー時は画像としてフォールバックして次へ
+            advanceSlide();
+          });
         } else {
           videoEl.classList.add("hidden");
           imgEl.classList.remove("hidden");
           imgEl.src = m.url;
+          imgEl.classList.remove("animate-zoom");
+          void imgEl.offsetWidth; // リフロー強制
           imgEl.classList.add("animate-zoom");
           imgEl.style.opacity = 1;
 
@@ -1479,6 +1209,9 @@
 
     function restartMovie() {
       if (activeMovieMediaItems.length > 0) {
+        if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
+        const videoEl = document.getElementById("movie-slide-video");
+        videoEl.pause();
         currentSlideIdx = 0;
         startAutoBgm();
         runSlideShowSequence();
