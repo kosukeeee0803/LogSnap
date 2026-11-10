@@ -173,7 +173,7 @@
 
         <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
           <div>
-            <p class="text-xs text-slate-500">保存メディア数</p>
+            <p class="text-xs text-slate-500">総スケジュール数</p>
             <p class="text-base font-bold text-slate-800" id="stat-completed-count">0</p>
           </div>
           <div>
@@ -211,7 +211,7 @@
         </div>
         <div>
           <label class="block text-xs text-slate-600 mb-1 font-medium">予定タイトル</label>
-          <input type="text" id="input-title" required placeholder="例: 金沢旅行・カフェ作業など" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500">
+          <input type="text" id="input-title" required placeholder="例: サッカーの試合、ジムで筋トレ、スタバで作業" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -232,9 +232,9 @@
     </div>
   </div>
 
-  <!-- モーダル: メディア追加（複数選択・カメラ撮影対応） -->
+  <!-- モーダル: メディア追加（複数選択・カメラ撮影・テーマ写真変更対応） -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl">
+    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">写真・動画を追加</h3>
@@ -245,18 +245,27 @@
         </button>
       </div>
 
-      <p class="text-xs text-slate-600 font-medium">サンプルから選ぶか、デバイスから複数の写真・動画を追加してください:</p>
-      <div class="grid grid-cols-2 gap-2" id="sample-photo-picker"></div>
-
-      <div class="pt-2 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 mb-1 font-medium">📷 その場でカメラで撮影して追加</label>
-        <input type="file" id="camera-file-input" accept="image/*,video/*" capture="environment" onchange="handleCameraCapture(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-500 cursor-pointer">
+      <!-- 未完了時のテーマ写真の自由変更セクション -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+        <label class="block text-xs font-bold text-indigo-600 flex items-center gap-1">
+          <i data-lucide="image" class="w-3.5 h-3.5"></i> テーマ写真（自由に変更可能・コンプリートに影響しません）
+        </label>
+        <div class="grid grid-cols-4 gap-2" id="theme-preset-picker">
+          <!-- 動的生成 -->
+        </div>
       </div>
 
-      <div class="pt-2 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 mb-1 font-medium">📁 デバイスから複数選択（写真・動画）</label>
-        <input type="file" id="local-file-input" accept="image/*,video/*" multiple onchange="handleLocalFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+      <div class="space-y-1">
+        <p class="text-xs text-slate-600 font-medium">📷 その場でカメラで撮影して追加（写真・動画）</p>
+        <input type="file" id="camera-file-input" accept="image/*,video/*" capture="environment" onchange="handleFileCaptureOrSelect(event, true)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-500 cursor-pointer">
       </div>
+
+      <div class="space-y-1 pt-2 border-t border-slate-100">
+        <label class="block text-xs text-slate-600 font-medium">📁 デバイスから複数選択（写真・動画）</label>
+        <input type="file" id="local-file-input" accept="image/*,video/mp4,video/quicktime,video/webm,video/m4v" multiple onchange="handleFileCaptureOrSelect(event, false)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        <p class="text-[10px] text-slate-400">※MP4, MOV, WebM等の形式に対応しています。</p>
+      </div>
+
       <div class="pt-2">
         <button onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
           決定して保存する
@@ -330,65 +339,83 @@
     let currentMonth = 11;
     let selectedDate = "2026-11-10";
 
+    // 豊富なカテゴリ辞書（サッカーとジムなどが被らないようバリエーションを強化）
     const categoryDict = [
-      { name: "お祭り・フェス・イベント", keywords: ["祭り", "夏祭り", "花火", "フェス", "イベント", "屋台", "縁日", "神輿", "ライブ", "披露宴", "結婚式", "水族館", "動物園"], imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80" },
-      { name: "美容室", keywords: ["美容室", "サロン", "カット", "カラー", "髪", "パーマ", "理容", "ネイル"], imageUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&auto=format&fit=crop&q=80" },
-      { name: "勉強・課題", keywords: ["勉強", "課題", "プログラミング", "大学", "研究", "テスト", "ゼミ", "講義", "レポート", "金沢工大", "kit"], imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80" },
-      { name: "カフェ", keywords: ["カフェ", "コーヒー", "作業", "読書", "スタバ", "コメダ"], imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80" },
-      { name: "筋トレ・運動・スポーツ", keywords: ["筋トレ", "ジム", "ランニング", "運動", "ワークアウト", "サッカー", "バスケ", "プール", "水泳", "スイミング", "ボウリング", "スポーツ"], imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80" },
-      { name: "ラーメン・麺類", keywords: ["ラーメン", "油そば", "つけ麺", "うどん", "パスタ", "そば"], imageUrl: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80" },
-      { name: "外食・ごはん", keywords: ["飯", "ごはん", "ランチ", "ディナー", "外食", "ごちそう", "レストラン", "居酒屋", "飲み会"], imageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80" },
-      { name: "買い物", keywords: ["買い物", "ショッピング", "服", "金沢駅", "買出し", "アウトレット", "モール"], imageUrl: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80" },
-      { name: "ゲーム・趣味", keywords: ["ゲーム", "ps5", "apex", "配信", "趣味", "プラモ", "開発", "釣り"], imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&auto=format&fit=crop&q=80" }
+      { name: "サッカー・スポーツ", keywords: ["サッカー", "フットサル", "試合", "バスケ", "テニス", "野球", "水泳", "プール", "スポーツ"], imageUrls: [
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "ジム・筋トレ", keywords: ["ジム", "筋トレ", "ランニング", "運動", "ワークアウト", "トレーニング", "ボウリング"], imageUrls: [
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "カフェ", keywords: ["カフェ", "コーヒー", "スタバ", "珈琲", "ドトール", "コメダ", "お茶"], imageUrls: [
+        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "勉強・作業", keywords: ["勉強", "作業", "大学", "講義", "テスト", "ゼミ", "レポート", "プログラミング", "金沢工大", "kit"], imageUrls: [
+        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "旅行・お出かけ", keywords: ["旅行", "観光", "お出かけ", "ドライブ", "デート", "ショッピング", "買い物", "金沢駅"], imageUrls: [
+        "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "お祭り・イベント", keywords: ["祭り", "夏祭り", "花火", "フェス", "イベント", "屋台", "ライブ", "結婚式", "水族館"], imageUrls: [
+        "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80"
+      ]},
+      { name: "ラーメン・食事", keywords: ["ラーメン", "油そば", "ランチ", "ディナー", "ごはん", "外食", "居酒屋", "寿司", "焼肉"], imageUrls: [
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80"
+      ]}
     ];
 
-    const defaultImage = "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&auto=format&fit=crop&q=80";
+    const defaultImages = [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&auto=format&fit=crop&q=80"
+    ];
 
-    async function getAutoImageForTitle(title) {
+    function getAutoImageForTitle(title) {
+      if (!title) return defaultImages[0];
       const t = title.toLowerCase();
-      const matched = categoryDict.find(cat => cat.keywords.some(kw => t.includes(kw)));
-      return matched ? matched.imageUrl : defaultImage;
+      for (const cat of categoryDict) {
+        if (cat.keywords.some(kw => t.includes(kw))) {
+          return cat.imageUrls[0];
+        }
+      }
+      return defaultImages[0];
     }
 
-    // ===== ローカルストレージを活用したデータ管理（mediaListで複数保持に対応） =====
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v2')) || [
+    // ===== データ管理（themeImage と mediaList を完全に分離） =====
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v3')) || [
       { 
         id: 1, 
         date: "2026-11-10", 
         time: "10:00", 
-        title: "金沢工大で課題消化", 
-        location: "野々市キャンパス", 
+        title: "スタバで作業", 
+        location: "野々市", 
+        themeImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
         mediaList: [
-          { id: "m1", url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80", type: "image" }
-        ], 
-        completedAt: "2026.11.10 10:15" 
+          { id: "m1", url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=80", type: "image" }
+        ] 
       },
       { 
         id: 2, 
         date: "2026-11-10", 
-        time: "18:00", 
-        title: "夏祭りで屋台巡り", 
-        location: "野々市広場", 
-        mediaList: [
-          { id: "m2", url: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80", type: "image" }
-        ], 
-        completedAt: null 
+        time: "15:00", 
+        title: "サッカーの練習", 
+        location: "グラウンド", 
+        themeImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
+        mediaList: [] 
       }
     ];
 
     function saveSchedules() {
-      localStorage.setItem('logsnap_user_schedules_v2', JSON.stringify(schedules));
+      localStorage.setItem('logsnap_user_schedules_v3', JSON.stringify(schedules));
     }
 
-    const samplePhotos = [
-      { label: "お祭り・フェス", url: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80" },
-      { label: "カフェ・作業", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80" },
-      { label: "勉強・PC", url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop&q=80" },
-      { label: "ラーメン・食", url: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80" }
-    ];
-
     let currentCheckinId = null;
-    let tempMediaList = []; // 選択中の複数メディア一時保存
+    let tempMediaList = []; 
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
@@ -438,7 +465,7 @@
       grid.innerHTML = "";
       
       const totalDays = getDaysInMonth(currentYear, currentMonth);
-      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
+      const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay(); // 日曜(0)〜土曜(6)の正しい位置
 
       for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement("div");
@@ -451,9 +478,12 @@
         const dd = String(day).padStart(2, '0');
         const dateStr = `${currentYear}-${mm}-${dd}`;
         const daySchedules = schedules.filter(s => s.date === dateStr);
-        // メディアが1枚以上ある最初のものをサムネイル表示
-        const hasMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.url);
         const isSelected = selectedDate === dateStr;
+
+        // サムネイル表示ロジック：完了時(mediaListあり)は思い出写真、未完了時はテーマ画像
+        const firstCompletedMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.url);
+        const themeImg = daySchedules[0]?.themeImage;
+        const thumbnail = firstCompletedMedia ? firstCompletedMedia.url : themeImg;
 
         const cell = document.createElement("div");
         cell.onclick = () => selectDate(dateStr);
@@ -461,7 +491,7 @@
           isSelected ? 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-500/20' : 'bg-slate-50 border-slate-200 hover:border-slate-300'
         }`;
 
-        let bgHtml = hasMedia ? `<img src="${hasMedia.url}" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-40">` : '';
+        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-40">` : '';
         let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 z-10"></span>` : '';
 
         cell.innerHTML = `${bgHtml}<span class="text-xs font-semibold z-10 ${isSelected ? 'text-indigo-600 font-bold' : 'text-slate-700'}">${day}</span><div class="z-10">${dotHtml}</div>`;
@@ -477,7 +507,7 @@
     }
 
     function deleteSchedule(id) {
-      if (confirm("この予定をキャンセル（削除）しますか？")) {
+      if (confirm("この予定を削除しますか？")) {
         schedules = schedules.filter(s => s.id !== id);
         saveSchedules();
         renderCalendar();
@@ -514,27 +544,37 @@
 
         const mediaCount = (item.mediaList || []).length;
         const statusBadge = mediaCount > 0 
-          ? `<div class="flex items-center gap-1.5 text-xs text-pink-500 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>MEMORY SNAP (${mediaCount}件)</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-indigo-400 font-bold"><i data-lucide="clock" class="w-3.5 h-3.5"></i><span>SCHEDULED (${item.time}) - 未記録</span></div>`;
+          ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>COMPLETED (${mediaCount}件の思い出)</span></div>`
+          : `<div class="flex items-center gap-1.5 text-xs text-indigo-500 font-bold"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>THEME PHOTO (未完了)</span></div>`;
 
-        // メディアギャラリー部分のHTML生成
-        let galleryHtml = '';
+        // テーマ写真のプレビューまたは思い出ギャラリー
+        let thumbnailDisplay = '';
         if (mediaCount > 0) {
-          galleryHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
+          thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
           item.mediaList.forEach(m => {
             const isVideo = m.type === 'video' || m.url.startsWith('data:video');
-            galleryHtml += `
+            thumbnailDisplay += `
               <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/media bg-slate-900">
                 ${isVideo ? `<video src="${m.url}" class="w-full h-full object-cover" muted></video>` : `<img src="${m.url}" class="w-full h-full object-cover">`}
-                <button onclick="deleteMediaFromSchedule(${item.id}, '${m.id}')" title="この写真を削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
+                <button onclick="deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
                 </button>
               </div>
             `;
           });
-          galleryHtml += `</div>`;
+          thumbnailDisplay += `</div>`;
         } else {
-          galleryHtml = `<p class="text-[11px] text-slate-400 italic">まだ写真や動画が追加されていません。</p>`;
+          // 未完了時はテーマ写真を表示
+          thumbnailDisplay = `
+            <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <img src="${item.themeImage || defaultImages[0]}" class="w-16 h-16 object-cover rounded-lg shadow-sm">
+              <div class="flex-1">
+                <p class="text-[10px] text-slate-400 font-bold">現在のテーマ画像</p>
+                <p class="text-xs text-slate-600 truncate">予定に合わせたお洒落なサムネイル</p>
+              </div>
+              <button onclick="openCheckinModal(${item.id})" class="text-xs text-indigo-600 hover:underline font-bold px-2 py-1">変更・記録</button>
+            </div>
+          `;
         }
 
         card.innerHTML = `
@@ -549,14 +589,14 @@
             <div class="flex items-center gap-1">
               <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all">
                 <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                <span>追加</span>
+                <span>写真/動画を追加</span>
               </button>
-              <button onclick="deleteSchedule(${item.id})" title="予定を削除" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
+              <button onclick="deleteSchedule(${item.id})" title="削除" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
-          ${galleryHtml}
+          ${thumbnailDisplay}
         `;
         container.appendChild(card);
       });
@@ -598,7 +638,6 @@
       const mode = document.getElementById("recap-mode").value;
       const targetVal = document.getElementById("recap-target-select").value;
       
-      // 期間に該当する予定を抽出
       let targetSchedules = schedules;
       if (targetVal) {
         if (mode === 'month') {
@@ -609,7 +648,6 @@
         }
       }
 
-      // 該当予定に紐づくすべてのメディアを展開して返す
       const allMedia = [];
       targetSchedules.forEach(item => {
         if (item.mediaList && item.mediaList.length > 0) {
@@ -632,7 +670,7 @@
       const grid = document.getElementById("mosaic-grid");
       grid.innerHTML = "";
 
-      const uniqueSpots = new Set(filteredMedia.map(m => m.location)).size;
+      const uniqueSpots = new Set(schedules.map(s => s.location)).size;
       document.getElementById("stat-completed-count").innerText = schedules.length;
       document.getElementById("stat-spots-count").innerText = uniqueSpots;
       document.getElementById("stat-rate").innerText = `${filteredMedia.length}個`;
@@ -671,7 +709,7 @@
       const title = document.getElementById("input-title").value;
       const time = document.getElementById("input-time").value;
       const location = document.getElementById("input-location").value;
-      const autoImageUrl = await getAutoImageForTitle(title);
+      const autoImageUrl = getAutoImageForTitle(title);
 
       schedules.push({ 
         id: Date.now(), 
@@ -679,10 +717,8 @@
         time, 
         title, 
         location: location || "野々市", 
-        mediaList: [
-          { id: Math.random().toString(36).substring(2,9), url: autoImageUrl, type: "image" }
-        ], 
-        completedAt: null 
+        themeImage: autoImageUrl, // キーワード分析で自動設定されたテーマ写真
+        mediaList: [] // 完了時の思い出写真は最初は空（テーマ写真とは完全分離）
       });
 
       saveSchedules();
@@ -696,32 +732,37 @@
       currentCheckinId = id;
       const item = schedules.find(s => s.id === id);
       document.getElementById("checkin-target-title").innerText = item.title;
-      document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || '未設定'}`;
+      document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || '野々市'}`;
 
-      const picker = document.getElementById("sample-photo-picker");
-      picker.innerHTML = "";
+      // テーマ写真の変更用ピッカーを描画
+      const themePicker = document.getElementById("theme-preset-picker");
+      themePicker.innerHTML = "";
       
-      tempMediaList = [];
+      // カテゴリからいくつかのプリセット候補を表示
+      const presetCandidates = [
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80", // サッカー
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80", // ジム
+        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80", // カフェ
+        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80"  // 勉強
+      ];
 
-      samplePhotos.forEach((photo) => {
+      presetCandidates.forEach(url => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70 hover:opacity-100 transition-all";
-        btn.innerHTML = `<img src="${photo.url}" class="w-full h-full object-cover"><span class="absolute bottom-1 left-1 text-[9px] bg-black/70 text-white px-1.5 py-0.5 rounded">${photo.label}</span>`;
-        
+        const isCurrent = item.themeImage === url;
+        btn.className = `relative aspect-video rounded-lg overflow-hidden border-2 ${isCurrent ? 'border-indigo-600 ring-2 ring-indigo-600/30' : 'border-slate-200 opacity-70 hover:opacity-100'}`;
+        btn.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
         btn.onclick = () => {
-          const exists = tempMediaList.some(m => m.url === photo.url);
-          if (!exists) {
-            tempMediaList.push({ id: Math.random().toString(36).substring(2,9), url: photo.url, type: "image" });
-            btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-indigo-600 ring-2 ring-indigo-600/30";
-          } else {
-            tempMediaList = tempMediaList.filter(m => m.url !== photo.url);
-            btn.className = "relative aspect-video rounded-lg overflow-hidden border-2 border-slate-200 opacity-70";
-          }
+          item.themeImage = url;
+          saveSchedules();
+          openCheckinModal(id); // 再描画
+          renderCalendar();
+          renderSchedules();
         };
-        picker.appendChild(btn);
+        themePicker.appendChild(btn);
       });
 
+      tempMediaList = [];
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
 
@@ -731,34 +772,35 @@
       tempMediaList = [];
     }
 
-    function handleLocalFileSelect(event) {
+    // 動画形式の幅広い対応 ＆ 非対応時のエラー案内バリデーション
+    function handleFileCaptureOrSelect(event, isCamera) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
+
+      const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/webm', 'video/m4v', 'application/octet-stream'];
+
       Array.from(files).forEach(file => {
+        const isVideo = file.type.startsWith("video") || file.name.match(/\.(mp4|mov|webm|m4v)$/i);
+        
+        if (isVideo) {
+          // 動画の形式チェック（広く許容しつつ、極端な非対応形式はアラート）
+          const extCheck = file.name.match(/\.(mp4|mov|webm|m4v|avi|mkv)$/i);
+          if (!extCheck && file.type && !validVideoTypes.includes(file.type)) {
+            alert("⚠️ 対応していない動画形式の可能性があります。MP4またはMOV形式の動画ファイルを選択してください。");
+            return;
+          }
+        }
+
         const reader = new FileReader();
         reader.onload = function(e) {
           tempMediaList.push({
             id: Math.random().toString(36).substring(2,9),
             url: e.target.result,
-            type: file.type.startsWith("video") ? "video" : "image"
+            type: isVideo ? "video" : "image"
           });
         };
         reader.readAsDataURL(file);
       });
-    }
-
-    function handleCameraCapture(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        tempMediaList.push({
-          id: Math.random().toString(36).substring(2,9),
-          url: e.target.result,
-          type: file.type.startsWith("video") ? "video" : "image"
-        });
-      };
-      reader.readAsDataURL(file);
     }
 
     function confirmCheckin() {
@@ -850,7 +892,7 @@
     function playHighlightMovie() {
       activeMovieMediaItems = getAllFilteredMediaItems();
       if (activeMovieMediaItems.length === 0) {
-        alert("選択した期間に写真・動画の記録がありません。");
+        alert("選択した期間に完了した思い出の写真・動画がありません。");
         return;
       }
 
