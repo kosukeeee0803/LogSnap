@@ -170,7 +170,7 @@
               <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
             </div>
-            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">日本語モードでは完全に日本語表記に統一され、祝日は日曜日と同様に赤文字でスッキリと表示されるようになりました。</p>
+            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">カレンダーの日付は1回タップで選択・確認、選択中の日付をもう一度タップすると予定記入画面が開くように改善されました。</p>
           </div>
         </div>
       </div>
@@ -447,7 +447,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "日本語モードでは完全に日本語表記に統一され、祝日は日曜日と同様に赤文字でスッキリと表示されるようになりました。",
+        welcomeNoteDesc: "カレンダーの日付は1回タップで選択・確認、選択中の日付をもう一度タップすると予定記入画面が開くように改善されました。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -716,7 +716,7 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v22')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v23')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -739,7 +739,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v22', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v23', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -951,7 +951,6 @@
         cell.onclick = async () => { 
           await shiftMonth(-1); 
           selectDate(dateStr); 
-          openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
         
@@ -989,13 +988,17 @@
         let thumbnail = firstCompletedMedia ? await resolveThumbnailUrl(firstCompletedMedia) : null;
 
         const cell = document.createElement("div");
+        // 🔄 修正: すでに選択されている日付を再タップしたときのみ予定追加モーダルを開く。未選択なら選択のみ。
         cell.onclick = async () => {
           if (!isCurrentPanel) {
             if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
             else await shiftMonth(-1);
           }
-          selectDate(dateStr);
-          openAddModalForDate(dateStr);
+          if (selectedDate === dateStr) {
+            openAddModalForDate(dateStr);
+          } else {
+            selectDate(dateStr);
+          }
         };
         
         cell.className = `relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white ${
@@ -1049,7 +1052,6 @@
         cell.onclick = async () => { 
           await shiftMonth(1); 
           selectDate(dateStr); 
-          openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
         
@@ -1131,7 +1133,6 @@
       modal.classList.add("hidden");
     }
 
-    // ===== 🛠️ 完全日本語対応された予定リストカード表示 =====
     async function renderSchedules() {
       const container = document.getElementById("schedule-list");
       container.innerHTML = "";
