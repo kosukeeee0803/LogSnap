@@ -74,7 +74,7 @@
         <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-600"></i>
         <span id="mode-toggle-text">写真映えモード</span>
       </button>
-      <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
+      <button onclick="openAddModalForSelectedDate()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
         <i data-lucide="plus" class="w-4 h-4"></i>
         <span>予定を追加</span>
       </button>
@@ -86,7 +86,6 @@
 
     <!-- ===== タブ1: カレンダービュー ===== -->
     <section id="tab-calendar" class="tab-content space-y-6">
-      <!-- 外枠の白い大きなカードを外し、すっきりとしたフラットな構造に変更 -->
       <div class="select-none overflow-hidden relative">
         <div class="flex items-center justify-between mb-4 px-1">
           <div class="flex items-center gap-2">
@@ -139,7 +138,7 @@
             <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-600"></i>
             <span id="selected-date-title">2026-12-01 の予定 ＆ 思い出</span>
           </h3>
-          <button onclick="openAddModal()" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
+          <button onclick="openAddModalForSelectedDate()" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
             <span>この日に追加</span>
           </button>
@@ -164,7 +163,7 @@
               <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono">今日</span>
             </div>
-            <p class="text-xs text-slate-600">IndexedDBストレージが有効化され、デバイス内に写真や動画が半永久保存されるようになりました。</p>
+            <p class="text-xs text-slate-600">日付をタップするとその日の予定追加モーダルが直接開くようになりました。</p>
           </div>
         </div>
       </div>
@@ -268,7 +267,7 @@
       <button onclick="closeAddModal()" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-full">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
-      <h2 class="text-base font-bold text-slate-900">新しい予定</h2>
+      <h2 class="text-base font-bold text-slate-900">新しい予定を追加</h2>
       <button onclick="document.getElementById('add-schedule-form').requestSubmit()" class="p-2 -mr-2 text-indigo-600 hover:text-indigo-700 font-bold rounded-full">
         <i data-lucide="check" class="w-6 h-6"></i>
       </button>
@@ -445,7 +444,6 @@
       });
     }
 
-    // メディアオブジェクトのURLキャッシュ（メモリ効率化）
     const mediaObjectUrlCache = {};
 
     async function resolveMediaUrl(mediaItem) {
@@ -478,7 +476,7 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v16')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v17')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -501,7 +499,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v16', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v17', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -682,7 +680,11 @@
         const dateStr = `${prevYear}-${mm}-${dd}`;
         
         const cell = document.createElement("div");
-        cell.onclick = async () => { await shiftMonth(-1); selectDate(dateStr); };
+        cell.onclick = async () => { 
+          await shiftMonth(-1); 
+          selectDate(dateStr); 
+          openAddModalForDate(dateStr);
+        };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${dayNum}</span>`;
         grid.appendChild(cell);
@@ -706,12 +708,14 @@
         let thumbnail = firstCompletedMedia ? await resolveThumbnailUrl(firstCompletedMedia) : null;
 
         const cell = document.createElement("div");
+        // ★日付をタップした瞬間に下のエリアの切り替え ＋ 予定追加モーダルが直接開く仕様に変更
         cell.onclick = async () => {
           if (!isCurrentPanel) {
             if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
             else await shiftMonth(-1);
           }
           selectDate(dateStr);
+          openAddModalForDate(dateStr);
         };
         
         cell.className = `relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white ${
@@ -762,7 +766,11 @@
         const dateStr = `${nextYear}-${mm}-${dd}`;
 
         const cell = document.createElement("div");
-        cell.onclick = async () => { await shiftMonth(1); selectDate(dateStr); };
+        cell.onclick = async () => { 
+          await shiftMonth(1); 
+          selectDate(dateStr); 
+          openAddModalForDate(dateStr);
+        };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${day}</span>`;
         grid.appendChild(cell);
@@ -837,7 +845,7 @@
       const currentDaySchedules = schedules.filter(s => s.date === selectedDate);
 
       if (currentDaySchedules.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">この日の予定はありません</p><button onclick="openAddModal()" class="mt-2 text-xs text-indigo-600 hover:underline font-semibold">＋ 予定を追加する</button></div>`;
+        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">この日の予定はありません</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs text-indigo-600 hover:underline font-semibold">＋ 予定を追加する</button></div>`;
         return;
       }
 
@@ -1084,11 +1092,19 @@
       }
     }
 
-    function openAddModal() { 
-      document.getElementById("input-date").value = selectedDate; 
-      document.getElementById("add-modal").classList.remove("hidden"); 
+    // 予定追加モーダルを開く関数群
+    function openAddModalForSelectedDate() {
+      openAddModalForDate(selectedDate);
     }
-    function closeAddModal() { document.getElementById("add-modal").classList.add("hidden"); }
+
+    function openAddModalForDate(dateStr) {
+      document.getElementById("input-date").value = dateStr;
+      document.getElementById("add-modal").classList.remove("hidden");
+    }
+
+    function closeAddModal() { 
+      document.getElementById("add-modal").classList.add("hidden"); 
+    }
 
     async function handleAddSchedule(e) {
       e.preventDefault();
@@ -1138,7 +1154,6 @@
         const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
         const mediaId = "media_" + Math.random().toString(36).substring(2, 9);
         
-        // ファイル本体をIndexedDBに保存
         await saveMediaToIDB(mediaId, file);
 
         let thumbBlob = null;
