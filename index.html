@@ -164,13 +164,13 @@
           </h2>
           <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full" data-i18n="newBadge">新着</span>
         </div>
-        <div class="space-y-2.5">
+        <div id="notifications-list" class="space-y-2.5">
           <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
             <div class="flex justify-between items-center">
               <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
             </div>
-            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">カレンダーの日付は1回タップで選択・確認、選択中の日付をもう一度タップすると予定記入画面が開くように改善されました。</p>
+            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。</p>
           </div>
         </div>
       </div>
@@ -324,9 +324,15 @@
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="timeLabel">時間</span>
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="timeLabel">開始時間</span>
               </span>
-              <input type="time" id="input-time" required value="15:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <input type="time" id="input-time" required value="10:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+              <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-pink-600"></i> <span data-i18n="endTimeLabel">終了時間</span>
+              </span>
+              <input type="time" id="input-endtime" required value="12:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
             </div>
           </div>
 
@@ -447,7 +453,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "カレンダーの日付は1回タップで選択・確認、選択中の日付をもう一度タップすると予定記入画面が開くように改善されました。",
+        welcomeNoteDesc: "予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -473,7 +479,8 @@
         modalNewEventTitle: "新しい予定を追加",
         eventTitleLabel: "予定タイトル",
         dateLabel: "日付",
-        timeLabel: "時間",
+        timeLabel: "開始時間",
+        endTimeLabel: "終了時間",
         locationLabel: "場所（スポット）",
         saveBtn: "保存する",
         addMediaModalTitle: "写真・動画を追加",
@@ -491,7 +498,8 @@
         albumLabel: "アルバム",
         noMediaBadge: "メディアなし",
         noPhotosYet: "写真・動画はまだありません",
-        addBtnText: "追加"
+        addBtnText: "追加",
+        todayEventsNotification: "本日の予定リマインダー"
       },
       en: {
         photoAestheticMode: "Photo Mode",
@@ -503,7 +511,7 @@
         newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "i18n multi-language support, regional holiday synchronization, and account language settings are now enabled.",
+        welcomeNoteDesc: "End times for events are now supported, and today's schedule is automatically posted to notifications.",
         vlogStudioTitle: "Create Vlog Recap",
         recapModeLabel: "Recap Range Mode",
         modeWeek: "Specific Week (Sun - Sat)",
@@ -529,7 +537,8 @@
         modalNewEventTitle: "Add New Event",
         eventTitleLabel: "Event Title",
         dateLabel: "Date",
-        timeLabel: "Time",
+        timeLabel: "Start Time",
+        endTimeLabel: "End Time",
         locationLabel: "Location / Spot",
         saveBtn: "Save Event",
         addMediaModalTitle: "Add Photos & Videos",
@@ -547,7 +556,8 @@
         albumLabel: "Album",
         noMediaBadge: "No Media",
         noPhotosYet: "No photos/videos yet",
-        addBtnText: "Add"
+        addBtnText: "Add",
+        todayEventsNotification: "Today's Schedule Reminder"
       }
     };
 
@@ -566,6 +576,7 @@
       });
       document.getElementById("language-select").value = currentLang;
       updateWeekdayHeader();
+      renderNotifications();
     }
 
     function updateWeekdayHeader() {
@@ -716,11 +727,12 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v23')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v24')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
         time: "10:00", 
+        endTime: "12:00",
         title: "カフェで作業", 
         location: "お気に入りのカフェ", 
         mediaList: [] 
@@ -729,6 +741,7 @@
         id: 2, 
         date: "2026-12-03", 
         time: "14:00", 
+        endTime: "16:00",
         title: "海沿いをドライブ", 
         location: "海岸通り", 
         mediaList: [] 
@@ -739,7 +752,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v23', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v24', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -769,11 +782,53 @@
       await renderAllPanels();
       updateTrackPosition(false);
       await renderSchedules();
+      renderNotifications();
       updateRecapOptions();
       await renderAlbumGallery();
       renderMovieHistory();
       setupCarouselSwipe();
     });
+
+    // 🔔 本日の予定を自動で通知欄に掲示する関数
+    function renderNotifications() {
+      const container = document.getElementById("notifications-list");
+      if (!container) return;
+
+      const todayStr = formatDateString(new Date());
+      const todaySchedules = schedules.filter(s => s.date === todayStr);
+
+      let html = `
+        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
+            <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
+          </div>
+          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。</p>
+        </div>
+      `;
+
+      if (todaySchedules.length > 0) {
+        html += `<div class="pt-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
+        todaySchedules.forEach(s => {
+          const timeRange = s.endTime ? `${s.time} - ${s.endTime}` : s.time;
+          html += `
+            <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-1 mb-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-900">${s.title}</span>
+                <span class="text-[10px] bg-indigo-50 text-indigo-600 font-mono px-2 py-0.5 rounded-full font-semibold">${timeRange}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${s.location || 'Spot'}
+              </p>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
 
     function toggleViewMode() {
       const btnText = document.getElementById("mode-toggle-text");
@@ -988,7 +1043,6 @@
         let thumbnail = firstCompletedMedia ? await resolveThumbnailUrl(firstCompletedMedia) : null;
 
         const cell = document.createElement("div");
-        // 🔄 修正: すでに選択されている日付を再タップしたときのみ予定追加モーダルを開く。未選択なら選択のみ。
         cell.onclick = async () => {
           if (!isCurrentPanel) {
             if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
@@ -1084,6 +1138,7 @@
         saveSchedules();
         await renderAllPanels();
         await renderSchedules();
+        renderNotifications();
         updateRecapOptions();
         await renderAlbumGallery();
       }
@@ -1154,6 +1209,8 @@
           ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>${albumText} (${mediaCount})</span></div>`
           : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>${noMediaText}</span></div>`;
 
+        const timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
+
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
           thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
@@ -1161,7 +1218,7 @@
             const isVideo = m.type === 'video';
             const displayThumb = await resolveThumbnailUrl(m);
             thumbnailDisplay += `
-              <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${item.time}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
+              <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${timeDisplay}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
                 <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
                 ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>Video</div>` : ''}
                 <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
@@ -1186,7 +1243,7 @@
               ${statusBadge}
               <h4 class="text-base font-bold text-slate-900 mt-1">${item.title}</h4>
               <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
-                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || 'Spot'} &bull; ${item.time}
+                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || 'Spot'} &bull; ${timeDisplay}
               </p>
             </div>
             <div class="flex items-center gap-1">
@@ -1223,6 +1280,8 @@
       if (tab === 'calendar') {
         await renderAllPanels();
         updateTrackPosition(false);
+      } else if (tab === 'notifications') {
+        renderNotifications();
       } else if (tab === 'lookbook') {
         updateRecapOptions();
         await renderAlbumGallery();
@@ -1406,12 +1465,14 @@
       const date = document.getElementById("input-date").value;
       const title = document.getElementById("input-title").value;
       const time = document.getElementById("input-time").value;
+      const endTime = document.getElementById("input-endtime").value;
       const location = document.getElementById("input-location").value;
       
       schedules.push({ 
         id: Date.now(), 
         date, 
         time, 
+        endTime,
         title, 
         location: location || "Spot", 
         mediaList: [] 
@@ -1421,6 +1482,7 @@
       closeAddModal();
       document.getElementById("add-schedule-form").reset();
       selectDate(date);
+      renderNotifications();
       updateRecapOptions();
     }
 
