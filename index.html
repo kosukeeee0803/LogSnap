@@ -54,7 +54,6 @@
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* モダンの下からスライドアップアニメーション */
     @keyframes slideUp {
       from { transform: translateY(100%); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -94,7 +93,6 @@
 
     <!-- ===== タブ1: カレンダービュー ===== -->
     <section id="tab-calendar" class="tab-content space-y-6">
-      <!-- カレンダー外枠を完全に撤廃し、画面端までめいっぱい広げた構造 -->
       <div class="select-none overflow-hidden relative -mx-4 px-4">
         <div class="flex items-center justify-between mb-3 px-1">
           <div class="flex items-center gap-2">
@@ -172,7 +170,7 @@
               <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono">今日</span>
             </div>
-            <p class="text-xs text-slate-600">カレンダーの外枠が完全になくなり、日付タップでモーダルが下からスムーズにスライドアップするようになりました。</p>
+            <p class="text-xs text-slate-600">土曜日の日付が青文字、日曜日の日付が赤文字に対応しました。</p>
           </div>
         </div>
       </div>
@@ -487,7 +485,7 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v18')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v19')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -510,7 +508,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v18', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v19', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -674,6 +672,14 @@
       await fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
     }
 
+    // 曜日インデックスに応じた文字色クラスを返すヘルパー関数 (0:日=赤, 6:土=青)
+    function getDayOfWeekColorClass(year, month, day) {
+      const dayOfWeek = new Date(year, month - 1, day).getDay();
+      if (dayOfWeek === 0) return "text-rose-500 font-bold"; // 日曜：赤文字
+      if (dayOfWeek === 6) return "text-sky-600 font-bold";  // 土曜：青文字
+      return "text-slate-800 font-bold";                     // 平日：通常色
+    }
+
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
       grid.innerHTML = "";
       const firstDayIndex = new Date(year, month - 1, 1).getDay();
@@ -689,6 +695,7 @@
         const mm = String(prevMonth).padStart(2, '0');
         const dd = String(dayNum).padStart(2, '0');
         const dateStr = `${prevYear}-${mm}-${dd}`;
+        const colorClass = getDayOfWeekColorClass(prevYear, prevMonth, dayNum);
         
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -697,7 +704,7 @@
           openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
-        cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${dayNum}</span>`;
+        cell.innerHTML = `<span class="text-xs ${colorClass}">${dayNum}</span>`;
         grid.appendChild(cell);
       }
 
@@ -708,6 +715,7 @@
         const dateStr = `${year}-${mm}-${dd}`;
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr && isCurrentPanel;
+        const colorClass = getDayOfWeekColorClass(year, month, day);
 
         let firstCompletedMedia = null;
         for (const s of daySchedules) {
@@ -757,7 +765,7 @@
         cell.innerHTML = `
           ${bgHtml}
           <div class="flex justify-between items-center z-10">
-            <span class="text-xs font-bold ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp' : 'text-slate-800'} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
+            <span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
           </div>
           ${contentHtml}
         `;
@@ -774,6 +782,7 @@
         const mm = String(nextMonth).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
         const dateStr = `${nextYear}-${mm}-${dd}`;
+        const colorClass = getDayOfWeekColorClass(nextYear, nextMonth, day);
 
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -782,7 +791,7 @@
           openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
-        cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${day}</span>`;
+        cell.innerHTML = `<span class="text-xs ${colorClass}">${day}</span>`;
         grid.appendChild(cell);
       }
     }
