@@ -170,7 +170,7 @@
               <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
             </div>
-            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">多言語対応（i18n）、英語圏祝日連動、アカウント設定での言語切り替え機能が実装されました。</p>
+            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">祝日が予定と同様にバッジ形式でカレンダー内にすっきりと表示されるようになりました。</p>
           </div>
         </div>
       </div>
@@ -435,7 +435,7 @@
   </div>
 
   <script>
-    // ===== 🌍 i18n 辞書データ (日本語 ＆ ネイティブ英語) =====
+    // ===== 🌍 i18n 辞書データ =====
     const i18n = {
       ja: {
         photoAestheticMode: "写真映えモード",
@@ -584,20 +584,19 @@
       renderAlbumGallery();
     }
 
-    // ===== 🇺🇸🇬🇧 英語圏の主要な祝日定義 (英語モード用) =====
-    // 例: 元日(1/1), 独立記念日(7/4), ハロウィン(10/31 - 祝日ではないが例として), クリスマス(12/25), 感謝祭(11月第4木曜など簡易固定)
+    // ===== 🇺🇸🇬🇧 英語圏の主要な祝日定義 =====
     function getEnglishHolidays(year) {
       return {
         [`${year}-01-01`]: "New Year's Day",
         [`${year}-07-04`]: "Independence Day",
         [`${year}-10-31`]: "Halloween",
-        [`${year}-11-26`]: "Thanksgiving Day",
-        [`${year}-12-25`]: "Christmas Day",
+        [`${year}-11-26`]: "Thanksgiving",
+        [`${year}-12-25`]: "Christmas",
         [`${year}-12-31`]: "New Year's Eve"
       };
     }
 
-    // ===== 🇯🇵 日本の祝日定義 (日本語モード用 - 2025/2026/2027年対応) =====
+    // ===== 🇯🇵 日本の祝日定義 =====
     function getJapaneseHolidays(year) {
       const holidays = {
         2025: {
@@ -709,7 +708,7 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v20')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v21')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -732,7 +731,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v20', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v21', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -751,7 +750,6 @@
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
       
-      // タイムゾーンの自動検出表示
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         document.getElementById("current-timezone-display").innerText = `${tz} (Auto)`;
@@ -906,7 +904,6 @@
       await fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
     }
 
-    // 🗓️ 日付の色クラス判定 (日曜・祝日=赤, 土曜=青)
     function getDateColorClass(year, month, day) {
       const mm = String(month).padStart(2, '0');
       const dd = String(day).padStart(2, '0');
@@ -915,12 +912,12 @@
       const holidayName = getHolidayName(dateStr, year);
 
       if (dayOfWeek === 0 || holidayName) {
-        return "text-rose-500 font-bold"; // 日曜または祝日は赤文字
+        return "text-rose-500 font-bold";
       }
       if (dayOfWeek === 6) {
-        return "text-sky-600 font-bold";  // 土曜は青文字
+        return "text-sky-600 font-bold";
       }
-      return "text-slate-800 font-bold";     // 平日
+      return "text-slate-800 font-bold";
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
@@ -940,6 +937,7 @@
         const dateStr = `${prevYear}-${mm}-${dd}`;
         const colorClass = getDateColorClass(prevYear, prevMonth, dayNum);
         const holiday = getHolidayName(dateStr, prevYear);
+        const daySchedules = schedules.filter(s => s.date === dateStr);
         
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -947,12 +945,22 @@
           selectDate(dateStr); 
           openAddModalForDate(dateStr);
         };
-        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
+        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
+        
+        let badgesHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
+        if (holiday) {
+          badgesHtml += `<div class="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded truncate font-semibold shadow-xs">${holiday}</div>`;
+        }
+        daySchedules.forEach(s => {
+          badgesHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
+        });
+        badgesHtml += `</div>`;
+
         cell.innerHTML = `
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center z-10">
             <span class="text-xs ${colorClass}">${dayNum}</span>
-            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px]">${holiday}</span>` : ''}
           </div>
+          ${badgesHtml}
         `;
         grid.appendChild(cell);
       }
@@ -997,16 +1005,19 @@
 
         let contentHtml = '';
         if (viewMode === 'schedule') {
-          if (daySchedules.length > 0) {
-            contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
-            daySchedules.forEach(s => {
-              contentHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
-            });
-            contentHtml += `</div>`;
+          contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
+          if (holiday) {
+            contentHtml += `<div class="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded truncate font-semibold shadow-xs">${holiday}</div>`;
           }
+          daySchedules.forEach(s => {
+            contentHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
+          });
+          contentHtml += `</div>`;
         } else {
           if (thumbnail) {
             contentHtml = `<div class="mt-1 z-10 w-full h-7 rounded bg-cover bg-center border border-white/80 shadow-xs" style="background-image: url('${thumbnail}')"></div>`;
+          } else if (holiday) {
+            contentHtml = `<div class="mt-1 z-10"><div class="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded truncate font-semibold shadow-xs">${holiday}</div></div>`;
           } else if (daySchedules.length > 0) {
             contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
           }
@@ -1016,7 +1027,6 @@
           ${bgHtml}
           <div class="flex justify-between items-center z-10">
             <span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
-            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px] font-semibold">${holiday}</span>` : ''}
           </div>
           ${contentHtml}
         `;
@@ -1035,6 +1045,7 @@
         const dateStr = `${nextYear}-${mm}-${dd}`;
         const colorClass = getDateColorClass(nextYear, nextMonth, day);
         const holiday = getHolidayName(dateStr, nextYear);
+        const daySchedules = schedules.filter(s => s.date === dateStr);
 
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -1042,12 +1053,22 @@
           selectDate(dateStr); 
           openAddModalForDate(dateStr);
         };
-        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
+        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
+        
+        let badgesHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
+        if (holiday) {
+          badgesHtml += `<div class="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded truncate font-semibold shadow-xs">${holiday}</div>`;
+        }
+        daySchedules.forEach(s => {
+          badgesHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
+        });
+        badgesHtml += `</div>`;
+
         cell.innerHTML = `
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center z-10">
             <span class="text-xs ${colorClass}">${day}</span>
-            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px]">${holiday}</span>` : ''}
           </div>
+          ${badgesHtml}
         `;
         grid.appendChild(cell);
       }
@@ -1115,6 +1136,7 @@
       modal.classList.add("hidden");
     }
 
+    // ===== 🛠️ 修復された美しい予定リストカード表示 =====
     async function renderSchedules() {
       const container = document.getElementById("schedule-list");
       container.innerHTML = "";
@@ -1132,7 +1154,7 @@
         const mediaCount = (item.mediaList || []).length;
         const statusBadge = mediaCount > 0 
           ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>Album (${mediaCount})</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"><span>No Media</span></div>`;
+          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>No Media</span></div>`;
 
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
