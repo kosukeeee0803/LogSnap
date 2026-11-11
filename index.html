@@ -79,11 +79,11 @@
       <!-- モード切り替えボタン -->
       <button onclick="toggleViewMode()" id="mode-toggle-btn" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-all border border-slate-200">
         <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-600"></i>
-        <span id="mode-toggle-text">写真映えモード</span>
+        <span id="mode-toggle-text" data-i18n="photoAestheticMode">写真映えモード</span>
       </button>
       <button onclick="openAddModalForSelectedDate()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
         <i data-lucide="plus" class="w-4 h-4"></i>
-        <span>予定を追加</span>
+        <span data-i18n="addEventBtn">予定を追加</span>
       </button>
     </div>
   </header>
@@ -97,29 +97,29 @@
         <div class="flex items-center justify-between mb-3 px-1">
           <div class="flex items-center gap-2">
             <select id="select-year" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
-              <option value="2025">2025年</option>
-              <option value="2026" selected>2026年</option>
-              <option value="2027">2027年</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
             </select>
             <select id="select-month" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
-              <option value="1">1月</option>
-              <option value="2">2月</option>
-              <option value="3">3月</option>
-              <option value="4">4月</option>
-              <option value="5">5月</option>
-              <option value="6">6月</option>
-              <option value="7">7月</option>
-              <option value="8">8月</option>
-              <option value="9">9月</option>
-              <option value="10">10月</option>
-              <option value="11">11月</option>
-              <option value="12" selected>12月</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12" selected>12</option>
             </select>
           </div>
-          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full font-medium">左右スワイプで月移動</span>
+          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full font-medium" data-i18n="swipeHint">左右スワイプで月移動</span>
         </div>
 
-        <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-500 mb-2 px-1">
+        <div id="weekday-header" class="grid grid-cols-7 text-center text-xs font-semibold text-slate-500 mb-2 px-1">
           <span class="text-rose-500">日</span>
           <span>月</span>
           <span>火</span>
@@ -147,7 +147,7 @@
           </h3>
           <button onclick="openAddModalForSelectedDate()" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-            <span>この日に追加</span>
+            <span data-i18n="addThisDayBtn">この日に追加</span>
           </button>
         </div>
 
@@ -160,17 +160,17 @@
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold flex items-center gap-1.5">
-            <i data-lucide="bell" class="w-4 h-4"></i> お知らせ ＆ リマインダー
+            <i data-lucide="bell" class="w-4 h-4"></i> <span data-i18n="notificationsTitle">お知らせ ＆ リマインダー</span>
           </h2>
-          <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full">新着</span>
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full" data-i18n="newBadge">新着</span>
         </div>
         <div class="space-y-2.5">
           <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
-              <span class="text-[10px] text-slate-400 font-mono">今日</span>
+              <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
+              <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
             </div>
-            <p class="text-xs text-slate-600">土曜日の日付が青文字、日曜日の日付が赤文字に対応しました。</p>
+            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">多言語対応（i18n）、英語圏祝日連動、アカウント設定での言語切り替え機能が実装されました。</p>
           </div>
         </div>
       </div>
@@ -181,26 +181,26 @@
       <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
           <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold">Cinematic Vlog Studio</h2>
-          <p class="text-lg font-bold text-slate-900">まとめ動画の作成</p>
+          <p class="text-lg font-bold text-slate-900" data-i18n="vlogStudioTitle">まとめ動画の作成</p>
         </div>
 
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
           <div>
-            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">対象期間モード</label>
+            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" data-i18n="recapModeLabel">対象期間モード</label>
             <select id="recap-mode" onchange="updateRecapOptions()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500">
-              <option value="week">特定の一週間 (日曜〜土曜)</option>
-              <option value="month" selected>1ヶ月間 (Monthly)</option>
+              <option value="week" data-i18n="modeWeek">特定の一週間 (日曜〜土曜)</option>
+              <option value="month" selected data-i18n="modeMonth">1ヶ月間 (Monthly)</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" id="recap-target-label">対象週 / 月</label>
+            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" id="recap-target-label" data-i18n="targetPeriodLabel">対象週 / 月</label>
             <select id="recap-target-select" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
           </div>
         </div>
 
         <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-pink-600/20 active:scale-95">
           <i data-lucide="play" class="w-4 h-4"></i>
-          <span>選択した期間のまとめ動画を再生・作成</span>
+          <span data-i18n="playMovieBtn">選択した期間のまとめ動画を再生・作成</span>
         </button>
       </div>
 
@@ -208,19 +208,19 @@
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
             <i data-lucide="film" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span>作成済みまとめ動画の履歴</span>
+            <span data-i18n="movieHistoryTitle">作成済みまとめ動画の履歴</span>
           </h3>
         </div>
         <div id="movie-history-list" class="space-y-2"></div>
       </div>
 
       <div>
-        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider">Gallery（複数メディア一覧）</h3>
+        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider" data-i18n="galleryTitle">Gallery（複数メディア一覧）</h3>
         <div id="mosaic-grid" class="mosaic-grid"></div>
       </div>
     </section>
 
-    <!-- ===== タブ4: アカウント ===== -->
+    <!-- ===== タブ4: アカウント & 設定 ===== -->
     <section id="tab-account" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
         <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
@@ -228,15 +228,42 @@
             L
           </div>
           <div>
-            <h2 class="text-base font-bold text-slate-900">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono">オフライン・IndexedDB永続化モード</p>
+            <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
+            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">オフライン・IndexedDB永続化モード</p>
           </div>
         </div>
-        <div class="space-y-1.5 pt-2">
-          <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">アプリ設定</h3>
+
+        <!-- ⚙️ 設定セクション -->
+        <div class="space-y-3 pt-1">
+          <h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600" data-i18n="settingsHeader">アプリ設定 (Settings)</h3>
+          
+          <!-- 言語切り替え設定 -->
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="text-xs font-medium text-slate-700">データストレージ初期化</span>
-            <button onclick="if(confirm('すべての予定と保存データをリセットしますか？')){ localStorage.clear(); indexedDB.deleteDatabase('LogSnapDB'); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold">
+            <div>
+              <p class="text-xs font-bold text-slate-800" data-i18n="languageSettingTitle">言語設定 (Language)</p>
+              <p class="text-[10px] text-slate-400" data-i18n="languageSettingDesc">表示言語と対応する祝日を切り替えます</p>
+            </div>
+            <select id="language-select" onchange="changeLanguage(this.value)" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
+              <option value="ja">日本語 (Japanese)</option>
+              <option value="en">English (Native)</option>
+            </select>
+          </div>
+
+          <!-- タイムゾーン設定 -->
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <p class="text-xs font-bold text-slate-800" data-i18n="timezoneSettingTitle">タイムゾーン (Timezone)</p>
+              <p class="text-[10px] text-slate-400 font-mono" id="current-timezone-display">Asia/Tokyo (Auto)</p>
+            </div>
+            <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded-lg" data-i18n="autoDetected">自動検出</span>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 pt-2 border-t border-slate-100">
+          <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400" data-i18n="dataManagement">データ管理</h3>
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-xs font-medium text-slate-700" data-i18n="resetStorage">データストレージ初期化</span>
+            <button onclick="if(confirm(t('confirmReset'))){ localStorage.clear(); indexedDB.deleteDatabase('LogSnapDB'); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold" data-i18n="resetBtn">
               リセット
             </button>
           </div>
@@ -251,19 +278,19 @@
     <div class="flex items-center justify-around">
       <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold">
         <i data-lucide="calendar" class="w-5 h-5"></i>
-        <span class="text-[10px]">カレンダー</span>
+        <span class="text-[10px]" data-i18n="navCalendar">カレンダー</span>
       </button>
       <button id="nav-notifications-btn" onclick="switchTab('notifications')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
         <i data-lucide="bell" class="w-5 h-5"></i>
-        <span class="text-[10px]">通知</span>
+        <span class="text-[10px]" data-i18n="navNotifications">通知</span>
       </button>
       <button id="nav-lookbook-btn" onclick="switchTab('lookbook')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
         <i data-lucide="book-open" class="w-5 h-5"></i>
-        <span class="text-[10px]">LOOKBOOK</span>
+        <span class="text-[10px]" data-i18n="navLookbook">LOOKBOOK</span>
       </button>
       <button id="nav-account-btn" onclick="switchTab('account')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium">
         <i data-lucide="user" class="w-5 h-5"></i>
-        <span class="text-[10px]">アカウント</span>
+        <span class="text-[10px]" data-i18n="navAccount">アカウント</span>
       </button>
     </div>
   </nav>
@@ -275,7 +302,7 @@
         <button onclick="closeAddModal()" class="p-1 -ml-1 text-slate-400 hover:text-slate-600 rounded-full">
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
-        <h2 class="text-base font-bold text-slate-900">新しい予定を追加</h2>
+        <h2 class="text-base font-bold text-slate-900" data-i18n="modalNewEventTitle">新しい予定を追加</h2>
         <button onclick="document.getElementById('add-schedule-form').requestSubmit()" class="p-1 -mr-1 text-indigo-600 hover:text-indigo-700 font-bold rounded-full">
           <i data-lucide="check" class="w-6 h-6"></i>
         </button>
@@ -284,34 +311,34 @@
       <div class="p-5 flex-1 space-y-4">
         <form id="add-schedule-form" onsubmit="handleAddSchedule(event)" class="space-y-4">
           <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4">
-            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1">予定タイトル</label>
+            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1" data-i18n="eventTitleLabel">予定タイトル</label>
             <input type="text" id="input-title" required placeholder="例: カフェで作業、ジムで筋トレ" class="w-full text-base font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent">
           </div>
 
           <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-4">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> 日付
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="dateLabel">日付</span>
               </span>
               <input type="date" id="input-date" required class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i> 時間
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="timeLabel">時間</span>
               </span>
               <input type="time" id="input-time" required value="15:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
             </div>
           </div>
 
           <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4">
-            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5">
+            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5" data-i18n="locationLabel">
               <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-600"></i> 場所（スポット）
             </label>
             <input type="text" id="input-location" placeholder="例: お気に入りのカフェ" class="w-full text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none bg-transparent">
           </div>
 
           <div class="pt-2 pb-4">
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md shadow-indigo-600/30 transition-all active:scale-95">
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md shadow-indigo-600/30 transition-all active:scale-95" data-i18n="saveBtn">
               保存する
             </button>
           </div>
@@ -325,7 +352,7 @@
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title">写真・動画を追加</h3>
+          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title" data-i18n="addMediaModalTitle">写真・動画を追加</h3>
           <p class="text-xs text-slate-500" id="checkin-target-meta">場所・時間</p>
         </div>
         <button onclick="closeCheckinModal()" class="text-slate-400 hover:text-slate-600">
@@ -334,13 +361,13 @@
       </div>
 
       <div class="space-y-1 pt-1 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 font-medium">📁 デバイスの写真・動画ファイル選択</label>
+        <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 デバイスの写真・動画ファイル選択</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルを選択するとIndexedDBに安全に保存されます。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※ファイルを選択するとIndexedDBに安全に保存されます。</p>
       </div>
 
       <div class="pt-2">
-        <button id="confirm-checkin-btn" onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all">
+        <button id="confirm-checkin-btn" onclick="confirmCheckin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm shadow-md shadow-emerald-600/20 transition-all" data-i18n="confirmSaveBtn">
           決定して保存する
         </button>
       </div>
@@ -373,7 +400,7 @@
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
           <span class="text-[10px] uppercase font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">Selected Vlog Recap</span>
-          <h3 class="text-base font-bold text-slate-900 mt-0.5">シネマティックまとめ動画</h3>
+          <h3 class="text-base font-bold text-slate-900 mt-0.5" data-i18n="vlogModalTitle">シネマティックまとめ動画</h3>
         </div>
         <button onclick="closeMovieModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-6 h-6"></i>
@@ -397,10 +424,10 @@
       <audio id="bgm-player" loop></audio>
 
       <div class="flex gap-2 pt-1">
-        <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
+        <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="restartMovieBtn">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 最初から再生
         </button>
-        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 active:scale-95">
+        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="downloadMovieBtn">
           <i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存
         </button>
       </div>
@@ -408,7 +435,204 @@
   </div>
 
   <script>
-    // ===== IndexedDB ストレージマネージャー =====
+    // ===== 🌍 i18n 辞書データ (日本語 ＆ ネイティブ英語) =====
+    const i18n = {
+      ja: {
+        photoAestheticMode: "写真映えモード",
+        scheduleViewMode: "予定表示モード",
+        addEventBtn: "予定を追加",
+        swipeHint: "左右スワイプで月移動",
+        weekdays: ["日", "月", "火", "水", "木", "金", "土"],
+        notificationsTitle: "お知らせ ＆ リマインダー",
+        newBadge: "新着",
+        welcomeNoteTitle: "✨ LogSnapへようこそ！",
+        todayLabel: "今日",
+        welcomeNoteDesc: "多言語対応（i18n）、英語圏祝日連動、アカウント設定での言語切り替え機能が実装されました。",
+        vlogStudioTitle: "まとめ動画の作成",
+        recapModeLabel: "対象期間モード",
+        modeWeek: "特定の一週間 (日曜〜土曜)",
+        modeMonth: "1ヶ月間 (Monthly)",
+        targetPeriodLabel: "対象週 / 月",
+        playMovieBtn: "選択した期間のまとめ動画を再生・作成",
+        movieHistoryTitle: "作成済みまとめ動画の履歴",
+        galleryTitle: "Gallery（複数メディア一覧）",
+        guestUser: "ゲストユーザー",
+        offlineMode: "オフライン・IndexedDB永続化モード",
+        settingsHeader: "アプリ設定 (Settings)",
+        languageSettingTitle: "言語設定 (Language)",
+        languageSettingDesc: "表示言語と対応する祝日を切り替えます",
+        timezoneSettingTitle: "タイムゾーン (Timezone)",
+        autoDetected: "自動検出",
+        dataManagement: "データ管理",
+        resetStorage: "データストレージ初期化",
+        resetBtn: "リセット",
+        navCalendar: "カレンダー",
+        navNotifications: "通知",
+        navLookbook: "LOOKBOOK",
+        navAccount: "アカウント",
+        modalNewEventTitle: "新しい予定を追加",
+        eventTitleLabel: "予定タイトル",
+        dateLabel: "日付",
+        timeLabel: "時間",
+        locationLabel: "場所（スポット）",
+        saveBtn: "保存する",
+        addMediaModalTitle: "写真・動画を追加",
+        selectFileLabel: "📁 デバイスの写真・動画ファイル選択",
+        fileLoadingHint: "※ファイルを選択するとIndexedDBに安全に保存されます。",
+        confirmSaveBtn: "決定して保存する",
+        vlogModalTitle: "シネマティックまとめ動画",
+        restartMovieBtn: "最初から再生",
+        downloadMovieBtn: "動画をファイル保存",
+        noEvents: "この日の予定はありません",
+        addThisDayBtn: "この日に追加",
+        noMediaMessage: "選択した期間の写真・動画ログがありません。",
+        noMovieHistory: "まだ保存されたまとめ動画の履歴はありません。",
+        confirmReset: "すべての予定と保存データをリセットしますか？"
+      },
+      en: {
+        photoAestheticMode: "Photo Mode",
+        scheduleViewMode: "Schedule Mode",
+        addEventBtn: "New Event",
+        swipeHint: "Swipe left/right to change month",
+        weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        notificationsTitle: "Notifications & Reminders",
+        newBadge: "New",
+        welcomeNoteTitle: "✨ Welcome to LogSnap!",
+        todayLabel: "Today",
+        welcomeNoteDesc: "i18n multi-language support, regional holiday synchronization, and account language settings are now enabled.",
+        vlogStudioTitle: "Create Vlog Recap",
+        recapModeLabel: "Recap Range Mode",
+        modeWeek: "Specific Week (Sun - Sat)",
+        modeMonth: "Full Month (Monthly)",
+        targetPeriodLabel: "Target Week / Month",
+        playMovieBtn: "Play & Create Cinematic Vlog",
+        movieHistoryTitle: "Saved Vlog History",
+        galleryTitle: "Gallery (All Media)",
+        guestUser: "Guest User",
+        offlineMode: "Offline IndexedDB Mode",
+        settingsHeader: "App Settings",
+        languageSettingTitle: "Language",
+        languageSettingDesc: "Switch display language & regional holidays",
+        timezoneSettingTitle: "Timezone",
+        autoDetected: "Auto-detected",
+        dataManagement: "Data Management",
+        resetStorage: "Reset Storage Data",
+        resetBtn: "Reset",
+        navCalendar: "Calendar",
+        navNotifications: "Notifications",
+        navLookbook: "LOOKBOOK",
+        navAccount: "Account",
+        modalNewEventTitle: "Add New Event",
+        eventTitleLabel: "Event Title",
+        dateLabel: "Date",
+        timeLabel: "Time",
+        locationLabel: "Location / Spot",
+        saveBtn: "Save Event",
+        addMediaModalTitle: "Add Photos & Videos",
+        selectFileLabel: "📁 Select Media Files",
+        fileLoadingHint: "Files will be securely stored in IndexedDB.",
+        confirmSaveBtn: "Confirm & Save",
+        vlogModalTitle: "Cinematic Vlog Recap",
+        restartMovieBtn: "Replay",
+        downloadMovieBtn: "Save Video File",
+        noEvents: "No events scheduled for this day",
+        addThisDayBtn: "Add to this day",
+        noMediaMessage: "No media logs found for the selected period.",
+        noMovieHistory: "No saved vlog history yet.",
+        confirmReset: "Are you sure you want to reset all data?"
+      }
+    };
+
+    let currentLang = localStorage.getItem('logsnap_lang') || 'ja';
+
+    function t(key) {
+      return i18n[currentLang][key] || key;
+    }
+
+    function updateUIStrings() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[currentLang][key]) {
+          el.innerText = i18n[currentLang][key];
+        }
+      });
+      document.getElementById("language-select").value = currentLang;
+      updateWeekdayHeader();
+    }
+
+    function updateWeekdayHeader() {
+      const weekdays = i18n[currentLang].weekdays;
+      const headerEl = document.getElementById("weekday-header");
+      headerEl.innerHTML = `
+        <span class="text-rose-500">${weekdays[0]}</span>
+        <span>${weekdays[1]}</span>
+        <span>${weekdays[2]}</span>
+        <span>${weekdays[3]}</span>
+        <span>${weekdays[4]}</span>
+        <span>${weekdays[5]}</span>
+        <span class="text-sky-500">${weekdays[6]}</span>
+      `;
+    }
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('logsnap_lang', lang);
+      updateUIStrings();
+      renderAllPanels();
+      renderSchedules();
+      updateRecapOptions();
+      renderAlbumGallery();
+    }
+
+    // ===== 🇺🇸🇬🇧 英語圏の主要な祝日定義 (英語モード用) =====
+    // 例: 元日(1/1), 独立記念日(7/4), ハロウィン(10/31 - 祝日ではないが例として), クリスマス(12/25), 感謝祭(11月第4木曜など簡易固定)
+    function getEnglishHolidays(year) {
+      return {
+        [`${year}-01-01`]: "New Year's Day",
+        [`${year}-07-04`]: "Independence Day",
+        [`${year}-10-31`]: "Halloween",
+        [`${year}-11-26`]: "Thanksgiving Day",
+        [`${year}-12-25`]: "Christmas Day",
+        [`${year}-12-31`]: "New Year's Eve"
+      };
+    }
+
+    // ===== 🇯🇵 日本の祝日定義 (日本語モード用 - 2025/2026/2027年対応) =====
+    function getJapaneseHolidays(year) {
+      const holidays = {
+        2025: {
+          "2025-01-01": "元日", "2025-01-13": "成人の日", "2025-02-11": "建国記念の日", "2025-02-23": "天皇誕生日", "2025-02-24": "振替休日",
+          "2025-03-20": "春分の日", "2025-04-29": "昭和の日", "2025-05-03": "憲法記念日", "2025-05-04": "みどりの日", "2025-05-05": "こどもの日",
+          "2025-05-06": "振替休日", "2025-07-21": "海の日", "2025-08-11": "山の日", "2025-09-15": "敬老の日", "2025-09-23": "秋分の日",
+          "2025-10-13": "スポーツの日", "2025-11-03": "文化の日", "2025-11-23": "勤労感謝の日", "2025-11-24": "振替休日"
+        },
+        2026: {
+          "2026-01-01": "元日", "2026-01-12": "成人の日", "2026-02-11": "建国記念の日", "2026-02-23": "天皇誕生日",
+          "2026-03-20": "春分の日", "2026-04-29": "昭和の日", "2026-05-03": "憲法記念日", "2026-05-04": "みどりの日", "2026-05-05": "こどもの日",
+          "2026-05-06": "振替休日", "2026-07-20": "海の日", "2026-08-11": "山の日", "2026-09-21": "敬老の日", "2026-09-22": "国民の休日",
+          "2026-09-23": "秋分の日", "2026-10-12": "スポーツの日", "2026-11-03": "文化の日", "2026-11-23": "勤労感謝の日"
+        },
+        2027: {
+          "2027-01-01": "元日", "2027-01-11": "成人の日", "2027-02-11": "建国記念の日", "2027-02-23": "天皇誕生日",
+          "2027-03-21": "春分の日", "2027-03-22": "振替休日", "2027-04-29": "昭和の日", "2027-05-03": "憲法記念日", "2027-05-04": "みどりの日",
+          "2027-05-05": "こどもの日", "2027-07-19": "海の日", "2027-08-11": "山の日", "2027-09-20": "敬老の日", "2027-09-23": "秋分の日",
+          "2027-10-11": "スポーツの日", "2027-11-03": "文化の日", "2027-11-23": "勤労感謝の日"
+        }
+      };
+      return holidays[year] || {};
+    }
+
+    function getHolidayName(dateStr, year) {
+      if (currentLang === 'en') {
+        const eng = getEnglishHolidays(year);
+        return eng[dateStr] || null;
+      } else {
+        const jpn = getJapaneseHolidays(year);
+        return jpn[dateStr] || null;
+      }
+    }
+
+    // ===== 🗄️ IndexedDB ストレージマネージャー =====
     const DB_NAME = "LogSnapDB";
     const STORE_NAME = "mediaStore";
     let dbInstance = null;
@@ -485,7 +709,7 @@
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v19')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v20')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -508,7 +732,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v19', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v20', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -526,6 +750,16 @@
       lucide.createIcons();
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
+      
+      // タイムゾーンの自動検出表示
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById("current-timezone-display").innerText = `${tz} (Auto)`;
+      } catch (e) {
+        document.getElementById("current-timezone-display").innerText = "Asia/Tokyo (Auto)";
+      }
+
+      updateUIStrings();
       await renderAllPanels();
       updateTrackPosition(false);
       await renderSchedules();
@@ -539,10 +773,10 @@
       const btnText = document.getElementById("mode-toggle-text");
       if (viewMode === 'photo') {
         viewMode = 'schedule';
-        btnText.innerText = "予定表示モード";
+        btnText.innerText = t('scheduleViewMode');
       } else {
         viewMode = 'photo';
-        btnText.innerText = "写真映えモード";
+        btnText.innerText = t('photoAestheticMode');
       }
       renderAllPanels();
     }
@@ -672,12 +906,21 @@
       await fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
     }
 
-    // 曜日インデックスに応じた文字色クラスを返すヘルパー関数 (0:日=赤, 6:土=青)
-    function getDayOfWeekColorClass(year, month, day) {
+    // 🗓️ 日付の色クラス判定 (日曜・祝日=赤, 土曜=青)
+    function getDateColorClass(year, month, day) {
+      const mm = String(month).padStart(2, '0');
+      const dd = String(day).padStart(2, '0');
+      const dateStr = `${year}-${mm}-${dd}`;
       const dayOfWeek = new Date(year, month - 1, day).getDay();
-      if (dayOfWeek === 0) return "text-rose-500 font-bold"; // 日曜：赤文字
-      if (dayOfWeek === 6) return "text-sky-600 font-bold";  // 土曜：青文字
-      return "text-slate-800 font-bold";                     // 平日：通常色
+      const holidayName = getHolidayName(dateStr, year);
+
+      if (dayOfWeek === 0 || holidayName) {
+        return "text-rose-500 font-bold"; // 日曜または祝日は赤文字
+      }
+      if (dayOfWeek === 6) {
+        return "text-sky-600 font-bold";  // 土曜は青文字
+      }
+      return "text-slate-800 font-bold";     // 平日
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
@@ -695,7 +938,8 @@
         const mm = String(prevMonth).padStart(2, '0');
         const dd = String(dayNum).padStart(2, '0');
         const dateStr = `${prevYear}-${mm}-${dd}`;
-        const colorClass = getDayOfWeekColorClass(prevYear, prevMonth, dayNum);
+        const colorClass = getDateColorClass(prevYear, prevMonth, dayNum);
+        const holiday = getHolidayName(dateStr, prevYear);
         
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -704,7 +948,12 @@
           openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
-        cell.innerHTML = `<span class="text-xs ${colorClass}">${dayNum}</span>`;
+        cell.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-xs ${colorClass}">${dayNum}</span>
+            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px]">${holiday}</span>` : ''}
+          </div>
+        `;
         grid.appendChild(cell);
       }
 
@@ -715,7 +964,8 @@
         const dateStr = `${year}-${mm}-${dd}`;
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr && isCurrentPanel;
-        const colorClass = getDayOfWeekColorClass(year, month, day);
+        const colorClass = getDateColorClass(year, month, day);
+        const holiday = getHolidayName(dateStr, year);
 
         let firstCompletedMedia = null;
         for (const s of daySchedules) {
@@ -766,6 +1016,7 @@
           ${bgHtml}
           <div class="flex justify-between items-center z-10">
             <span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
+            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px] font-semibold">${holiday}</span>` : ''}
           </div>
           ${contentHtml}
         `;
@@ -782,7 +1033,8 @@
         const mm = String(nextMonth).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
         const dateStr = `${nextYear}-${mm}-${dd}`;
-        const colorClass = getDayOfWeekColorClass(nextYear, nextMonth, day);
+        const colorClass = getDateColorClass(nextYear, nextMonth, day);
+        const holiday = getHolidayName(dateStr, nextYear);
 
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -791,7 +1043,12 @@
           openAddModalForDate(dateStr);
         };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
-        cell.innerHTML = `<span class="text-xs ${colorClass}">${day}</span>`;
+        cell.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-xs ${colorClass}">${day}</span>
+            ${holiday ? `<span class="text-[8px] text-rose-500 truncate max-w-[50px]">${holiday}</span>` : ''}
+          </div>
+        `;
         grid.appendChild(cell);
       }
     }
@@ -804,7 +1061,7 @@
     }
 
     async function deleteSchedule(id) {
-      if (confirm("この予定を削除しますか？")) {
+      if (confirm(t('confirmReset'))) {
         schedules = schedules.filter(s => s.id !== id);
         saveSchedules();
         await renderAllPanels();
@@ -864,7 +1121,7 @@
       const currentDaySchedules = schedules.filter(s => s.date === selectedDate);
 
       if (currentDaySchedules.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">この日の予定はありません</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs text-indigo-600 hover:underline font-semibold">＋ 予定を追加する</button></div>`;
+        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">${t('noEvents')}</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs text-indigo-600 hover:underline font-semibold">＋ ${t('addThisDayBtn')}</button></div>`;
         return;
       }
 
@@ -874,8 +1131,8 @@
 
         const mediaCount = (item.mediaList || []).length;
         const statusBadge = mediaCount > 0 
-          ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>アルバム (${mediaCount}件の思い出)</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>写真未登録</span></div>`;
+          ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>Album (${mediaCount})</span></div>`
+          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"><span>No Media</span></div>`;
 
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
@@ -886,7 +1143,7 @@
             thumbnailDisplay += `
               <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${item.time}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
                 <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
-                ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : ''}
+                ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>Video</div>` : ''}
                 <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
                 </button>
@@ -897,8 +1154,8 @@
         } else {
           thumbnailDisplay = `
             <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
-              <span class="text-xs text-slate-500">まだ思い出の写真がありません</span>
-              <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ 写真を追加</button>
+              <span class="text-xs text-slate-500">No photos/videos yet</span>
+              <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ Add</button>
             </div>
           `;
         }
@@ -909,15 +1166,15 @@
               ${statusBadge}
               <h4 class="text-base font-bold text-slate-900 mt-1">${item.title}</h4>
               <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
-                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || 'スポット'} &bull; ${item.time}
+                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || 'Spot'} &bull; ${item.time}
               </p>
             </div>
             <div class="flex items-center gap-1">
               <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all active:scale-95">
                 <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
-                <span>追加</span>
+                <span>Add</span>
               </button>
-              <button onclick="deleteSchedule(${item.id})" title="削除" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
+              <button onclick="deleteSchedule(${item.id})" title="Delete" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -967,16 +1224,16 @@
       selectEl.innerHTML = "";
 
       if (mode === 'month') {
-        labelEl.innerText = "対象の月 (Monthly)";
+        labelEl.innerText = t('targetPeriodLabel');
         for (let m = 1; m <= 12; m++) {
           const opt = document.createElement("option");
           opt.value = `${currentYear}-${String(m).padStart(2, '0')}`;
-          opt.innerText = `${currentYear}年 ${m}月全体`;
+          opt.innerText = currentLang === 'en' ? `${currentYear} / Month ${m}` : `${currentYear}年 ${m}月全体`;
           if (m === currentMonth) opt.selected = true;
           selectEl.appendChild(opt);
         }
       } else {
-        labelEl.innerText = "対象の一週間 (日曜〜土曜)";
+        labelEl.innerText = t('targetPeriodLabel');
         const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
         const lastDayOfMonth = new Date(currentYear, currentMonth, 0);
 
@@ -992,7 +1249,7 @@
 
           const opt = document.createElement("option");
           opt.value = `${startStr}_${endStr}`;
-          opt.innerText = `${currSunday.getMonth() + 1}月${currSunday.getDate()}日(日) 〜 ${currSaturday.getMonth() + 1}月${currSaturday.getDate()}日(土)`;
+          opt.innerText = `${currSunday.getMonth() + 1}/${currSunday.getDate()} - ${currSaturday.getMonth() + 1}/${currSaturday.getDate()}`;
           
           const todayStr = formatDateString(new Date());
           if (startStr <= todayStr && todayStr <= endStr) {
@@ -1043,7 +1300,7 @@
       grid.innerHTML = "";
 
       if (filteredMedia.length === 0) {
-        grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">選択した期間の写真・動画ログがありません。</p>`;
+        grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">${t('noMediaMessage')}</p>`;
         return;
       }
 
@@ -1072,7 +1329,7 @@
       listContainer.innerHTML = "";
 
       if (movieHistory.length === 0) {
-        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">まだ保存されたまとめ動画の履歴はありません。</p>`;
+        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">${t('noMovieHistory')}</p>`;
         return;
       }
 
@@ -1086,12 +1343,12 @@
             </div>
             <div>
               <p class="text-xs font-bold text-slate-800">${item.title}</p>
-              <p class="text-[10px] text-slate-400 font-mono">作成日時: ${item.createdAt} (${item.mediaCount}件のメディア)</p>
+              <p class="text-[10px] text-slate-400 font-mono">${item.createdAt} (${item.mediaCount} items)</p>
             </div>
           </div>
           <div class="flex items-center gap-1.5">
             <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-95">
-              再生
+              Play
             </button>
             <button onclick="deleteMovieHistory('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -1104,7 +1361,7 @@
     }
 
     function deleteMovieHistory(id) {
-      if (confirm("この動画履歴を削除しますか？")) {
+      if (confirm(t('confirmReset'))) {
         movieHistory = movieHistory.filter(h => h.id !== id);
         saveMovieHistory();
         renderMovieHistory();
@@ -1136,7 +1393,7 @@
         date, 
         time, 
         title, 
-        location: location || "スポット", 
+        location: location || "Spot", 
         mediaList: [] 
       });
 
@@ -1151,7 +1408,7 @@
       currentCheckinId = id;
       const item = schedules.find(s => s.id === id);
       document.getElementById("checkin-target-title").innerText = item.title;
-      document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || 'スポット'}`;
+      document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || 'Spot'}`;
       tempMediaList = [];
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
@@ -1164,7 +1421,7 @@
       const files = event.target.files;
       if (!files || files.length === 0) return;
       const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "⏳ IndexedDB保存中...";
+      confirmBtn.innerText = "⏳ Saving to IndexedDB...";
       confirmBtn.disabled = true;
       tempMediaList = [];
 
@@ -1192,7 +1449,7 @@
         });
       }
 
-      confirmBtn.innerText = "決定して保存する";
+      confirmBtn.innerText = t('confirmSaveBtn');
       confirmBtn.disabled = false;
     }
 
@@ -1259,7 +1516,7 @@
     function playHighlightMovie() {
       activeMovieMediaItems = getAllFilteredMediaItems();
       if (activeMovieMediaItems.length === 0) {
-        alert("選択した期間に思い出のメディアがありません。");
+        alert(t('noMediaMessage'));
         return;
       }
       const selectEl = document.getElementById("recap-target-select");
@@ -1376,10 +1633,10 @@
       const screenEl = document.getElementById("movie-screen");
       const btn = document.getElementById("download-video-btn");
       try {
-        btn.innerText = "⏳ 録画中...";
+        btn.innerText = "⏳ Recording...";
         btn.disabled = true;
         const stream = screenEl.captureStream ? screenEl.captureStream(30) : null;
-        if (!stream) { alert("非対応ブラウザです"); btn.disabled = false; return; }
+        if (!stream) { alert("Not supported browser"); btn.disabled = false; return; }
 
         let chunks = [];
         let rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
@@ -1391,18 +1648,18 @@
           a.href = url;
           a.download = `LogSnap_Vlog_${Date.now()}.webm`;
           a.click();
-          movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || "まとめ動画", createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems });
+          movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || "Vlog Recap", createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems });
           saveMovieHistory();
           renderMovieHistory();
-          btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存`;
+          btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> ${t('downloadMovieBtn')}`;
           btn.disabled = false;
           lucide.createIcons();
-          alert("まとめ動画の保存が完了しました！");
+          alert("Vlog video saved successfully!");
         };
         rec.start();
         setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, 20000);
       } catch (err) {
-        alert("エラーが発生しました。");
+        alert("An error occurred during recording.");
         btn.disabled = false;
       }
     }
