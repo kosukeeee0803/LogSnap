@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LogSnap - 予定×シネマティックVlog・アルバム</title>
+  <title>LogSnap - 予定×シネマティックVlog・アルバム (IndexedDB対応)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -164,7 +164,7 @@
               <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono">今日</span>
             </div>
-            <p class="text-xs text-slate-600">カレンダーの外枠をなくし、画面いっぱいに広げた見やすいレイアウトにアップデートされました。</p>
+            <p class="text-xs text-slate-600">IndexedDBストレージが有効化され、デバイス内に写真や動画が半永久保存されるようになりました。</p>
           </div>
         </div>
       </div>
@@ -223,14 +223,14 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono">オフラインモードで利用中</p>
+            <p class="text-xs text-slate-500 font-mono">オフライン・IndexedDB永続化モード</p>
           </div>
         </div>
         <div class="space-y-1.5 pt-2">
           <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">アプリ設定</h3>
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
             <span class="text-xs font-medium text-slate-700">データストレージ初期化</span>
-            <button onclick="if(confirm('すべての予定データをリセットしますか？')){localStorage.clear();location.reload();}" class="text-xs text-rose-600 hover:underline font-semibold">
+            <button onclick="if(confirm('すべての予定と保存データをリセットしますか？')){ localStorage.clear(); indexedDB.deleteDatabase('LogSnapDB'); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold">
               リセット
             </button>
           </div>
@@ -328,7 +328,7 @@
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium">📁 デバイスの写真・動画ファイル選択</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルを選択するとサムネイルが自動生成されます。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400">※ファイルを選択するとIndexedDBに安全に保存されます。</p>
       </div>
 
       <div class="pt-2">
@@ -400,21 +400,92 @@
   </div>
 
   <script>
+    // ===== IndexedDB ストレージマネージャー =====
+    const DB_NAME = "LogSnapDB";
+    const STORE_NAME = "mediaStore";
+    let dbInstance = null;
+
+    function openDatabase() {
+      return new Promise((resolve, reject) => {
+        if (dbInstance) return resolve(dbInstance);
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          dbInstance = request.result;
+          resolve(dbInstance);
+        };
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+      });
+    }
+
+    async function saveMediaToIDB(id, blobData) {
+      const db = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.put(blobData, id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getMediaFromIDB(id) {
+      const db = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    // メディアオブジェクトのURLキャッシュ（メモリ効率化）
+    const mediaObjectUrlCache = {};
+
+    async function resolveMediaUrl(mediaItem) {
+      if (!mediaItem || !mediaItem.id) return mediaItem ? mediaItem.url : '';
+      if (mediaObjectUrlCache[mediaItem.id]) {
+        return mediaObjectUrlCache[mediaItem.id];
+      }
+      const blob = await getMediaFromIDB(mediaItem.id);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        mediaObjectUrlCache[mediaItem.id] = url;
+        return url;
+      }
+      return mediaItem.url || '';
+    }
+
+    async function resolveThumbnailUrl(mediaItem) {
+      if (!mediaItem || !mediaItem.id) return '';
+      const thumbId = mediaItem.id + "_thumb";
+      const thumbBlob = await getMediaFromIDB(thumbId);
+      if (thumbBlob) {
+        return URL.createObjectURL(thumbBlob);
+      }
+      return await resolveMediaUrl(mediaItem);
+    }
+    // ===========================================
+
     let currentYear = 2026;
     let currentMonth = 12;
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v15')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v16')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
         time: "10:00", 
         title: "カフェで作業", 
         location: "お気に入りのカフェ", 
-        mediaList: [
-          { id: "m1", url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=80", type: "image" }
-        ] 
+        mediaList: [] 
       },
       { 
         id: 2, 
@@ -422,9 +493,7 @@
         time: "14:00", 
         title: "海沿いをドライブ", 
         location: "海岸通り", 
-        mediaList: [
-          { id: "m2", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80", type: "image" }
-        ] 
+        mediaList: [] 
       }
     ];
 
@@ -432,7 +501,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v15', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v16', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -445,20 +514,20 @@
     let currentCheckinId = null;
     let tempMediaList = []; 
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      await openDatabase();
       lucide.createIcons();
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
-      renderAllPanels();
+      await renderAllPanels();
       updateTrackPosition(false);
-      renderSchedules();
+      await renderSchedules();
       updateRecapOptions();
-      renderAlbumGallery();
+      await renderAlbumGallery();
       renderMovieHistory();
       setupCarouselSwipe();
     });
 
-    // モード切り替え関数
     function toggleViewMode() {
       const btnText = document.getElementById("mode-toggle-text");
       if (viewMode === 'photo') {
@@ -553,7 +622,7 @@
       track.style.transform = 'translateX(-100%)';
     }
 
-    function shiftMonth(offset) {
+    async function shiftMonth(offset) {
       currentMonth += offset;
       if (currentMonth > 12) {
         currentMonth = 1;
@@ -565,38 +634,38 @@
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
       
-      renderAllPanels();
+      await renderAllPanels();
       updateTrackPosition(false);
       updateRecapOptions();
-      renderAlbumGallery();
+      await renderAlbumGallery();
     }
 
-    function changeYearMonthFromSelect() {
+    async function changeYearMonthFromSelect() {
       currentYear = parseInt(document.getElementById("select-year").value, 10);
       currentMonth = parseInt(document.getElementById("select-month").value, 10);
-      renderAllPanels();
+      await renderAllPanels();
       updateTrackPosition(false);
       updateRecapOptions();
-      renderAlbumGallery();
+      await renderAlbumGallery();
     }
 
     function getDaysInMonth(year, month) {
       return new Date(year, month, 0).getDate();
     }
 
-    function renderAllPanels() {
+    async function renderAllPanels() {
       let pY = currentMonth === 1 ? currentYear - 1 : currentYear;
       let pM = currentMonth === 1 ? 12 : currentMonth - 1;
-      fillCalendarGrid(document.getElementById("panel-prev"), pY, pM, false);
+      await fillCalendarGrid(document.getElementById("panel-prev"), pY, pM, false);
 
-      fillCalendarGrid(document.getElementById("panel-curr"), currentYear, currentMonth, true);
+      await fillCalendarGrid(document.getElementById("panel-curr"), currentYear, currentMonth, true);
 
       let nY = currentMonth === 12 ? currentYear + 1 : currentYear;
       let nM = currentMonth === 12 ? 1 : currentMonth + 1;
-      fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
+      await fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
     }
 
-    function fillCalendarGrid(grid, year, month, isCurrentPanel) {
+    async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
       grid.innerHTML = "";
       const firstDayIndex = new Date(year, month - 1, 1).getDay();
       const totalDays = getDaysInMonth(year, month);
@@ -613,7 +682,7 @@
         const dateStr = `${prevYear}-${mm}-${dd}`;
         
         const cell = document.createElement("div");
-        cell.onclick = () => { shiftMonth(-1); selectDate(dateStr); };
+        cell.onclick = async () => { await shiftMonth(-1); selectDate(dateStr); };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${dayNum}</span>`;
         grid.appendChild(cell);
@@ -627,20 +696,24 @@
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr && isCurrentPanel;
 
-        // ユーザーが保存した実際の写真のサムネイルを取得（自動生成は完全に削除）
-        const firstCompletedMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.thumbnail || m.url);
-        const thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnail || firstCompletedMedia.url) : null;
+        let firstCompletedMedia = null;
+        for (const s of daySchedules) {
+          if (s.mediaList && s.mediaList.length > 0) {
+            firstCompletedMedia = s.mediaList[0];
+            break;
+          }
+        }
+        let thumbnail = firstCompletedMedia ? await resolveThumbnailUrl(firstCompletedMedia) : null;
 
         const cell = document.createElement("div");
-        cell.onclick = () => {
+        cell.onclick = async () => {
           if (!isCurrentPanel) {
-            if (month > currentMonth || (month === 1 && currentMonth === 12)) shiftMonth(1);
-            else shiftMonth(-1);
+            if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
+            else await shiftMonth(-1);
           }
           selectDate(dateStr);
         };
         
-        // 外枠をなくし、画面幅いっぱいに広げたゆとりのあるグリッドセル
         cell.className = `relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white ${
           isSelected ? 'bg-indigo-50/50 ring-2 ring-indigo-500/40 z-10' : 'hover:bg-slate-50/80'
         }`;
@@ -652,7 +725,6 @@
 
         let contentHtml = '';
         if (viewMode === 'schedule') {
-          // 予定表示モード：スケジュールタイトルをバナー状にリスト表示
           if (daySchedules.length > 0) {
             contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
             daySchedules.forEach(s => {
@@ -661,7 +733,6 @@
             contentHtml += `</div>`;
           }
         } else {
-          // 写真映えモード：写真がある日は小さなサムネイルやドットを表示
           if (thumbnail) {
             contentHtml = `<div class="mt-1 z-10 w-full h-7 rounded bg-cover bg-center border border-white/80 shadow-xs" style="background-image: url('${thumbnail}')"></div>`;
           } else if (daySchedules.length > 0) {
@@ -691,7 +762,7 @@
         const dateStr = `${nextYear}-${mm}-${dd}`;
 
         const cell = document.createElement("div");
-        cell.onclick = () => { shiftMonth(1); selectDate(dateStr); };
+        cell.onclick = async () => { await shiftMonth(1); selectDate(dateStr); };
         cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${day}</span>`;
         grid.appendChild(cell);
@@ -705,36 +776,39 @@
       renderSchedules();
     }
 
-    function deleteSchedule(id) {
+    async function deleteSchedule(id) {
       if (confirm("この予定を削除しますか？")) {
         schedules = schedules.filter(s => s.id !== id);
         saveSchedules();
-        renderAllPanels();
-        renderSchedules();
+        await renderAllPanels();
+        await renderSchedules();
         updateRecapOptions();
-        renderAlbumGallery();
+        await renderAlbumGallery();
       }
     }
 
-    function deleteMediaFromSchedule(scheduleId, mediaId) {
+    async function deleteMediaFromSchedule(scheduleId, mediaId) {
       const item = schedules.find(s => s.id === scheduleId);
       if (item && item.mediaList) {
         item.mediaList = item.mediaList.filter(m => m.id !== mediaId);
         saveSchedules();
-        renderAllPanels();
-        renderSchedules();
-        renderAlbumGallery();
+        await renderAllPanels();
+        await renderSchedules();
+        await renderAlbumGallery();
       }
     }
 
-    function openMediaViewer(url, type, title, meta) {
+    async function openMediaViewer(mediaItem, title, meta) {
       const modal = document.getElementById("media-viewer-modal");
       const imgEl = document.getElementById("viewer-img");
       const videoEl = document.getElementById("viewer-video");
       document.getElementById("viewer-title").innerText = title;
       document.getElementById("viewer-meta").innerText = meta;
 
-      if (type === 'video') {
+      const url = await resolveMediaUrl(mediaItem);
+      const isVideo = mediaItem.type === 'video';
+
+      if (isVideo) {
         imgEl.classList.add("hidden");
         videoEl.classList.remove("hidden");
         videoEl.src = url;
@@ -757,7 +831,7 @@
       modal.classList.add("hidden");
     }
 
-    function renderSchedules() {
+    async function renderSchedules() {
       const container = document.getElementById("schedule-list");
       container.innerHTML = "";
       const currentDaySchedules = schedules.filter(s => s.date === selectedDate);
@@ -767,7 +841,7 @@
         return;
       }
 
-      currentDaySchedules.forEach(item => {
+      for (const item of currentDaySchedules) {
         const card = document.createElement("div");
         card.className = "bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all p-4 space-y-3 relative group";
 
@@ -779,11 +853,11 @@
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
           thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
-          item.mediaList.forEach(m => {
-            const isVideo = m.type === 'video' || m.url.startsWith('blob:');
-            const displayThumb = m.thumbnail || m.url;
+          for (const m of item.mediaList) {
+            const isVideo = m.type === 'video';
+            const displayThumb = await resolveThumbnailUrl(m);
             thumbnailDisplay += `
-              <div onclick="openMediaViewer('${m.url}', '${isVideo ? 'video' : 'image'}', '${item.title}', '${item.date} ${item.time}')" class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
+              <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${item.time}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
                 <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
                 ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>動画</div>` : ''}
                 <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
@@ -791,7 +865,7 @@
                 </button>
               </div>
             `;
-          });
+          }
           thumbnailDisplay += `</div>`;
         } else {
           thumbnailDisplay = `
@@ -824,11 +898,11 @@
           ${thumbnailDisplay}
         `;
         container.appendChild(card);
-      });
+      }
       lucide.createIcons();
     }
 
-    function switchTab(tab) {
+    async function switchTab(tab) {
       const tabs = ['calendar', 'notifications', 'lookbook', 'account'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
@@ -843,11 +917,11 @@
       });
 
       if (tab === 'calendar') {
-        renderAllPanels();
+        await renderAllPanels();
         updateTrackPosition(false);
       } else if (tab === 'lookbook') {
         updateRecapOptions();
-        renderAlbumGallery();
+        await renderAlbumGallery();
         renderMovieHistory();
       }
     }
@@ -936,7 +1010,7 @@
       return allMedia;
     }
 
-    function renderAlbumGallery() {
+    async function renderAlbumGallery() {
       const filteredMedia = getAllFilteredMediaItems();
       const grid = document.getElementById("mosaic-grid");
       grid.innerHTML = "";
@@ -946,13 +1020,13 @@
         return;
       }
 
-      filteredMedia.forEach(m => {
+      for (const m of filteredMedia) {
         const itemEl = document.createElement("div");
         itemEl.className = "relative aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer bg-slate-900";
-        const isVideo = m.type === 'video' || m.url.startsWith('blob:');
-        const displayThumb = m.thumbnail || m.url;
+        const isVideo = m.type === 'video';
+        const displayThumb = await resolveThumbnailUrl(m);
         
-        itemEl.onclick = () => openMediaViewer(m.url, isVideo ? 'video' : 'image', m.title, `${m.date} / ${m.location}`);
+        itemEl.onclick = () => openMediaViewer(m, m.title, `${m.date} / ${m.location}`);
         itemEl.innerHTML = `
           <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy">
           ${isVideo ? `<div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono"><i data-lucide="video" class="w-3 h-3 text-pink-400"></i>VLOG</div>` : ''}
@@ -962,7 +1036,7 @@
           </div>
         `;
         grid.appendChild(itemEl);
-      });
+      }
       lucide.createIcons();
     }
 
@@ -1056,21 +1130,40 @@
       const files = event.target.files;
       if (!files || files.length === 0) return;
       const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "⏳ 処理中...";
+      confirmBtn.innerText = "⏳ IndexedDB保存中...";
       confirmBtn.disabled = true;
       tempMediaList = [];
 
       for (const file of files) {
         const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
-        const blobUrl = URL.createObjectURL(file);
-        let thumb = isVideo ? await extractThumbnailFromVideo(blobUrl).catch(() => null) : blobUrl;
-        tempMediaList.push({ id: Math.random().toString(36).substring(2, 9), url: blobUrl, thumbnail: thumb || blobUrl, type: isVideo ? "video" : "image" });
+        const mediaId = "media_" + Math.random().toString(36).substring(2, 9);
+        
+        // ファイル本体をIndexedDBに保存
+        await saveMediaToIDB(mediaId, file);
+
+        let thumbBlob = null;
+        if (isVideo) {
+          const tempBlobUrl = URL.createObjectURL(file);
+          thumbBlob = await extractThumbnailBlobFromVideo(tempBlobUrl).catch(() => null);
+        } else {
+          thumbBlob = file;
+        }
+
+        if (thumbBlob) {
+          await saveMediaToIDB(mediaId + "_thumb", thumbBlob);
+        }
+
+        tempMediaList.push({ 
+          id: mediaId, 
+          type: isVideo ? "video" : "image" 
+        });
       }
+
       confirmBtn.innerText = "決定して保存する";
       confirmBtn.disabled = false;
     }
 
-    function extractThumbnailFromVideo(videoUrl) {
+    function extractThumbnailBlobFromVideo(videoUrl) {
       return new Promise((resolve) => {
         const video = document.createElement('video');
         video.src = videoUrl;
@@ -1082,14 +1175,14 @@
           canvas.width = video.videoWidth || 320;
           canvas.height = video.videoHeight || 180;
           canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.8));
+          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
         };
         video.onerror = () => resolve(null);
         setTimeout(() => resolve(null), 3000);
       });
     }
 
-    function confirmCheckin() {
+    async function confirmCheckin() {
       if (!currentCheckinId) return;
       const item = schedules.find(s => s.id === currentCheckinId);
       if (item && tempMediaList.length > 0) {
@@ -1098,10 +1191,10 @@
       }
       saveSchedules();
       closeCheckinModal();
-      renderAllPanels();
-      renderSchedules();
+      await renderAllPanels();
+      await renderSchedules();
       updateRecapOptions();
-      renderAlbumGallery();
+      await renderAlbumGallery();
     }
 
     const vlogPlaylist = [
@@ -1144,7 +1237,7 @@
       runSlideShowSequence();
     }
 
-    function playArchivedMovie(historyId) {
+    async function playArchivedMovie(historyId) {
       const historyItem = movieHistory.find(h => h.id === historyId);
       if (!historyItem) return;
       activeMovieMediaItems = historyItem.mediaItems;
@@ -1164,7 +1257,7 @@
       videoEl.onended = null;
     }
 
-    function runSlideShowSequence() {
+    async function runSlideShowSequence() {
       if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
       const videoEl = document.getElementById("movie-slide-video");
       videoEl.onended = null;
@@ -1183,7 +1276,8 @@
       videoEl.style.opacity = 0;
       videoEl.pause();
 
-      const isVideo = m.type === 'video' || m.url.startsWith('blob:');
+      const mediaUrl = await resolveMediaUrl(m);
+      const isVideo = m.type === 'video';
       titleEl.innerText = m.title;
       metaEl.innerText = `${m.location} / ${m.date}`;
       timestampEl.innerText = formatVlogTime(m.time);
@@ -1192,7 +1286,7 @@
         if (isVideo) {
           imgEl.classList.add("hidden");
           videoEl.classList.remove("hidden");
-          videoEl.src = m.url;
+          videoEl.src = mediaUrl;
           videoEl.currentTime = 0;
           videoEl.volume = 0.8;
           videoEl.style.opacity = 1;
@@ -1214,7 +1308,7 @@
         } else {
           videoEl.classList.add("hidden");
           imgEl.classList.remove("hidden");
-          imgEl.src = m.url;
+          imgEl.src = mediaUrl;
           imgEl.classList.remove("animate-zoom");
           void imgEl.offsetWidth;
           imgEl.classList.add("animate-zoom");
