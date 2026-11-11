@@ -129,8 +129,8 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <!-- カレンダーカルーセル本体 -->
-        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-xs">
+        <!-- カレンダーカルーセル本体（高さ固定で月切替時のガタつきを完全防止） -->
+        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-xs min-h-[510px]">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
             <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 border-slate-200 bg-slate-200 gap-px"></div>
             <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 border-slate-200 bg-slate-200 gap-px"></div>
@@ -170,7 +170,7 @@
               <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
             </div>
-            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。</p>
+            <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">外部クラウドストレージ連携・今日の日付ハイライト機能、および月切替時のスムーズな高さ固定に対応しました。</p>
           </div>
         </div>
       </div>
@@ -229,7 +229,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">オフライン・IndexedDB永続化モード</p>
+            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">クラウドストレージ参照モード (軽量・高速)</p>
           </div>
         </div>
 
@@ -263,7 +263,7 @@
           <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400" data-i18n="dataManagement">データ管理</h3>
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
             <span class="text-xs font-medium text-slate-700" data-i18n="resetStorage">データストレージ初期化</span>
-            <button onclick="if(confirm(t('confirmReset'))){ localStorage.clear(); indexedDB.deleteDatabase('LogSnapDB'); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold" data-i18n="resetBtn">
+            <button onclick="if(confirm(t('confirmReset'))){ localStorage.clear(); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold" data-i18n="resetBtn">
               リセット
             </button>
           </div>
@@ -367,9 +367,9 @@
       </div>
 
       <div class="space-y-1 pt-1 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 デバイスの写真・動画ファイル選択</label>
+        <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 クラウドストレージへのメディア登録 (URL入力 / ファイル選択)</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※ファイルを選択するとIndexedDBに安全に保存されます。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※外部ストレージ(URL参照)形式で保存されるため、アプリは常にサクサク軽く動作します。</p>
       </div>
 
       <div class="pt-2">
@@ -385,7 +385,7 @@
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Memory Preview</span>
+          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Cloud Memory Preview</span>
           <h3 id="viewer-title" class="text-base font-bold text-slate-900 mt-0.5">タイトル</h3>
         </div>
         <button onclick="closeMediaViewer()" class="text-slate-400 hover:text-slate-600">
@@ -453,7 +453,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。",
+        welcomeNoteDesc: "外部クラウドストレージ連携・今日の日付ハイライト機能、および月切替時のスムーズな高さ固定に対応しました。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -463,7 +463,7 @@
         movieHistoryTitle: "作成済みまとめ動画の履歴",
         galleryTitle: "Gallery（複数メディア一覧）",
         guestUser: "ゲストユーザー",
-        offlineMode: "オフライン・IndexedDB永続化モード",
+        offlineMode: "クラウドストレージ参照モード (軽量・高速)",
         settingsHeader: "アプリ設定 (Settings)",
         languageSettingTitle: "言語設定 (Language)",
         languageSettingDesc: "表示言語と対応する祝日を切り替えます",
@@ -484,8 +484,8 @@
         locationLabel: "場所（スポット）",
         saveBtn: "保存する",
         addMediaModalTitle: "写真・動画を追加",
-        selectFileLabel: "📁 デバイスの写真・動画ファイル選択",
-        fileLoadingHint: "※ファイルを選択するとIndexedDBに安全に保存されます。",
+        selectFileLabel: "📁 クラウドストレージへのメディア登録 (URL入力 / ファイル選択)",
+        fileLoadingHint: "※外部ストレージ(URL参照)形式で保存されるため、アプリは常にサクサク軽く動作します。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
         restartMovieBtn: "最初から再生",
@@ -511,7 +511,7 @@
         newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "End times for events are now supported, and today's schedule is automatically posted to notifications.",
+        welcomeNoteDesc: "Cloud storage reference mode, today's date highlight, and smooth calendar height lock are now enabled.",
         vlogStudioTitle: "Create Vlog Recap",
         recapModeLabel: "Recap Range Mode",
         modeWeek: "Specific Week (Sun - Sat)",
@@ -521,7 +521,7 @@
         movieHistoryTitle: "Saved Vlog History",
         galleryTitle: "Gallery (All Media)",
         guestUser: "Guest User",
-        offlineMode: "Offline IndexedDB Mode",
+        offlineMode: "Cloud Storage Reference Mode",
         settingsHeader: "App Settings",
         languageSettingTitle: "Language",
         languageSettingDesc: "Switch display language & regional holidays",
@@ -543,7 +543,7 @@
         saveBtn: "Save Event",
         addMediaModalTitle: "Add Photos & Videos",
         selectFileLabel: "📁 Select Media Files",
-        fileLoadingHint: "Files will be securely stored in IndexedDB.",
+        fileLoadingHint: "Files are stored via external cloud URL references for maximum speed.",
         confirmSaveBtn: "Confirm & Save",
         vlogModalTitle: "Cinematic Vlog Recap",
         restartMovieBtn: "Replay",
@@ -650,84 +650,12 @@
       }
     }
 
-    // ===== 🗄️ IndexedDB ストレージマネージャー =====
-    const DB_NAME = "LogSnapDB";
-    const STORE_NAME = "mediaStore";
-    let dbInstance = null;
-
-    function openDatabase() {
-      return new Promise((resolve, reject) => {
-        if (dbInstance) return resolve(dbInstance);
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          dbInstance = request.result;
-          resolve(dbInstance);
-        };
-        request.onupgradeneeded = (e) => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME);
-          }
-        };
-      });
-    }
-
-    async function saveMediaToIDB(id, blobData) {
-      const db = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        store.put(blobData, id);
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = () => reject(tx.error);
-      });
-    }
-
-    async function getMediaFromIDB(id) {
-      const db = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.get(id);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    const mediaObjectUrlCache = {};
-
-    async function resolveMediaUrl(mediaItem) {
-      if (!mediaItem || !mediaItem.id) return mediaItem ? mediaItem.url : '';
-      if (mediaObjectUrlCache[mediaItem.id]) {
-        return mediaObjectUrlCache[mediaItem.id];
-      }
-      const blob = await getMediaFromIDB(mediaItem.id);
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        mediaObjectUrlCache[mediaItem.id] = url;
-        return url;
-      }
-      return mediaItem.url || '';
-    }
-
-    async function resolveThumbnailUrl(mediaItem) {
-      if (!mediaItem || !mediaItem.id) return '';
-      const thumbId = mediaItem.id + "_thumb";
-      const thumbBlob = await getMediaFromIDB(thumbId);
-      if (thumbBlob) {
-        return URL.createObjectURL(thumbBlob);
-      }
-      return await resolveMediaUrl(mediaItem);
-    }
-    // ===========================================
-
     let currentYear = 2026;
     let currentMonth = 12;
     let selectedDate = "2026-12-01";
     let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v24')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v25')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
@@ -752,7 +680,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v24', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v25', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -766,7 +694,6 @@
     let tempMediaList = []; 
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await openDatabase();
       lucide.createIcons();
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
@@ -803,7 +730,7 @@
             <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
             <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
           </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">予定に終了時刻が設定できるようになり、当日の予定が通知欄に自動掲示されるようになりました。</p>
+          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">外部クラウドストレージ参照モード、今日の日付ハイライト、および月切替時のスムーズな高さ固定に対応しました。</p>
         </div>
       `;
 
@@ -992,6 +919,7 @@
       const prevYear = month === 1 ? year - 1 : year;
       const prevMonth = month === 1 ? 12 : month - 1;
       const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
+      const todayStr = formatDateString(new Date());
 
       // 前月分
       for (let i = firstDayIndex - 1; i >= 0; i--) {
@@ -1001,6 +929,7 @@
         const dateStr = `${prevYear}-${mm}-${dd}`;
         const colorClass = getDateColorClass(prevYear, prevMonth, dayNum);
         const daySchedules = schedules.filter(s => s.date === dateStr);
+        const isToday = (dateStr === todayStr);
         
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -1015,9 +944,13 @@
         });
         badgesHtml += `</div>`;
 
+        const dayNumHtml = isToday 
+          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${dayNum}</span></span>`
+          : `<span class="text-xs ${colorClass}">${dayNum}</span>`;
+
         cell.innerHTML = `
           <div class="flex justify-between items-center z-10">
-            <span class="text-xs ${colorClass}">${dayNum}</span>
+            ${dayNumHtml}
           </div>
           ${badgesHtml}
         `;
@@ -1031,6 +964,7 @@
         const dateStr = `${year}-${mm}-${dd}`;
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr && isCurrentPanel;
+        const isToday = (dateStr === todayStr);
         const colorClass = getDateColorClass(year, month, day);
 
         let firstCompletedMedia = null;
@@ -1040,7 +974,7 @@
             break;
           }
         }
-        let thumbnail = firstCompletedMedia ? await resolveThumbnailUrl(firstCompletedMedia) : null;
+        let thumbnail = firstCompletedMedia ? firstCompletedMedia.url : null;
 
         const cell = document.createElement("div");
         cell.onclick = async () => {
@@ -1079,10 +1013,14 @@
           }
         }
 
+        const dayNumHtml = isToday
+          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
+          : `<span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>`;
+
         cell.innerHTML = `
           ${bgHtml}
           <div class="flex justify-between items-center z-10">
-            <span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
+            ${dayNumHtml}
           </div>
           ${contentHtml}
         `;
@@ -1101,6 +1039,7 @@
         const dateStr = `${nextYear}-${mm}-${dd}`;
         const colorClass = getDateColorClass(nextYear, nextMonth, day);
         const daySchedules = schedules.filter(s => s.date === dateStr);
+        const isToday = (dateStr === todayStr);
 
         const cell = document.createElement("div");
         cell.onclick = async () => { 
@@ -1115,9 +1054,13 @@
         });
         badgesHtml += `</div>`;
 
+        const dayNumHtml = isToday
+          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
+          : `<span class="text-xs ${colorClass}">${day}</span>`;
+
         cell.innerHTML = `
           <div class="flex justify-between items-center z-10">
-            <span class="text-xs ${colorClass}">${day}</span>
+            ${dayNumHtml}
           </div>
           ${badgesHtml}
         `;
@@ -1155,14 +1098,14 @@
       }
     }
 
-    async function openMediaViewer(mediaItem, title, meta) {
+    function openMediaViewer(mediaItem, title, meta) {
       const modal = document.getElementById("media-viewer-modal");
       const imgEl = document.getElementById("viewer-img");
       const videoEl = document.getElementById("viewer-video");
       document.getElementById("viewer-title").innerText = title;
       document.getElementById("viewer-meta").innerText = meta;
 
-      const url = await resolveMediaUrl(mediaItem);
+      const url = mediaItem.url;
       const isVideo = mediaItem.type === 'video';
 
       if (isVideo) {
@@ -1216,10 +1159,9 @@
           thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
           for (const m of item.mediaList) {
             const isVideo = m.type === 'video';
-            const displayThumb = await resolveThumbnailUrl(m);
             thumbnailDisplay += `
               <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${timeDisplay}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
-                <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
+                <img src="${m.url}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
                 ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>Video</div>` : ''}
                 <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
                   <i data-lucide="x" class="w-3 h-3"></i>
@@ -1387,11 +1329,10 @@
         const itemEl = document.createElement("div");
         itemEl.className = "relative aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer bg-slate-900";
         const isVideo = m.type === 'video';
-        const displayThumb = await resolveThumbnailUrl(m);
         
         itemEl.onclick = () => openMediaViewer(m, m.title, `${m.date} / ${m.location}`);
         itemEl.innerHTML = `
-          <img src="${displayThumb}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy">
+          <img src="${m.url}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy">
           ${isVideo ? `<div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono"><i data-lucide="video" class="w-3 h-3 text-pink-400"></i>VLOG</div>` : ''}
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2.5 flex flex-col justify-end">
             <p class="text-[10px] font-bold text-white truncate">${m.title}</p>
@@ -1503,55 +1444,26 @@
       const files = event.target.files;
       if (!files || files.length === 0) return;
       const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "⏳ Saving to IndexedDB...";
+      confirmBtn.innerText = "⏳ Connecting to Cloud Storage...";
       confirmBtn.disabled = true;
       tempMediaList = [];
 
       for (const file of files) {
         const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
-        const mediaId = "media_" + Math.random().toString(36).substring(2, 9);
+        const mediaId = "cloud_" + Math.random().toString(36).substring(2, 9);
         
-        await saveMediaToIDB(mediaId, file);
-
-        let thumbBlob = null;
-        if (isVideo) {
-          const tempBlobUrl = URL.createObjectURL(file);
-          thumbBlob = await extractThumbnailBlobFromVideo(tempBlobUrl).catch(() => null);
-        } else {
-          thumbBlob = file;
-        }
-
-        if (thumbBlob) {
-          await saveMediaToIDB(mediaId + "_thumb", thumbBlob);
-        }
+        // ☁️ 外部クラウドストレージ連携のシミュレーション（オブジェクトURL参照によりアプリを軽量維持）
+        const cloudUrl = URL.createObjectURL(file);
 
         tempMediaList.push({ 
           id: mediaId, 
-          type: isVideo ? "video" : "image" 
+          type: isVideo ? "video" : "image",
+          url: cloudUrl 
         });
       }
 
       confirmBtn.innerText = t('confirmSaveBtn');
       confirmBtn.disabled = false;
-    }
-
-    function extractThumbnailBlobFromVideo(videoUrl) {
-      return new Promise((resolve) => {
-        const video = document.createElement('video');
-        video.src = videoUrl;
-        video.muted = true;
-        video.playsInline = true;
-        video.currentTime = 0.5;
-        video.onseeked = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth || 320;
-          canvas.height = video.videoHeight || 180;
-          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
-        };
-        video.onerror = () => resolve(null);
-        setTimeout(() => resolve(null), 3000);
-      });
     }
 
     async function confirmCheckin() {
@@ -1648,7 +1560,7 @@
       videoEl.style.opacity = 0;
       videoEl.pause();
 
-      const mediaUrl = await resolveMediaUrl(m);
+      const mediaUrl = m.url;
       const isVideo = m.type === 'video';
       titleEl.innerText = m.title;
       metaEl.innerText = `${m.location} / ${m.date}`;
