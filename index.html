@@ -68,10 +68,17 @@
         LogSnap
       </h1>
     </div>
-    <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
-      <i data-lucide="plus" class="w-4 h-4"></i>
-      <span>予定を追加</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <!-- モード切り替えボタン -->
+      <button onclick="toggleViewMode()" id="mode-toggle-btn" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-all border border-slate-200">
+        <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-600"></i>
+        <span id="mode-toggle-text">写真映えモード</span>
+      </button>
+      <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span>予定を追加</span>
+      </button>
+    </div>
   </header>
 
   <!-- メインコンテンツ -->
@@ -115,12 +122,12 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <!-- カレンダーカルーセル本体 -->
+        <!-- カレンダーカルーセル本体（格子状グリッド構造） -->
         <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
-            <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
-            <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
-            <div id="panel-next" class="w-full flex-shrink-0 grid grid-cols-7 gap-2"></div>
+            <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 border-t border-l border-slate-200 bg-slate-200 gap-px"></div>
+            <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 border-t border-l border-slate-200 bg-slate-200 gap-px"></div>
+            <div id="panel-next" class="w-full flex-shrink-0 grid grid-cols-7 border-t border-l border-slate-200 bg-slate-200 gap-px"></div>
           </div>
         </div>
       </div>
@@ -156,7 +163,7 @@
               <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono">今日</span>
             </div>
-            <p class="text-xs text-slate-600">安定性の高いシネマティック画像生成エンジンにアップデートされました。</p>
+            <p class="text-xs text-slate-600">伝統的なグリッドカレンダーと2つのモード切替に対応しました。</p>
           </div>
         </div>
       </div>
@@ -395,31 +402,27 @@
     let currentYear = 2026;
     let currentMonth = 12;
     let selectedDate = "2026-12-01";
+    let viewMode = 'photo'; // 'photo': 写真映えモード, 'schedule': 予定表示モード
 
-    // 🌟 安定稼働する高画質Unsplashシネマティック画像自動生成エンジン
-    function generateSmartThumbnailUrl(title) {
-      const t = (title || "").toLowerCase();
-      let query = "nature,mood";
-      if (t.includes("カフェ") || t.includes("コーヒー") || t.includes("スタバ") || t.includes("珈琲")) query = "coffee,cafe,interior";
-      else if (t.includes("ジム") || t.includes("筋トレ") || t.includes("トレーニング")) query = "gym,fitness";
-      else if (t.includes("海") || t.includes("ビーチ") || t.includes("ドライブ") || t.includes("旅行")) query = "ocean,travel,sunset";
-      else if (t.includes("仕事") || t.includes("勉強") || t.includes("作業") || t.includes("pc")) query = "workspace,laptop";
-      else if (t.includes("ご飯") || t.includes("ランチ") || t.includes("ディナー") || t.includes("ラーメン") || t.includes("肉")) query = "food,restaurant";
-      
-      // 常に安定して高画質な画像が取得できる信頼性の高いUnsplash Source URL
-      return `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80`;
-    }
-
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v13')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v14')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
         time: "10:00", 
         title: "カフェで作業", 
         location: "お気に入りのカフェ", 
-        themeImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
         mediaList: [
           { id: "m1", url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=80", type: "image" }
+        ] 
+      },
+      { 
+        id: 2, 
+        date: "2026-12-03", 
+        time: "14:00", 
+        title: "海沿いをドライブ", 
+        location: "海岸通り", 
+        mediaList: [
+          { id: "m2", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80", type: "image" }
         ] 
       }
     ];
@@ -428,7 +431,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v13', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v14', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -453,6 +456,19 @@
       renderMovieHistory();
       setupCarouselSwipe();
     });
+
+    // モード切り替え関数
+    function toggleViewMode() {
+      const btnText = document.getElementById("mode-toggle-text");
+      if (viewMode === 'photo') {
+        viewMode = 'schedule';
+        btnText.innerText = "予定表示モード";
+      } else {
+        viewMode = 'photo';
+        btnText.innerText = "写真映えモード";
+      }
+      renderAllPanels();
+    }
 
     function setupCarouselSwipe() {
       const viewport = document.getElementById("calendar-viewport");
@@ -588,6 +604,7 @@
       const prevMonth = month === 1 ? 12 : month - 1;
       const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
 
+      // 前月分
       for (let i = firstDayIndex - 1; i >= 0; i--) {
         const dayNum = daysInPrevMonth - i;
         const mm = String(prevMonth).padStart(2, '0');
@@ -596,11 +613,12 @@
         
         const cell = document.createElement("div");
         cell.onclick = () => { shiftMonth(-1); selectDate(dateStr); };
-        cell.className = "relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer border border-slate-100 bg-slate-50/60 opacity-40 hover:opacity-70 transition-all";
+        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[75px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${dayNum}</span>`;
         grid.appendChild(cell);
       }
 
+      // 当月分
       for (let day = 1; day <= totalDays; day++) {
         const mm = String(month).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
@@ -608,9 +626,9 @@
         const daySchedules = schedules.filter(s => s.date === dateStr);
         const isSelected = selectedDate === dateStr && isCurrentPanel;
 
+        // ユーザーが保存した実際の写真のサムネイルを取得（自動生成は完全に削除）
         const firstCompletedMedia = daySchedules.flatMap(s => s.mediaList || []).find(m => m.thumbnail || m.url);
-        const themeImg = daySchedules[0]?.themeImage;
-        const thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnail || firstCompletedMedia.url) : themeImg;
+        const thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnail || firstCompletedMedia.url) : null;
 
         const cell = document.createElement("div");
         cell.onclick = () => {
@@ -620,21 +638,47 @@
           }
           selectDate(dateStr);
         };
-        cell.className = `relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer transition-all border overflow-hidden shadow-xs ${
-          isSelected ? 'border-indigo-600 ring-2 ring-indigo-500/30 bg-indigo-50/40' : 'border-slate-200 bg-white hover:border-slate-300'
+        
+        // 伝統的なグリッド・スペース拡大デザイン
+        cell.className = `relative p-1.5 flex flex-col justify-between min-h-[75px] cursor-pointer transition-all overflow-hidden bg-white ${
+          isSelected ? 'bg-indigo-50/50 ring-2 ring-indigo-500/40 z-10' : 'hover:bg-slate-50/80'
         }`;
 
-        let bgHtml = thumbnail ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-65 rounded-2xl" loading="lazy">` : '';
-        let dotHtml = daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-indigo-600 z-10 shadow-sm"></span>` : '';
+        let bgHtml = '';
+        if (viewMode === 'photo' && thumbnail) {
+          bgHtml = `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-60" loading="lazy">`;
+        }
+
+        let contentHtml = '';
+        if (viewMode === 'schedule') {
+          // 予定表示モード：スケジュールタイトルをバナー状にリスト表示
+          if (daySchedules.length > 0) {
+            contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[45px]">`;
+            daySchedules.forEach(s => {
+              contentHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
+            });
+            contentHtml += `</div>`;
+          }
+        } else {
+          // 写真映えモード：写真がある日は小さなサムネイルやドットを表示
+          if (thumbnail) {
+            contentHtml = `<div class="mt-1 z-10 w-full h-6 rounded bg-cover bg-center border border-white/80 shadow-xs" style="background-image: url('${thumbnail}')"></div>`;
+          } else if (daySchedules.length > 0) {
+            contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
+          }
+        }
 
         cell.innerHTML = `
           ${bgHtml}
-          <span class="text-xs font-bold z-10 ${thumbnail ? 'text-white photo-stamp' : 'text-slate-800'} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
-          <div class="z-10">${dotHtml}</div>
+          <div class="flex justify-between items-center z-10">
+            <span class="text-xs font-bold ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp' : 'text-slate-800'} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>
+          </div>
+          ${contentHtml}
         `;
         grid.appendChild(cell);
       }
 
+      // 翌月分埋め
       const totalCellsSoFar = firstDayIndex + totalDays;
       const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
       const nextYear = month === 12 ? year + 1 : year;
@@ -647,7 +691,7 @@
 
         const cell = document.createElement("div");
         cell.onclick = () => { shiftMonth(1); selectDate(dateStr); };
-        cell.className = "relative aspect-[1/1.1] rounded-2xl p-1.5 flex flex-col justify-between items-center cursor-pointer border border-slate-100 bg-slate-50/60 opacity-40 hover:opacity-70 transition-all";
+        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[75px] cursor-pointer";
         cell.innerHTML = `<span class="text-xs font-bold text-slate-400">${day}</span>`;
         grid.appendChild(cell);
       }
@@ -729,7 +773,7 @@
         const mediaCount = (item.mediaList || []).length;
         const statusBadge = mediaCount > 0 
           ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>アルバム (${mediaCount}件の思い出)</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-indigo-500 font-bold"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>自動サムネイル適用中</span></div>`;
+          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>写真未登録</span></div>`;
 
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
@@ -750,12 +794,8 @@
           thumbnailDisplay += `</div>`;
         } else {
           thumbnailDisplay = `
-            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-              <img src="${item.themeImage}" class="w-14 h-14 object-cover rounded-lg shadow-sm" loading="lazy">
-              <div class="flex-1">
-                <p class="text-[10px] text-indigo-600 font-bold">✨ 自動生成サムネイル</p>
-                <p class="text-xs text-slate-600">写真を追加してさらにリッチに</p>
-              </div>
+            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-xs text-slate-500">まだ思い出の写真がありません</span>
               <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ 写真を追加</button>
             </div>
           `;
@@ -982,15 +1022,12 @@
       const time = document.getElementById("input-time").value;
       const location = document.getElementById("input-location").value;
       
-      const aiThemeImageUrl = generateSmartThumbnailUrl(title);
-
       schedules.push({ 
         id: Date.now(), 
         date, 
         time, 
         title, 
         location: location || "スポット", 
-        themeImage: aiThemeImageUrl,
         mediaList: [] 
       });
 
