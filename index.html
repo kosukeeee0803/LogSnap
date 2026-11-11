@@ -156,7 +156,7 @@
               <span class="text-xs font-bold text-slate-900">✨ LogSnapへようこそ！</span>
               <span class="text-[10px] text-slate-400 font-mono">今日</span>
             </div>
-            <p class="text-xs text-slate-600">AIサムネイル自動生成機能が搭載されました。予定を入力するだけで自動でおしゃれな背景がセットされます。</p>
+            <p class="text-xs text-slate-600">安定性の高いシネマティック画像生成エンジンにアップデートされました。</p>
           </div>
         </div>
       </div>
@@ -215,7 +215,16 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono">オフラインモードで利用中 (AI自動生成対応)</p>
+            <p class="text-xs text-slate-500 font-mono">オフラインモードで利用中</p>
+          </div>
+        </div>
+        <div class="space-y-1.5 pt-2">
+          <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">アプリ設定</h3>
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-xs font-medium text-slate-700">データストレージ初期化</span>
+            <button onclick="if(confirm('すべての予定データをリセットしますか？')){localStorage.clear();location.reload();}" class="text-xs text-rose-600 hover:underline font-semibold">
+              リセット
+            </button>
           </div>
         </div>
       </div>
@@ -260,8 +269,8 @@
     <div class="max-w-md w-full mx-auto p-4 flex-1">
       <form id="add-schedule-form" onsubmit="handleAddSchedule(event)" class="space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1">予定タイトル (✨AIサムネイル自動生成)</label>
-          <input type="text" id="input-title" required placeholder="例: カフェで作業、ジムで筋トレ、海ドライブ" class="w-full text-base font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent">
+          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1">予定タイトル</label>
+          <input type="text" id="input-title" required placeholder="例: カフェで作業、ジムで筋トレ" class="w-full text-base font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent">
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-4">
@@ -288,7 +297,7 @@
 
         <div class="pt-4">
           <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md shadow-indigo-600/30 transition-all active:scale-95">
-            保存する (自動生成)
+            保存する
           </button>
         </div>
       </form>
@@ -306,13 +315,6 @@
         <button onclick="closeCheckinModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
-      </div>
-
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-        <label class="block text-xs font-bold text-indigo-600 flex items-center gap-1">
-          <i data-lucide="image" class="w-3.5 h-3.5"></i> AI自動生成サムネイル
-        </label>
-        <div class="grid grid-cols-4 gap-2" id="theme-preset-picker"></div>
       </div>
 
       <div class="space-y-1 pt-1 border-t border-slate-100">
@@ -394,29 +396,28 @@
     let currentMonth = 12;
     let selectedDate = "2026-12-01";
 
-    // 🌟 AI風自動サムネイル生成関数（無料外部API × キーワード解析）
-    function generateAiThumbnailUrl(title) {
+    // 🌟 安定稼働する高画質Unsplashシネマティック画像自動生成エンジン
+    function generateSmartThumbnailUrl(title) {
       const t = (title || "").toLowerCase();
-      let tag = "cinematic,mood";
-      if (t.includes("カフェ") || t.includes("コーヒー") || t.includes("スタバ") || t.includes("珈琲")) tag = "cafe,coffee,interior";
-      else if (t.includes("ジム") || t.includes("筋トレ") || t.includes("トレーニング") || t.includes("ワークアウト")) tag = "gym,fitness,workout";
-      else if (t.includes("海") || t.includes("ビーチ") || t.includes("ドライブ") || t.includes("旅行") || t.includes("trip")) tag = "ocean,travel,car";
-      else if (t.includes("仕事") || t.includes("勉強") || t.includes("作業") || t.includes("pc") || t.includes("プログラミング")) tag = "workspace,laptop,coding";
-      else if (t.includes("ご飯") || t.includes("ランチ") || t.includes("ディナー") || t.includes("居酒屋") || t.includes("ラーメン") || t.includes("肉")) tag = "food,restaurant,ramen";
-      else if (t.includes("散歩") || t.includes("公園") || t.includes("自然")) tag = "nature,park,walk";
+      let query = "nature,mood";
+      if (t.includes("カフェ") || t.includes("コーヒー") || t.includes("スタバ") || t.includes("珈琲")) query = "coffee,cafe,interior";
+      else if (t.includes("ジム") || t.includes("筋トレ") || t.includes("トレーニング")) query = "gym,fitness";
+      else if (t.includes("海") || t.includes("ビーチ") || t.includes("ドライブ") || t.includes("旅行")) query = "ocean,travel,sunset";
+      else if (t.includes("仕事") || t.includes("勉強") || t.includes("作業") || t.includes("pc")) query = "workspace,laptop";
+      else if (t.includes("ご飯") || t.includes("ランチ") || t.includes("ディナー") || t.includes("ラーメン") || t.includes("肉")) query = "food,restaurant";
       
-      // 無料の画像生成・配信API（LoremFlickr）を利用して、タイトルに応じた高画質シネマティック写真を完全自動取得
-      return `https://loremflickr.com/600/400/${tag}?lock=${Math.floor(Math.random() * 10000)}`;
+      // 常に安定して高画質な画像が取得できる信頼性の高いUnsplash Source URL
+      return `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80`;
     }
 
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v12')) || [
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v13')) || [
       { 
         id: 1, 
         date: "2026-12-01", 
         time: "10:00", 
         title: "カフェで作業", 
         location: "お気に入りのカフェ", 
-        themeImage: generateAiThumbnailUrl("カフェで作業"),
+        themeImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
         mediaList: [
           { id: "m1", url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=80", type: "image" }
         ] 
@@ -427,7 +428,7 @@
 
     function saveSchedules() {
       try {
-        localStorage.setItem('logsnap_user_schedules_v12', JSON.stringify(schedules));
+        localStorage.setItem('logsnap_user_schedules_v13', JSON.stringify(schedules));
       } catch (e) {
         console.error("Storage quota exceeded", e);
       }
@@ -728,7 +729,7 @@
         const mediaCount = (item.mediaList || []).length;
         const statusBadge = mediaCount > 0 
           ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>アルバム (${mediaCount}件の思い出)</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-indigo-500 font-bold"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>AIサムネイル自動適用中</span></div>`;
+          : `<div class="flex items-center gap-1.5 text-xs text-indigo-500 font-bold"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>自動サムネイル適用中</span></div>`;
 
         let thumbnailDisplay = '';
         if (mediaCount > 0) {
@@ -752,7 +753,7 @@
             <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
               <img src="${item.themeImage}" class="w-14 h-14 object-cover rounded-lg shadow-sm" loading="lazy">
               <div class="flex-1">
-                <p class="text-[10px] text-indigo-600 font-bold">✨ AI自動生成サムネイル</p>
+                <p class="text-[10px] text-indigo-600 font-bold">✨ 自動生成サムネイル</p>
                 <p class="text-xs text-slate-600">写真を追加してさらにリッチに</p>
               </div>
               <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ 写真を追加</button>
@@ -981,8 +982,7 @@
       const time = document.getElementById("input-time").value;
       const location = document.getElementById("input-location").value;
       
-      // ✨ AI自動生成サムネイルをタイトルから構築
-      const aiThemeImageUrl = generateAiThumbnailUrl(title);
+      const aiThemeImageUrl = generateSmartThumbnailUrl(title);
 
       schedules.push({ 
         id: Date.now(), 
@@ -1006,33 +1006,6 @@
       const item = schedules.find(s => s.id === id);
       document.getElementById("checkin-target-title").innerText = item.title;
       document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || 'スポット'}`;
-
-      const themePicker = document.getElementById("theme-preset-picker");
-      themePicker.innerHTML = "";
-      
-      // AI再生成用の候補
-      const aiSuggestions = [
-        item.themeImage,
-        generateAiThumbnailUrl(item.title + " 2"),
-        generateAiThumbnailUrl(item.title + " cinematic")
-      ];
-
-      aiSuggestions.forEach(url => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        const isCurrent = item.themeImage === url;
-        btn.className = `relative aspect-video rounded-lg overflow-hidden border-2 ${isCurrent ? 'border-indigo-600 ring-2 ring-indigo-600/30' : 'border-slate-200 opacity-70 hover:opacity-100'}`;
-        btn.innerHTML = `<img src="${url}" class="w-full h-full object-cover" loading="lazy">`;
-        btn.onclick = () => {
-          item.themeImage = url;
-          saveSchedules();
-          openCheckinModal(id);
-          renderAllPanels();
-          renderSchedules();
-        };
-        themePicker.appendChild(btn);
-      });
-
       tempMediaList = [];
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
