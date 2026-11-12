@@ -361,7 +361,7 @@
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 Firebase Cloud Storageへアップロード</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※超高速リサイズ・サムネイル自動生成に対応しています。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※iOS完全対応の超高速サムネイル自動生成エンジン稼働中。</p>
       </div>
 
       <div class="pt-2">
@@ -456,6 +456,19 @@
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f172a"/><polygon points="40,32 40,68 70,50" fill="#f472b6"/></svg>'
     );
+
+    // 🎬 Vlog 関連の変数宣言（ここだけに一本化）
+    const vlogPlaylist = [
+      { name: "Avatar's Love", url: "7_BPM69.mp3" },
+      { name: "異国のグルメ", url: "082_BPM97.mp3" },
+      { name: "Sunday Chill", url: "sunday.mp3" },
+      { name: "Velvet Mood", url: "velvet.mp3" }
+    ];
+
+    let activeMovieMediaItems = [];
+    let currentSlideIdx = 0;
+    let activeSlideTimeout = null;
+    let currentMovieTitle = "";
 
     async function getCachedDownloadURL(fileRef) {
       const path = fileRef.fullPath;
@@ -562,639 +575,6 @@
         cells.push(makeGrayCell(nextYear, nextMonth, day, todayStr));
       }
       return cells;
-    }
-
-    async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
-      const key = `${year}-${month}-${viewMode}-${currentLang}`;
-      let cells = monthCellCache.get(key);
-      if (!cells) {
-        cells = buildCalendarCells(year, month);
-        monthCellCache.set(key, cells);
-      }
-      grid.replaceChildren(...cells);
-      if (isCurrentPanel) applySelectionHighlight();
-    }
-
-    function applySelectionHighlight() {
-      document.querySelectorAll('#calendar-track .ring-2').forEach(el => el.classList.remove(...SELECTED_CLASSES));
-      const el = document.querySelector(`#panel-curr [data-date="${selectedDate}"]:not([data-gray="1"])`);
-      if (el) el.classList.add(...SELECTED_CLASSES);
-    }
-
-    function setupCalendarClicks() {
-      [["panel-prev", -1], ["panel-curr", 0], ["panel-next", 1]].forEach(([id, panelOffset]) => {
-        document.getElementById(id).addEventListener("click", async (e) => {
-          const cell = e.target.closest("[data-date]");
-          if (!cell) return;
-          const dateStr = cell.dataset.date;
-          const isGray = cell.dataset.gray === "1";
-          let shift = panelOffset;
-          if (panelOffset === 0 && isGray) {
-            shift = dateStr < `${currentYear}-${String(currentMonth).padStart(2, '0')}` ? -1 : 1;
-          }
-          if (shift !== 0) await shiftMonth(shift);
-          if (!isGray && selectedDate === dateStr) openAddModalForDate(dateStr);
-          else selectDate(dateStr);
-        });
-      });
-    }
-
-    // 🚀 画像リサイズ・圧縮関数
-    async function resizeImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.8) {
-      return new Promise((resolve) => {
-        if (!file.type.startsWith("image/")) return resolve(file);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > maxWidth) {
-                height *= maxWidth / width;
-                width = maxWidth;
-              }
-            } else {
-              if (height > maxHeight) {
-                width *= maxHeight / height;
-                height = maxHeight;
-              }
-            }
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob((blob) => {
-              if (!blob) return resolve(file);
-              const resizedFile = new File([blob], file.name, { type: "image/jpeg", lastModified: Date.now() });
-              resolve(resizedFile);
-            }, "image/jpeg", quality);
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // 🚀 サムネイル生成
-    async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > maxWidth) {
-                height *= maxWidth / width;
-                width = maxWidth;
-              }
-            } else {
-              if (height > maxHeight) {
-                width *= maxHeight / height;
-                height = maxHeight;
-              }
-            }
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob((blob) => {
-              if (!blob) return resolve(file);
-              const thumbFile = new File([blob], "thumb_" + file.name, { type: "image/jpeg", lastModified: Date.now() });
-              resolve(thumbFile);
-            }, "image/jpeg", quality);
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // 🚀 動画サムネイル生成（10秒タイムアウト付き）
-    async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
-      return new Promise((resolve) => {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.muted = true;
-        video.playsInline = true;
-        
-        const blobUrl = URL.createObjectURL(file);
-        video.src = blobUrl;
-
-        let timeoutId = setTimeout(() => {
-          URL.revokeObjectURL(blobUrl);
-          resolve(null);
-        }, 10000);
-
-        video.onloadeddata = () => {
-          video.currentTime = Math.min(0.5, video.duration || 0.1);
-        };
-
-        video.onseeked = () => {
-          clearTimeout(timeoutId);
-          let width = video.videoWidth || 300;
-          let height = video.videoHeight || 300;
-          if (width > height) {
-            if (width > maxWidth) {
-              height *= maxWidth / width;
-              width = maxWidth;
-            }
-          } else {
-            if (height > maxHeight) {
-              width *= maxHeight / height;
-              height = maxHeight;
-            }
-          }
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(video, 0, 0, width, height);
-          
-          URL.revokeObjectURL(blobUrl);
-
-          canvas.toBlob((blob) => {
-            if (!blob) return resolve(null);
-            const thumbFile = new File([blob], "thumb_video.jpg", { type: "image/jpeg", lastModified: Date.now() });
-            resolve(thumbFile);
-          }, "image/jpeg", quality);
-        };
-
-        video.onerror = () => {
-          clearTimeout(timeoutId);
-          URL.revokeObjectURL(blobUrl);
-          resolve(null);
-        };
-      });
-    }
-
-    // ===== 🌍 i18n 辞書データ =====
-    const i18n = {
-      ja: {
-        photoAestheticMode: "写真映えモード",
-        scheduleViewMode: "予定表示モード",
-        addEventBtn: "予定を追加",
-        swipeHint: "左右スワイプで月移動",
-        weekdays: ["日", "月", "火", "水", "木", "金", "土"],
-        notificationsTitle: "お知らせ ＆ リマインダー",
-        newBadge: "新着",
-        welcomeNoteTitle: "✨ LogSnapへようこそ！",
-        todayLabel: "今日",
-        welcomeNoteDesc: "DOMキャッシュ＆イベント委譲による完全ノーラグ・超高速カレンダー稼働中。",
-        vlogStudioTitle: "まとめ動画の作成",
-        recapModeLabel: "対象期間モード",
-        modeWeek: "特定の一週間 (日曜〜土曜)",
-        modeMonth: "1ヶ月間 (Monthly)",
-        targetPeriodLabel: "対象週 / 月",
-        playMovieBtn: "選択した期間のまとめ動画を再生・作成",
-        movieHistoryTitle: "作成済みまとめ動画の履歴",
-        galleryTitle: "Gallery（複数メディア一覧）",
-        guestUser: "ゲストユーザー",
-        offlineMode: "Firebase Storage 超高速化モード",
-        settingsHeader: "アプリ設定 (Settings)",
-        languageSettingTitle: "言語設定 (Language)",
-        languageSettingDesc: "表示言語と対応する祝日を切り替えます",
-        timezoneSettingTitle: "タイムゾーン (Timezone)",
-        autoDetected: "自動検出",
-        dataManagement: "データ管理",
-        resetStorage: "データストレージ初期化",
-        resetBtn: "リセット",
-        navCalendar: "カレンダー",
-        navNotifications: "通知",
-        navLookbook: "LOOKBOOK",
-        navAccount: "アカウント",
-        modalNewEventTitle: "新しい予定を追加",
-        eventTitleLabel: "予定タイトル",
-        dateLabel: "日付",
-        timeLabel: "開始時間",
-        endTimeLabel: "終了時間",
-        locationLabel: "場所（スポット）",
-        saveBtn: "保存する",
-        addMediaModalTitle: "写真・動画を追加",
-        selectFileLabel: "📁 Firebase Cloud Storageへアップロード",
-        fileLoadingHint: "※超高速リサイズ・サムネイル自動生成に対応しています。",
-        confirmSaveBtn: "決定して保存する",
-        vlogModalTitle: "シネマティックまとめ動画",
-        restartMovieBtn: "最初から再生",
-        downloadMovieBtn: "動画をファイル保存",
-        noEvents: "この日の予定はありません",
-        addThisDayBtn: "この日に追加",
-        noMediaMessage: "選択した期間の写真・動画ログがありません。",
-        noMovieHistory: "まだ保存されたまとめ動画の履歴はありません。",
-        confirmReset: "すべての予定と保存データをリセットしますか？",
-        albumLabel: "アルバム",
-        noMediaBadge: "メディアなし",
-        noPhotosYet: "写真・動画はまだありません",
-        addBtnText: "追加",
-        todayEventsNotification: "本日の予定リマインダー"
-      },
-      en: {
-        photoAestheticMode: "Photo Mode",
-        scheduleViewMode: "Schedule Mode",
-        addEventBtn: "New Event",
-        swipeHint: "Swipe left/right to change month",
-        weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        notificationsTitle: "Notifications & Reminders",
-        newBadge: "New",
-        welcomeNoteTitle: "✨ Welcome to LogSnap!",
-        todayLabel: "Today",
-        welcomeNoteDesc: "Zero-lag ultra-fast calendar powered by DOM caching & event delegation.",
-        vlogStudioTitle: "Create Vlog Recap",
-        recapModeLabel: "Recap Range Mode",
-        modeWeek: "Specific Week (Sun - Sat)",
-        modeMonth: "Full Month (Monthly)",
-        targetPeriodLabel: "Target Week / Month",
-        playMovieBtn: "Play & Create Cinematic Vlog",
-        movieHistoryTitle: "Saved Vlog History",
-        galleryTitle: "Gallery (All Media)",
-        guestUser: "Guest User",
-        offlineMode: "Firebase Storage Fast Mode",
-        settingsHeader: "App Settings",
-        languageSettingTitle: "Language",
-        languageSettingDesc: "Switch display language & regional holidays",
-        timezoneSettingTitle: "Timezone",
-        autoDetected: "Auto-detected",
-        dataManagement: "Data Management",
-        resetStorage: "Reset Storage Data",
-        resetBtn: "Reset",
-        navCalendar: "Calendar",
-        navNotifications: "Notifications",
-        navLookbook: "LOOKBOOK",
-        navAccount: "Account",
-        modalNewEventTitle: "Add New Event",
-        eventTitleLabel: "Event Title",
-        dateLabel: "Date",
-        timeLabel: "Start Time",
-        endTimeLabel: "End Time",
-        locationLabel: "Location / Spot",
-        saveBtn: "Save Event",
-        addMediaModalTitle: "Add Photos & Videos",
-        selectFileLabel: "📁 Select Media Files",
-        fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
-        confirmSaveBtn: "Confirm & Save",
-        vlogModalTitle: "Cinematic Vlog Recap",
-        restartMovieBtn: "Replay",
-        downloadMovieBtn: "Save Video File",
-        noEvents: "No events scheduled for this day",
-        addThisDayBtn: "Add to this day",
-        noMediaMessage: "No media logs found for the selected period.",
-        noMovieHistory: "No saved vlog history yet.",
-        confirmReset: "Are you sure you want to reset all data?",
-        albumLabel: "Album",
-        noMediaBadge: "No Media",
-        noPhotosYet: "No photos/videos yet",
-        addBtnText: "Add",
-        todayEventsNotification: "Today's Schedule Reminder"
-      }
-    };
-
-    let currentLang = localStorage.getItem('logsnap_lang') || 'ja';
-
-    function t(key) {
-      return i18n[currentLang][key] || key;
-    }
-
-    function updateUIStrings() {
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        if (i18n[currentLang][key]) {
-          el.innerText = i18n[currentLang][key];
-        }
-      });
-      document.getElementById("language-select").value = currentLang;
-      updateWeekdayHeader();
-      renderNotifications();
-    }
-
-    function updateWeekdayHeader() {
-      const weekdays = i18n[currentLang].weekdays;
-      const headerEl = document.getElementById("weekday-header");
-      headerEl.innerHTML = `
-        <span class="text-rose-500">${weekdays[0]}</span>
-        <span>${weekdays[1]}</span>
-        <span>${weekdays[2]}</span>
-        <span>${weekdays[3]}</span>
-        <span>${weekdays[4]}</span>
-        <span>${weekdays[5]}</span>
-        <span class="text-sky-500">${weekdays[6]}</span>
-      `;
-    }
-
-    function changeLanguage(lang) {
-      currentLang = lang;
-      localStorage.setItem('logsnap_lang', lang);
-      monthCellCache.clear();
-      updateUIStrings();
-      renderAllPanels();
-      renderSchedules();
-      updateRecapOptions();
-    }
-
-    function getEnglishHolidays(year) {
-      return {
-        [`${year}-01-01`]: "New Year's Day",
-        [`${year}-07-04`]: "Independence Day",
-        [`${year}-10-31`]: "Halloween",
-        [`${year}-11-26`]: "Thanksgiving",
-        [`${year}-12-25`]: "Christmas",
-        [`${year}-12-31`]: "New Year's Eve"
-      };
-    }
-
-    function getJapaneseHolidays(year) {
-      const holidays = {
-        2025: {
-          "2025-01-01": "元日", "2025-01-13": "成人の日", "2025-02-11": "建国記念の日", "2025-02-23": "天皇誕生日", "2025-02-24": "振替休日",
-          "2025-03-20": "春分の日", "2025-04-29": "昭和の日", "2025-05-03": "憲法記念日", "2025-05-04": "みどりの日", "2025-05-05": "こどもの日",
-          "2025-05-06": "振替休日", "2025-07-21": "海の日", "2025-08-11": "山の日", "2025-09-15": "敬老の日", "2025-09-23": "秋分の日",
-          "2025-10-13": "スポーツの日", "2025-11-03": "文化の日", "2025-11-23": "勤労感謝の日", "2025-11-24": "振替休日"
-        },
-        2026: {
-          "2026-01-01": "元日", "2026-01-12": "成人の日", "2026-02-11": "建国記念の日", "2026-02-23": "天皇誕生日",
-          "2026-03-20": "春分の日", "2026-04-29": "昭和の日", "2026-05-03": "憲法記念日", "2026-05-04": "みどりの日", "2026-05-05": "こどもの日",
-          "2026-05-06": "振替休日", "2026-07-20": "海の日", "2026-08-11": "山の日", "2026-09-21": "敬老の日", "2026-09-22": "国民の休日",
-          "2026-09-23": "秋分の日", "2026-10-12": "スポーツの日", "2026-11-03": "文化の日", "2026-11-23": "勤労感謝の日"
-        },
-        2027: {
-          "2027-01-01": "元日", "2027-01-11": "成人の日", "2027-02-11": "建国記念の日", "2027-02-23": "天皇誕生日",
-          "2027-03-21": "春分の日", "2027-03-22": "振替休日", "2027-04-29": "昭和の日", "2027-05-03": "憲法記念日", "2027-05-04": "みどりの日",
-          "2027-05-05": "こどもの日", "2027-07-19": "海の日", "2027-08-11": "山の日", "2027-09-20": "敬老の日", "2027-09-23": "秋分の日",
-          "2027-10-11": "スポーツの日", "2027-11-03": "文化の日", "2027-11-23": "勤労感謝の日"
-        }
-      };
-      return holidays[year] || {};
-    }
-
-    function getHolidayName(dateStr, year) {
-      if (currentLang === 'en') {
-        const eng = getEnglishHolidays(year);
-        return eng[dateStr] || null;
-      } else {
-        const jpn = getJapaneseHolidays(year);
-        return jpn[dateStr] || null;
-      }
-    }
-
-    let currentYear = 2026;
-    let currentMonth = 12;
-    let selectedDate = "2026-12-01";
-    let viewMode = 'photo';
-
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
-      { 
-        id: 1, 
-        date: "2026-12-01", 
-        time: "10:00", 
-        endTime: "12:00",
-        title: "カフェで作業", 
-        location: "お気に入りのカフェ", 
-        mediaList: [] 
-      },
-      { 
-        id: 2, 
-        date: "2026-12-03", 
-        time: "14:00", 
-        endTime: "16:00",
-        title: "海沿いをドライブ", 
-        location: "海岸通り", 
-        mediaList: [] 
-      }
-    ];
-
-    let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
-
-    function saveSchedules() {
-      monthCellCache.clear();
-      try {
-        localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules));
-      } catch (e) {
-        console.error("Storage quota exceeded", e);
-      }
-    }
-
-    function saveMovieHistory() {
-      localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory));
-    }
-
-    let currentCheckinId = null;
-    let tempMediaList = []; 
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      lucide.createIcons();
-      document.getElementById("select-year").value = currentYear;
-      document.getElementById("select-month").value = currentMonth;
-      
-      try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.getElementById("current-timezone-display").innerText = `${tz} (Auto)`;
-      } catch (e) {
-        document.getElementById("current-timezone-display").innerText = "Asia/Tokyo (Auto)";
-      }
-
-      updateUIStrings();
-      await renderAllPanels();
-      updateTrackPosition(false);
-      await renderSchedules();
-      renderNotifications();
-      updateRecapOptions();
-      setupCarouselSwipe();
-      setupCalendarClicks();
-    });
-
-    function renderNotifications() {
-      const container = document.getElementById("notifications-list");
-      if (!container) return;
-
-      const todayStr = formatDateString(new Date());
-      const todaySchedules = schedules.filter(s => s.date === todayStr);
-
-      let html = `
-        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
-            <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
-          </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">DOMキャッシュ＆イベント委譲による完全ノーラグ・超高速カレンダー稼働中。</p>
-        </div>
-      `;
-
-      if (todaySchedules.length > 0) {
-        html += `<div class="pt-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
-        todaySchedules.forEach(s => {
-          const timeRange = s.endTime ? `${s.time} - ${s.endTime}` : s.time;
-          html += `
-            <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-1 mb-2">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-900">${s.title}</span>
-                <span class="text-[10px] bg-indigo-50 text-indigo-600 font-mono px-2 py-0.5 rounded-full font-semibold">${timeRange}</span>
-              </div>
-              <p class="text-[11px] text-slate-500 flex items-center gap-1">
-                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${s.location || 'Spot'}
-              </p>
-            </div>
-          `;
-        });
-        html += `</div>`;
-      }
-
-      container.innerHTML = html;
-      lucide.createIcons();
-    }
-
-    function toggleViewMode() {
-      const btnText = document.getElementById("mode-toggle-text");
-      if (viewMode === 'photo') {
-        viewMode = 'schedule';
-        btnText.innerText = t('scheduleViewMode');
-      } else {
-        viewMode = 'photo';
-        btnText.innerText = t('photoAestheticMode');
-      }
-      monthCellCache.clear();
-      renderAllPanels();
-    }
-
-    function setupCarouselSwipe() {
-      const viewport = document.getElementById("calendar-viewport");
-      const track = document.getElementById("calendar-track");
-      let startX = 0;
-      let currentX = 0;
-      let isDragging = false;
-      let currentTranslate = -100;
-
-      viewport.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
-        isDragging = true;
-        track.style.transition = 'none';
-      }, { passive: true });
-
-      viewport.addEventListener("touchmove", (e) => {
-        if (!isDragging) return;
-        currentX = e.touches[0].clientX;
-        let diff = currentX - startX;
-        let pxWidth = viewport.offsetWidth;
-        let movePercent = (diff / pxWidth) * 100;
-        track.style.transform = `translateX(${currentTranslate + movePercent}%)`;
-      }, { passive: true });
-
-      viewport.addEventListener("touchend", (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        let diff = (e.changedTouches[0].clientX) - startX;
-        let pxWidth = viewport.offsetWidth;
-        
-        track.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-
-        if (diff < -pxWidth * 0.25) {
-          track.style.transform = 'translateX(-200%)';
-          setTimeout(() => shiftMonth(1), 300);
-        } else if (diff > pxWidth * 0.25) {
-          track.style.transform = 'translateX(0%)';
-          setTimeout(() => shiftMonth(-1), 300);
-        } else {
-          track.style.transform = `translateX(${currentTranslate}%)`;
-        }
-      }, { passive: true });
-
-      viewport.addEventListener("mousedown", (e) => {
-        startX = e.clientX;
-        isDragging = true;
-        track.style.transition = 'none';
-      });
-      window.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        currentX = e.clientX;
-        let diff = currentX - startX;
-        let pxWidth = viewport.offsetWidth;
-        let movePercent = (diff / pxWidth) * 100;
-        track.style.transform = `translateX(${currentTranslate + movePercent}%)`;
-      });
-      window.addEventListener("mouseup", (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        let diff = e.clientX - startX;
-        let pxWidth = viewport.offsetWidth;
-
-        track.style.transform = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-
-        if (diff < -pxWidth * 0.25) {
-          track.style.transform = 'translateX(-200%)';
-          setTimeout(() => shiftMonth(1), 300);
-        } else if (diff > pxWidth * 0.25) {
-          track.style.transform = 'translateX(0%)';
-          setTimeout(() => shiftMonth(-1), 300);
-        } else {
-          track.style.transform = `translateX(${currentTranslate}%)`;
-        }
-      });
-    }
-
-    function updateTrackPosition(animated = true) {
-      const track = document.getElementById("calendar-track");
-      if (!animated) track.style.transition = 'none';
-      else track.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-      track.style.transform = 'translateX(-100%)';
-    }
-
-    async function shiftMonth(offset) {
-      currentMonth += offset;
-      if (currentMonth > 12) {
-        currentMonth = 1;
-        currentYear++;
-      } else if (currentMonth < 1) {
-        currentMonth = 12;
-        currentYear--;
-      }
-      document.getElementById("select-year").value = currentYear;
-      document.getElementById("select-month").value = currentMonth;
-      
-      await renderAllPanels();
-      updateTrackPosition(false);
-      updateRecapOptions();
-    }
-
-    async function changeYearMonthFromSelect() {
-      currentYear = parseInt(document.getElementById("select-year").value, 10);
-      currentMonth = parseInt(document.getElementById("select-month").value, 10);
-      await renderAllPanels();
-      updateTrackPosition(false);
-      updateRecapOptions();
-    }
-
-    function getDaysInMonth(year, month) {
-      return new Date(year, month, 0).getDate();
-    }
-
-    async function renderAllPanels() {
-      let pY = currentMonth === 1 ? currentYear - 1 : currentYear;
-      let pM = currentMonth === 1 ? 12 : currentMonth - 1;
-      await fillCalendarGrid(document.getElementById("panel-prev"), pY, pM, false);
-
-      await fillCalendarGrid(document.getElementById("panel-curr"), currentYear, currentMonth, true);
-
-      let nY = currentMonth === 12 ? currentYear + 1 : currentYear;
-      let nM = currentMonth === 12 ? 1 : currentMonth + 1;
-      await fillCalendarGrid(document.getElementById("panel-next"), nY, nM, false);
-    }
-
-    function getDateColorClass(year, month, day) {
-      const mm = String(month).padStart(2, '0');
-      const dd = String(day).padStart(2, '0');
-      const dateStr = `${year}-${mm}-${dd}`;
-      const dayOfWeek = new Date(year, month - 1, day).getDay();
-      const holidayName = getHolidayName(dateStr, year);
-
-      if (dayOfWeek === 0 || holidayName) {
-        return "text-rose-500 font-bold";
-      }
-      if (dayOfWeek === 6) {
-        return "text-sky-600 font-bold";
-      }
-      return "text-slate-800 font-bold";
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
@@ -1667,19 +1047,147 @@
         item.mediaList.push(...tempMediaList);
       }
       saveSchedules();
-      closeAddModal(); // closeCheckinModal
       closeCheckinModal();
       await renderAllPanels();
       await renderSchedules();
       updateRecapOptions();
     }
 
-    const vlogPlaylist = [
-      { name: "Avatar's Love", url: "7_BPM69.mp3" },
-      { name: "異国のグルメ", url: "082_BPM97.mp3" },
-      { name: "Sunday Chill", url: "sunday.mp3" },
-      { name: "Velvet Mood", url: "velvet.mp3" }
-    ];
+    // 🚀 画像リサイズ・圧縮関数
+    async function resizeImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.8) {
+      return new Promise((resolve) => {
+        if (!file.type.startsWith("image/")) return resolve(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (!blob) return resolve(file);
+              const resizedFile = new File([blob], file.name, { type: "image/jpeg", lastModified: Date.now() });
+              resolve(resizedFile);
+            }, "image/jpeg", quality);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 🚀 サムネイル生成
+    async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (!blob) return resolve(file);
+              const thumbFile = new File([blob], "thumb_" + file.name, { type: "image/jpeg", lastModified: Date.now() });
+              resolve(thumbFile);
+            }, "image/jpeg", quality);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 🚀 iOS対応・堅牢な動画サムネイル生成（preload='auto' & 統合 finish 処理）
+    async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        const blobUrl = URL.createObjectURL(file);
+        let done = false;
+        let seeking = false;
+        let timeoutId = null;
+
+        const finish = (result) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timeoutId);
+          URL.revokeObjectURL(blobUrl);
+          video.removeAttribute('src');
+          video.load();
+          resolve(result);
+        };
+
+        const capture = () => {
+          try {
+            if (!video.videoWidth || !video.videoHeight) return finish(null);
+            const scale = Math.min(1, maxWidth / video.videoWidth, maxHeight / video.videoHeight);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(video.videoWidth * scale);
+            canvas.height = Math.round(video.videoHeight * scale);
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              finish(blob ? new File([blob], 'thumb_video.jpg', { type: 'image/jpeg', lastModified: Date.now() }) : null);
+            }, 'image/jpeg', quality);
+          } catch (e) {
+            finish(null);
+          }
+        };
+
+        const seek = () => {
+          if (seeking || done) return;
+          seeking = true;
+          const d = isFinite(video.duration) ? video.duration : 0;
+          try {
+            video.currentTime = Math.min(0.5, d / 2 || 0.1);
+          } catch (e) {
+            finish(null);
+          }
+        };
+
+        timeoutId = setTimeout(() => finish(null), 15000);
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.preload = 'auto';
+        video.onloadedmetadata = seek;
+        video.onloadeddata = seek;
+        video.onseeked = capture;
+        video.onerror = () => finish(null);
+        video.src = blobUrl;
+        video.load();
+      });
+    }
 
     function startAutoBgm() {
       const player = document.getElementById("bgm-player");
@@ -1694,11 +1202,6 @@
       player.pause();
       player.currentTime = 0;
     }
-
-    let activeMovieMediaItems = [];
-    let currentSlideIdx = 0;
-    let activeSlideTimeout = null;
-    let currentMovieTitle = "";
 
     function playHighlightMovie() {
       activeMovieMediaItems = getAllFilteredMediaItems();
@@ -1851,20 +1354,278 @@
       }
     }
 
-    // 🚀 ⑤ 既存ファイルのキャッシュ設定を付与する関数（コンソールから手動実行可能）
-    async function applyCacheControlToExistingFiles() {
-      for (const s of schedules) {
-        for (const m of (s.mediaList || [])) {
-          for (const u of [m.url, m.thumbnailUrl]) {
-            if (!u) continue;
-            try {
-              await firebase.storage().refFromURL(u).updateMetadata({ cacheControl: 'public,max-age=31536000' });
-            } catch (e) { console.warn(u, e); }
-          }
-        }
+    // 🌍 i18n 辞書データ
+    const i18n = {
+      ja: {
+        photoAestheticMode: "写真映えモード",
+        scheduleViewMode: "予定表示モード",
+        addEventBtn: "予定を追加",
+        swipeHint: "左右スワイプで月移動",
+        weekdays: ["日", "月", "火", "水", "木", "金", "土"],
+        notificationsTitle: "お知らせ ＆ リマインダー",
+        newBadge: "新着",
+        welcomeNoteTitle: "✨ LogSnapへようこそ！",
+        todayLabel: "今日",
+        welcomeNoteDesc: "iOS対応・超高速サムネイル生成エンジン搭載済み。",
+        vlogStudioTitle: "まとめ動画の作成",
+        recapModeLabel: "対象期間モード",
+        modeWeek: "特定の一週間 (日曜〜土曜)",
+        modeMonth: "1ヶ月間 (Monthly)",
+        targetPeriodLabel: "対象週 / 月",
+        playMovieBtn: "選択した期間のまとめ動画を再生・作成",
+        movieHistoryTitle: "作成済みまとめ動画の履歴",
+        galleryTitle: "Gallery（複数メディア一覧）",
+        guestUser: "ゲストユーザー",
+        offlineMode: "Firebase Storage 超高速化モード",
+        settingsHeader: "アプリ設定 (Settings)",
+        languageSettingTitle: "言語設定 (Language)",
+        languageSettingDesc: "表示言語と対応する祝日を切り替えます",
+        timezoneSettingTitle: "タイムゾーン (Timezone)",
+        autoDetected: "自動検出",
+        dataManagement: "データ管理",
+        resetStorage: "データストレージ初期化",
+        resetBtn: "リセット",
+        navCalendar: "カレンダー",
+        navNotifications: "通知",
+        navLookbook: "LOOKBOOK",
+        navAccount: "アカウント",
+        modalNewEventTitle: "新しい予定を追加",
+        eventTitleLabel: "予定タイトル",
+        dateLabel: "日付",
+        timeLabel: "開始時間",
+        endTimeLabel: "終了時間",
+        locationLabel: "場所（スポット）",
+        saveBtn: "保存する",
+        addMediaModalTitle: "写真・動画を追加",
+        selectFileLabel: "📁 Firebase Cloud Storageへアップロード",
+        fileLoadingHint: "※iOS対応・超高速リサイズ＆サムネイル自動生成に対応。",
+        confirmSaveBtn: "決定して保存する",
+        vlogModalTitle: "シネマティックまとめ動画",
+        restartMovieBtn: "最初から再生",
+        downloadMovieBtn: "動画をファイル保存",
+        noEvents: "この日の予定はありません",
+        addThisDayBtn: "この日に追加",
+        noMediaMessage: "選択した期間の写真・動画ログがありません。",
+        noMovieHistory: "まだ保存されたまとめ動画の履歴はありません。",
+        confirmReset: "すべての予定と保存データをリセットしますか？",
+        albumLabel: "アルバム",
+        noMediaBadge: "メディアなし",
+        noPhotosYet: "写真・動画はまだありません",
+        addBtnText: "追加",
+        todayEventsNotification: "本日の予定リマインダー"
+      },
+      en: {
+        photoAestheticMode: "Photo Mode",
+        scheduleViewMode: "Schedule Mode",
+        addEventBtn: "New Event",
+        swipeHint: "Swipe left/right to change month",
+        weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        notificationsTitle: "Notifications & Reminders",
+        newBadge: "New",
+        welcomeNoteTitle: "✨ Welcome to LogSnap!",
+        todayLabel: "Today",
+        welcomeNoteDesc: "iOS-compatible ultra-fast thumbnail generation engine active.",
+        vlogStudioTitle: "Create Vlog Recap",
+        recapModeLabel: "Recap Range Mode",
+        modeWeek: "Specific Week (Sun - Sat)",
+        modeMonth: "Full Month (Monthly)",
+        targetPeriodLabel: "Target Week / Month",
+        playMovieBtn: "Play & Create Cinematic Vlog",
+        movieHistoryTitle: "Saved Vlog History",
+        galleryTitle: "Gallery (All Media)",
+        guestUser: "Guest User",
+        offlineMode: "Firebase Storage Fast Mode",
+        settingsHeader: "App Settings",
+        languageSettingTitle: "Language",
+        languageSettingDesc: "Switch display language & regional holidays",
+        timezoneSettingTitle: "Timezone",
+        autoDetected: "Auto-detected",
+        dataManagement: "Data Management",
+        resetStorage: "Reset Storage Data",
+        resetBtn: "Reset",
+        navCalendar: "Calendar",
+        navNotifications: "Notifications",
+        navLookbook: "LOOKBOOK",
+        navAccount: "Account",
+        modalNewEventTitle: "Add New Event",
+        eventTitleLabel: "Event Title",
+        dateLabel: "Date",
+        timeLabel: "Start Time",
+        endTimeLabel: "End Time",
+        locationLabel: "Location / Spot",
+        saveBtn: "Save Event",
+        addMediaModalTitle: "Add Photos & Videos",
+        selectFileLabel: "📁 Select Media Files",
+        fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
+        confirmSaveBtn: "Confirm & Save",
+        vlogModalTitle: "Cinematic Vlog Recap",
+        restartMovieBtn: "Replay",
+        downloadMovieBtn: "Save Video File",
+        noEvents: "No events scheduled for this day",
+        addThisDayBtn: "Add to this day",
+        noMediaMessage: "No media logs found for the selected period.",
+        noMovieHistory: "No saved vlog history yet.",
+        confirmReset: "Are you sure you want to reset all data?",
+        albumLabel: "Album",
+        noMediaBadge: "No Media",
+        noPhotosYet: "No photos/videos yet",
+        addBtnText: "Add",
+        todayEventsNotification: "Today's Schedule Reminder"
       }
-      console.log("Cache-Control metadata update done.");
+    };
+
+    let currentLang = localStorage.getItem('logsnap_lang') || 'ja';
+
+    function t(key) {
+      return i18n[currentLang][key] || key;
     }
+
+    function updateUIStrings() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[currentLang][key]) {
+          el.innerText = i18n[currentLang][key];
+        }
+      });
+      document.getElementById("language-select").value = currentLang;
+      updateWeekdayHeader();
+      renderNotifications();
+    }
+
+    function updateWeekdayHeader() {
+      const weekdays = i18n[currentLang].weekdays;
+      const headerEl = document.getElementById("weekday-header");
+      headerEl.innerHTML = `
+        <span class="text-rose-500">${weekdays[0]}</span>
+        <span>${weekdays[1]}</span>
+        <span>${weekdays[2]}</span>
+        <span>${weekdays[3]}</span>
+        <span>${weekdays[4]}</span>
+        <span>${weekdays[5]}</span>
+        <span class="text-sky-500">${weekdays[6]}</span>
+      `;
+    }
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('logsnap_lang', lang);
+      monthCellCache.clear();
+      updateUIStrings();
+      renderAllPanels();
+      renderSchedules();
+      updateRecapOptions();
+    }
+
+    function getEnglishHolidays(year) {
+      return {
+        [`${year}-01-01`]: "New Year's Day",
+        [`${year}-07-04`]: "Independence Day",
+        [`${year}-10-31`]: "Halloween",
+        [`${year}-11-26`]: "Thanksgiving",
+        [`${year}-12-25`]: "Christmas",
+        [`${year}-12-31`]: "New Year's Eve"
+      };
+    }
+
+    function getJapaneseHolidays(year) {
+      const holidays = {
+        2025: {
+          "2025-01-01": "元日", "2025-01-13": "成人の日", "2025-02-11": "建国記念の日", "2025-02-23": "天皇誕生日", "2025-02-24": "振替休日",
+          "2025-03-20": "春分の日", "2025-04-29": "昭和の日", "2025-05-03": "憲法記念日", "2025-05-04": "みどりの日", "2025-05-05": "こどもの日",
+          "2025-05-06": "振替休日", "2025-07-21": "海の日", "2025-08-11": "山の日", "2025-09-15": "敬老の日", "2025-09-23": "秋分の日",
+          "2025-10-13": "スポーツの日", "2025-11-03": "文化の日", "2025-11-23": "勤労感謝の日", "2025-11-24": "振替休日"
+        },
+        2026: {
+          "2026-01-01": "元日", "2026-01-12": "成人の日", "2026-02-11": "建国記念の日", "2026-02-23": "天皇誕生日",
+          "2026-03-20": "春分の日", "2026-04-29": "昭和の日", "2026-05-03": "憲法記念日", "2026-05-04": "みどりの日", "2026-05-05": "こどもの日",
+          "2026-05-06": "振替休日", "2026-07-20": "海の日", "2026-08-11": "山の日", "2026-09-21": "敬老の日", "2026-09-22": "国民の休日",
+          "2026-09-23": "秋分の日", "2026-10-12": "スポーツの日", "2026-11-03": "文化の日", "2026-11-23": "勤労感謝の日"
+        },
+        2027: {
+          "2027-01-01": "元日", "2027-01-11": "成人の日", "2027-02-11": "建国記念の日", "2027-02-23": "天皇誕生日",
+          "2027-03-21": "春分の日", "2027-03-22": "振替休日", "2027-04-29": "昭和の日", "2027-05-03": "憲法記念日", "2027-05-04": "みどりの日",
+          "2027-05-05": "こどもの日", "2027-07-19": "海の日", "2027-08-11": "山の日", "2027-09-20": "敬老の日", "2027-09-23": "秋分の日",
+          "2027-10-11": "スポーツの日", "2027-11-03": "文化の日", "2027-11-23": "勤労感謝の日"
+        }
+      };
+      return holidays[year] || {};
+    }
+
+    function getHolidayName(dateStr, year) {
+      if (currentLang === 'en') {
+        const eng = getEnglishHolidays(year);
+        return eng[dateStr] || null;
+      } else {
+        const jpn = getJapaneseHolidays(year);
+        return jpn[dateStr] || null;
+      }
+    }
+
+    let currentYear = 2026;
+    let currentMonth = 12;
+    let selectedDate = "2026-12-01";
+    let viewMode = 'photo';
+
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
+      { 
+        id: 1, 
+        date: "2026-12-01", 
+        time: "10:00", 
+        endTime: "12:00",
+        title: "カフェで作業", 
+        location: "お気に入りのカフェ", 
+        mediaList: [] 
+      },
+      { 
+        id: 2, 
+        date: "2026-12-03", 
+        time: "14:00", 
+        endTime: "16:00",
+        title: "海沿いをドライブ", 
+        location: "海岸通り", 
+        mediaList: [] 
+      }
+    ];
+
+    let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
+
+    function saveSchedules() {
+      monthCellCache.clear();
+      try {
+        localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules));
+      } catch (e) {
+        console.error("Storage quota exceeded", e);
+      }
+    }
+
+    function saveMovieHistory() {
+      localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory));
+    }
+
+    let currentCheckinId = null;
+    let tempMediaList = []; 
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      lucide.createIcons();
+      document.getElementById("select-year").value = currentYear;
+      document.getElementById("select-month").value = currentMonth;
+      
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById("current-timezone-display").innerText = `${tz} (Auto)`;
+      } catch (e) {
+        document.getElementById("current-timezone-display").innerText = "Asia/Tokyo (Auto)";
+      }
+
+      updateUIStrings();
+      await renderAllPanels();
+      updateTrackPosition(false);
+      await renderSchedules();
+      renderNotifications();
+      updateRecapOptions();
+      setupCarouselSwipe();
+      setupCalendarClicks();
+    });
   </script>
 </body>
 </html>
