@@ -27,7 +27,6 @@
   
   <!-- 🔥 Firebase SDK の読み込み (compat版) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
   <!-- 🚀 Firebase Auth SDK の追加 -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
@@ -253,7 +252,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">Firebase Storage 超高速化モード</p>
+            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">端末内保存モード</p>
           </div>
         </div>
 
@@ -284,7 +283,7 @@
           <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400" data-i18n="dataManagement">データ管理</h3>
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
             <span class="text-xs font-medium text-slate-700" data-i18n="resetStorage">データストレージ初期化</span>
-            <button onclick="if(confirm(t('confirmReset'))){ localStorage.clear(); location.reload(); }" class="text-xs text-rose-600 hover:underline font-semibold" data-i18n="resetBtn">
+            <button onclick="if(confirm(t('confirmReset'))){ resetAllData(); }" class="text-xs text-rose-600 hover:underline font-semibold" data-i18n="resetBtn">
               リセット
             </button>
           </div>
@@ -388,7 +387,7 @@
       </div>
 
       <div class="space-y-1 pt-1 border-t border-slate-100">
-        <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 Firebase Cloud Storageへアップロード</label>
+        <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 写真・動画を選ぶ</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
         <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※iOS完全対応の超高速サムネイル自動生成エンジン稼働中。</p>
       </div>
@@ -406,7 +405,7 @@
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Cloud Storage Preview</span>
+          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Preview</span>
           <h3 id="viewer-title" class="text-base font-bold text-slate-900 mt-0.5">タイトル</h3>
         </div>
         <button onclick="closeMediaViewer()" class="text-slate-400 hover:text-slate-600">
@@ -434,18 +433,14 @@
         </button>
       </div>
 
-      <div id="movie-screen" class="relative aspect-[16/9] w-full bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
-        <img id="movie-slide-img" src="" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 hidden">
-        <video id="movie-slide-video" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 hidden" playsinline muted></video>
-        
-        <div class="absolute bottom-3 right-4 z-20">
-          <span id="movie-timestamp" class="vcr-timestamp text-lg font-bold">9:45 am</span>
-        </div>
-
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 pointer-events-none z-10">
-          <p id="movie-slide-title" class="text-white font-bold text-sm">タイトル</p>
-          <p id="movie-slide-meta" class="text-slate-300 text-xs font-mono">場所・日付</p>
-        </div>
+      <canvas id="movie-canvas" width="720" height="1280" class="mx-auto block rounded-2xl bg-black" style="height:52vh;max-width:100%"></canvas>
+      <div id="rec-status" class="hidden space-y-1">
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="rec-bar" class="h-full bg-pink-500" style="width:0%"></div></div>
+        <p id="rec-text" class="text-[11px] text-slate-500 text-center"></p>
+      </div>
+      <div class="flex gap-2 items-center">
+        <select id="bgm-select" onchange="restartMovie()" class="flex-1 min-w-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
+        <label class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg cursor-pointer whitespace-nowrap">自分の曲<input type="file" id="bgm-file" accept="audio/*" class="hidden" onchange="pickCustomBgm(event)"></label>
       </div>
 
       <audio id="bgm-player" loop></audio>
@@ -475,11 +470,8 @@
 
     // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
-    const storageRef = firebase.storage().ref();
-    const metadataOptions = { cacheControl: 'public,max-age=31536000' };
 
     // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
-    const downloadUrlCache = new Map();
     const monthCellCache = new Map();
     const SELECTED_CLASSES = ['bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10'];
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
@@ -488,10 +480,12 @@
 
     // 🎬 Vlog 関連の変数宣言
     const vlogPlaylist = [
-      { name: "Avatar's Love", url: "7_BPM69.mp3" },
-      { name: "異国のグルメ", url: "082_BPM97.mp3" },
-      { name: "Sunday Chill", url: "sunday.mp3" },
-      { name: "Velvet Mood", url: "velvet.mp3" }
+      { name: "Avatar's Love", url: "7_BPM69.mp3", bpm: 69 },
+      { name: "異国のグルメ", url: "082_BPM97.mp3", bpm: 97 },
+      { name: "Sunday Chill", url: "sunday.mp3", bpm: 90 },
+      { name: "Velvet Mood", url: "velvet.mp3", bpm: 90 },
+      // 曲を増やすときはここに足す（bpm は曲のテンポ。切り替えがビートに合う）
+      // { name: "曲名", url: "ファイル名.mp3", bpm: 100 },
     ];
 
     let activeMovieMediaItems = [];
@@ -499,15 +493,223 @@
     let activeSlideTimeout = null;
     let currentMovieTitle = "";
 
-    async function getCachedDownloadURL(fileRef) {
-      const path = fileRef.fullPath;
-      if (downloadUrlCache.has(path)) {
-        return downloadUrlCache.get(path);
-      }
-      const url = await fileRef.getDownloadURL();
-      downloadUrlCache.set(path, url);
-      return url;
+    // ============================================================
+// LogSnap 端末内メディア保存（IndexedDB版）
+// index.html の script 内に貼り付けて使う。
+// 置き換え対象：Firebase Storage関連（storageRef / getCachedDownloadURL /
+// downloadUrlCache / handleFileSelect / saveSchedules / saveMovieHistory /
+// deleteSchedule / deleteMediaFromSchedule）
+// ============================================================
+
+// ---------- 1) IndexedDB の土台 ----------
+const MEDIA_DB_NAME = 'logsnap-media';
+let mediaDbPromise = null;
+
+function openMediaDb() {
+  if (!mediaDbPromise) {
+    mediaDbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(MEDIA_DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('media', { keyPath: 'id' });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  return mediaDbPromise;
+}
+
+async function mediaPut(record) {
+  const db = await openMediaDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('media', 'readwrite');
+    tx.objectStore('media').put(record);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error); // 容量不足(QuotaExceededError)もここに来る
+  });
+}
+
+async function mediaGet(id) {
+  const db = await openMediaDb();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction('media', 'readonly').objectStore('media').get(id);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function mediaDelete(id) {
+  const db = await openMediaDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('media', 'readwrite');
+    tx.objectStore('media').delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ---------- 2) Blob → 表示用URL（既存コードの m.url / m.thumbnailUrl をそのまま使える） ----------
+const objectUrls = new Map(); // id -> { url, thumbnailUrl }
+
+// 成功したら true。IndexedDBに実体が無ければ false
+async function attachMediaUrls(m) {
+  let cached = objectUrls.get(m.id);
+  if (!cached) {
+    const rec = await mediaGet(m.id);
+    if (!rec) return false;
+    cached = {
+      url: URL.createObjectURL(rec.blob),
+      thumbnailUrl: rec.thumbBlob ? URL.createObjectURL(rec.thumbBlob) : null
+    };
+    objectUrls.set(m.id, cached);
+  }
+  m.url = cached.url;
+  m.thumbnailUrl = cached.thumbnailUrl;
+  return true;
+}
+
+async function removeMedia(id) {
+  const cached = objectUrls.get(id);
+  if (cached) {
+    URL.revokeObjectURL(cached.url);
+    if (cached.thumbnailUrl) URL.revokeObjectURL(cached.thumbnailUrl);
+    objectUrls.delete(id);
+  }
+  await mediaDelete(id);
+}
+
+// 起動時に全メディアへURLを付け直す。
+// 以前Firebaseに保存した古いデータ（http URLを持つもの）は、そのまま残す。
+async function hydrateMediaList(list) {
+  const kept = [];
+  for (const m of (list || [])) {
+    const ok = await attachMediaUrls(m);
+    const legacy = typeof m.url === 'string' && m.url.startsWith('http');
+    if (ok || legacy) kept.push(m);
+  }
+  return kept;
+}
+
+async function hydrateAllMedia() {
+  for (const s of schedules) {
+    s.mediaList = await hydrateMediaList(s.mediaList);
+  }
+  for (const h of movieHistory) {
+    h.mediaItems = await hydrateMediaList(h.mediaItems);
+  }
+}
+
+// ---------- 3) 保存時：blob: のURLは localStorage に入れない ----------
+const stripBlobUrls = (key, value) =>
+  (key === 'url' || key === 'thumbnailUrl') &&
+  typeof value === 'string' && value.startsWith('blob:')
+    ? undefined
+    : value;
+
+function saveSchedules() {
+  monthCellCache.clear();
+  try {
+    localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
+  } catch (e) {
+    console.error('Storage quota exceeded', e);
+  }
+}
+
+function saveMovieHistory() {
+  localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
+}
+
+// ---------- 4) 追加時：リサイズ＋サムネイルを作って端末内に保存 ----------
+async function handleFileSelect(event) {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
+  const confirmBtn = document.getElementById('confirm-checkin-btn');
+  confirmBtn.innerText = '⏳ Saving...';
+  confirmBtn.disabled = true;
+  tempMediaList = [];
+
+  try {
+    for (const file of files) {
+      const isVideo = file.type.startsWith('video') || /\.(mp4|mov|webm|m4v)$/i.test(file.name);
+      const mediaId = 'local_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+      const optimized = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
+      const thumb = isVideo
+        ? await createVideoThumbnail(file, 300, 300, 0.7)   // 真っ黒な場合は null
+        : await createImageThumbnail(file, 300, 300, 0.7);
+
+      await mediaPut({
+        id: mediaId,
+        type: isVideo ? 'video' : 'image',
+        mime: optimized.type,
+        blob: optimized,
+        thumbBlob: thumb || null
+      });
+
+      const m = { id: mediaId, type: isVideo ? 'video' : 'image' };
+      await attachMediaUrls(m);
+      tempMediaList.push(m);
     }
+  } catch (err) {
+    console.error('Save error:', err);
+    alert('保存に失敗しました。端末の空き容量を確認してください。');
+  } finally {
+    confirmBtn.innerText = t('confirmSaveBtn');
+    confirmBtn.disabled = false;
+  }
+}
+
+// ---------- 5) 削除時：端末内の実体も消す ----------
+async function deleteMediaFromSchedule(scheduleId, mediaId) {
+  const item = schedules.find(s => s.id === scheduleId);
+  if (item && item.mediaList) {
+    item.mediaList = item.mediaList.filter(m => m.id !== mediaId);
+    await removeMedia(mediaId);
+    saveSchedules();
+    await renderAllPanels();
+    await renderSchedules();
+  }
+}
+
+async function deleteSchedule(id) {
+  if (!confirm(t('confirmReset'))) return;
+  const target = schedules.find(s => s.id === id);
+  for (const m of (target?.mediaList || [])) {
+    await removeMedia(m.id);
+  }
+  schedules = schedules.filter(s => s.id !== id);
+  saveSchedules();
+  await renderAllPanels();
+  await renderSchedules();
+  renderNotifications();
+  updateRecapOptions();
+}
+
+// ---------- 6) 他に必要な修正（コメント） ----------
+// (a) DOMContentLoaded の中、最初の renderAllPanels() の「前」に追加：
+//       navigator.storage?.persist?.();   // ブラウザによる自動削除を避ける要求
+//       await hydrateAllMedia();
+//
+// (b) 「データストレージ初期化」ボタンは、下の resetAllData() を呼ぶ形に変更：
+//       onclick="if(confirm(t('confirmReset'))){ resetAllData(); }"
+//     （localStorage.clear() だけだと、端末内の写真・動画が残る）
+async function resetAllData() {
+  try { (await openMediaDb()).close(); } catch (e) {}
+  await new Promise((res) => {
+    const r = indexedDB.deleteDatabase(MEDIA_DB_NAME);
+    r.onsuccess = r.onerror = r.onblocked = () => res();
+  });
+  localStorage.clear();
+  location.reload();
+}
+
+// (c) 削除してよいもの：
+//       storageRef / metadataOptions / downloadUrlCache / getCachedDownloadURL
+//       と script の firebase-storage-compat.js
+//     ※ firebaseConfig と firebase.initializeApp、firebase-app-compat.js、
+//       firebase-auth-compat.js は、ログイン機能がまだ使っているので残す。
+//       （認証UIを外す段階で、まとめて削除する）
 
     // 🚀 一覧用URL（動画のURLは <img> に渡さない）
     function getThumbUrl(m) {
@@ -801,28 +1003,7 @@
       renderSchedules();
     }
 
-    async function deleteSchedule(id) {
-      if (confirm(t('confirmReset'))) {
-        schedules = schedules.filter(s => s.id !== id);
-        saveSchedules();
-        await renderAllPanels();
-        await renderSchedules();
-        renderNotifications();
-        updateRecapOptions();
-      }
-    }
-
-    async function deleteMediaFromSchedule(scheduleId, mediaId) {
-      const item = schedules.find(s => s.id === scheduleId);
-      if (item && item.mediaList) {
-        item.mediaList = item.mediaList.filter(m => m.id !== mediaId);
-        saveSchedules();
-        await renderAllPanels();
-        await renderSchedules();
-      }
-    }
-
-    function openMediaViewer(mediaItem, title, meta) {
+            function openMediaViewer(mediaItem, title, meta) {
       const modal = document.getElementById("media-viewer-modal");
       const imgEl = document.getElementById("viewer-img");
       const videoEl = document.getElementById("viewer-video");
@@ -1170,58 +1351,7 @@
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
-    async function handleFileSelect(event) {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
-      const confirmBtn = document.getElementById("confirm-checkin-btn");
-      confirmBtn.innerText = "⏳ Uploading & Optimizing...";
-      confirmBtn.disabled = true;
-      tempMediaList = [];
-
-      try {
-        for (const file of files) {
-          const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
-          const mediaId = "cloud_" + Math.random().toString(36).substring(2, 9);
-          
-          const optimizedFile = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
-          const fileRef = storageRef.child('logsnap_media/' + Date.now() + '_' + file.name);
-          const snapshot = await fileRef.put(optimizedFile, metadataOptions);
-          const downloadURL = await getCachedDownloadURL(snapshot.ref);
-
-          let thumbUrl = null;
-
-          if (isVideo) {
-            const thumbFile = await createVideoThumbnail(file, 300, 300, 0.7);
-            if (thumbFile) {
-              const thumbRef = storageRef.child('logsnap_media/thumb_vid_' + Date.now() + '.jpg');
-              const thumbSnapshot = await thumbRef.put(thumbFile, metadataOptions);
-              thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
-            }
-          } else {
-            const thumbFile = await createImageThumbnail(file, 300, 300, 0.7);
-            const thumbRef = storageRef.child('logsnap_media/thumb_img_' + Date.now() + '.jpg');
-            const thumbSnapshot = await thumbRef.put(thumbFile, metadataOptions);
-            thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
-          }
-
-          tempMediaList.push({ 
-            id: mediaId, 
-            type: isVideo ? "video" : "image",
-            url: downloadURL,
-            thumbnailUrl: thumbUrl
-          });
-        }
-        confirmBtn.innerText = t('confirmSaveBtn');
-        confirmBtn.disabled = false;
-      } catch (err) {
-        console.error("Upload error:", err);
-        alert("Upload failed. Please check your Firebase configuration & security rules.");
-        confirmBtn.innerText = t('confirmSaveBtn');
-        confirmBtn.disabled = false;
-      }
-    }
-
-    async function confirmCheckin() {
+        async function confirmCheckin() {
       if (!currentCheckinId) return;
       const item = schedules.find(s => s.id === currentCheckinId);
       if (item && tempMediaList.length > 0) {
@@ -1431,118 +1561,314 @@
       }
     }
 
-    function startAutoBgm() {
-      const player = document.getElementById("bgm-player");
-      let trackIdx = Math.floor(Math.random() * vlogPlaylist.length);
-      player.src = vlogPlaylist[trackIdx].url;
-      player.volume = 0.35;
-      player.play().catch(() => {});
+    // ============================================================
+// LogSnap Vlog エンジン：Canvasに描画し、プレビューと録画の両方に使う
+// ============================================================
+// ---------- 書き出しの待ち時間対策 ----------
+let vlogAborted = false, screenLock = null;
+function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 15 : 20; }
+function showRecUi(on) {
+  const el = document.getElementById('rec-status');
+  if (el) el.classList.toggle('hidden', !on);
+}
+function updateRecUi(t) {
+  const bar = document.getElementById('rec-bar'), txt = document.getElementById('rec-text');
+  if (!bar || !txt) return;
+  bar.style.width = Math.min(100, t / vlog.total * 100) + '%';
+  txt.textContent = `書き出し中… あと約${Math.max(0, Math.ceil(vlog.total - t))}秒（画面を閉じたり、他のアプリに切り替えないでください）`;
+}
+async function holdScreenOn() {
+  try { if (navigator.wakeLock) screenLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function releaseScreen() {
+  try { if (screenLock) screenLock.release(); } catch (e) {}
+  screenLock = null;
+}
+// 書き出し中に画面を離れたら、壊れた動画を作らず中断して知らせる
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && vlog && vlog.rec) { stopVlog(); vlogAborted = true; }
+  else if (!document.hidden && vlogAborted) {
+    vlogAborted = false;
+    alert('画面を離れたため、書き出しを中断しました。画面を開いたまま、もう一度お試しください。');
+    if (!document.getElementById('movie-modal').classList.contains('hidden')) startVlog(false);
+  }
+});
+
+const VLOG_W = 720, VLOG_H = 1280, VLOG_FADE = 0.4;
+let vlog = null, vlogRunId = 0, customBgm = null;
+let bgmCtx = null, bgmDest = null;
+
+// ---------- BGM ----------
+function currentBgm() {
+  const v = (document.getElementById('bgm-select') || {}).value || 'auto';
+  if (v === 'custom' && customBgm) return customBgm;
+  if (v !== 'auto' && vlogPlaylist[+v]) return vlogPlaylist[+v];
+  return vlogPlaylist[Math.floor(Math.random() * vlogPlaylist.length)];
+}
+function fillBgmSelect() {
+  const sel = document.getElementById('bgm-select');
+  if (!sel) return;
+  const keep = sel.value;
+  sel.innerHTML = '<option value="auto">BGM: おまかせ</option>' +
+    vlogPlaylist.map((b, i) => `<option value="${i}">${b.name}</option>`).join('') +
+    (customBgm ? `<option value="custom">自分の曲: ${customBgm.name}</option>` : '');
+  sel.value = [...sel.options].some(o => o.value === keep) ? keep : 'auto';
+}
+function pickCustomBgm(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (customBgm) URL.revokeObjectURL(customBgm.url);
+  customBgm = { name: f.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(f), bpm: 90 };
+  fillBgmSelect();
+  document.getElementById('bgm-select').value = 'custom';
+  restartMovie();
+}
+
+// ---------- 素材の選別（日ごとに1つずつ順番に拾い、30件まで） ----------
+function pickHighlights(items, max) {
+  if (items.length <= max) return items;
+  const byDate = new Map();
+  items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
+  const picked = new Set();
+  for (let round = 0; picked.size < max; round++) {
+    let added = false;
+    for (const list of byDate.values()) {
+      if (list[round] && picked.size < max) { picked.add(list[round]); added = true; }
     }
+    if (!added) break;
+  }
+  return items.filter(m => picked.has(m));
+}
 
-    function stopBgmAudio() {
-      const player = document.getElementById("bgm-player");
-      player.pause();
-      player.currentTime = 0;
-    }
+async function loadAsset(m) {
+  if (m.type === 'video') {
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.preload = 'metadata';
+    if (!m.url.startsWith('blob:')) v.crossOrigin = 'anonymous';
+    v.src = m.url;
+    await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; setTimeout(r, 4000); });
+    return { m, el: v, ok: !!v.videoWidth, vdur: isFinite(v.duration) ? v.duration : 3 };
+  }
+  const img = new Image();
+  if (!m.url.startsWith('blob:')) img.crossOrigin = 'anonymous';
+  img.src = m.url;
+  try { await img.decode(); } catch (e) {}
+  return { m, el: img, ok: !!img.naturalWidth };
+}
 
-    function playHighlightMovie() {
-      activeMovieMediaItems = getAllFilteredMediaItems();
-      if (activeMovieMediaItems.length === 0) {
-        alert(t('noMediaMessage'));
-        return;
-      }
-      const selectEl = document.getElementById("recap-target-select");
-      currentMovieTitle = selectEl.options[selectEl.selectedIndex].text;
-      document.getElementById("movie-modal").classList.remove("hidden");
-      currentSlideIdx = 0;
-      startAutoBgm();
-      runSlideShowSequence();
-    }
+// ---------- タイムライン（切り替えをBGMのビートに合わせる） ----------
+function buildTimeline(assets, title, bgm) {
+  const beat = 60 / (bgm.bpm || 90);
+  const beats = (sec) => beat * Math.max(2, Math.round(sec / beat));
+  const tl = [{ kind: 'intro', start: 0, dur: beats(2.2), title, count: assets.length }];
+  let t = tl[0].dur;
+  for (const a of assets) {
+    const dur = a.m.type === 'video'
+      ? Math.max(beat * 2, Math.floor(Math.min(a.vdur, 6) / beat) * beat)
+      : beats(2.8);
+    tl.push({ kind: 'clip', a, start: t, dur });
+    t += dur;
+  }
+  return { tl, total: t };
+}
 
-    async function playArchivedMovie(historyId) {
-      const historyItem = movieHistory.find(h => h.id === historyId);
-      if (!historyItem) return;
-      activeMovieMediaItems = historyItem.mediaItems;
-      currentMovieTitle = historyItem.title;
-      document.getElementById("movie-modal").classList.remove("hidden");
-      currentSlideIdx = 0;
-      startAutoBgm();
-      runSlideShowSequence();
-    }
+// ---------- 描画 ----------
+function drawCover(ctx, el, w, h, scale) {
+  const sw = el.videoWidth || el.naturalWidth, sh = el.videoHeight || el.naturalHeight;
+  if (!sw || !sh) return;
+  const r = Math.max(w / sw, h / sh) * scale;
+  ctx.drawImage(el, (w - sw * r) / 2, (h - sh * r) / 2, sw * r, sh * r);
+}
+function fitText(ctx, text, maxW, size, weight) {
+  let s = size;
+  do { ctx.font = `${weight} ${s}px sans-serif`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 18);
+}
+function drawOverlay(ctx, m) {
+  const g = ctx.createLinearGradient(0, VLOG_H * 0.62, 0, VLOG_H);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.75)');
+  ctx.fillStyle = g; ctx.fillRect(0, VLOG_H * 0.62, VLOG_W, VLOG_H * 0.38);
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 8;
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
+  fitText(ctx, m.title, VLOG_W - 80, 46, 'bold');
+  ctx.fillText(m.title, 40, VLOG_H - 150);
+  ctx.font = '26px "Courier New", monospace'; ctx.fillStyle = '#cbd5e1';
+  ctx.fillText(`${m.location} / ${m.date}`, 40, VLOG_H - 105);
+  ctx.font = 'italic bold 40px "Courier New", monospace'; ctx.fillStyle = '#bef264'; ctx.textAlign = 'right';
+  ctx.fillText(formatVlogTime(m.time), VLOG_W - 40, VLOG_H - 50);
+  ctx.shadowBlur = 0;
+}
+function drawSegment(ctx, seg, local, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (seg.kind === 'intro') {
+    const g = ctx.createLinearGradient(0, 0, VLOG_W, VLOG_H);
+    g.addColorStop(0, '#312e81'); g.addColorStop(1, '#be185d');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    fitText(ctx, seg.title, VLOG_W - 100, 64, 'bold');
+    ctx.fillText(seg.title, VLOG_W / 2, VLOG_H / 2 - 10);
+    ctx.font = '28px sans-serif';
+    ctx.fillText(`${seg.count} moments  ·  LogSnap`, VLOG_W / 2, VLOG_H / 2 + 50);
+  } else {
+    const { el, m } = seg.a;
+    drawCover(ctx, el, VLOG_W, VLOG_H, m.type === 'video' ? 1 : 1 + 0.08 * Math.min(1, local / seg.dur));
+    drawOverlay(ctx, m);
+  }
+  ctx.restore();
+}
+function renderFrame(t) {
+  const { ctx, tl, total } = vlog;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+  let i = tl.findIndex(s => t < s.start + s.dur);
+  if (i < 0) i = tl.length - 1;
+  if (i !== vlog.idx) {
+    const prev = tl[vlog.idx], cur = tl[i];
+    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
+    if (cur.a && cur.a.m.type === 'video') { cur.a.el.currentTime = 0; cur.a.el.play().catch(() => {}); }
+    vlog.idx = i;
+  }
+  const seg = tl[i], local = t - seg.start;
+  if (i > 0 && local < VLOG_FADE) {
+    drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
+    drawSegment(ctx, seg, local, local / VLOG_FADE);
+  } else {
+    drawSegment(ctx, seg, local, 1);
+  }
+  const left = total - t;
+  if (left < 1.5) vlog.player.volume = 0.35 * Math.max(0, left / 1.5);
+}
 
-    function closeMovieModal() {
-      document.getElementById("movie-modal").classList.add("hidden");
-      if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
-      stopBgmAudio();
-      const videoEl = document.getElementById("movie-slide-video");
-      videoEl.pause();
-      videoEl.onended = null;
-    }
+// ---------- 再生ループ ----------
+function vlogTick(now) {
+  if (!vlog) return;
+  const t = (now - vlog.t0) / 1000;
+  if (t >= vlog.total) { vlogEnd(now); return; }
+  renderFrame(t);
+  if (vlog.rec) updateRecUi(t);
+  vlog.raf = requestAnimationFrame(vlogTick);
+}
+function vlogEnd(now) {
+  const v = vlog;
+  if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
+  v.t0 = now; v.idx = -1;
+  v.player.currentTime = 0; v.player.volume = 0.35; v.player.play().catch(() => {});
+  v.raf = requestAnimationFrame(vlogTick);
+}
+function stopVlog() {
+  vlogRunId++;
+  if (!vlog) { setDlBtn(false); return; }
+  cancelAnimationFrame(vlog.raf);
+  vlog.saveOnStop = false;
+  if (vlog.rec && vlog.rec.state !== 'inactive') vlog.rec.stop();
+  vlog.tl.forEach(s => {
+    if (s.a && s.a.m.type === 'video') { s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load(); }
+  });
+  vlog.player.pause();
+  vlog = null;
+  setDlBtn(false);
+}
+function setDlBtn(rec) {
+  const b = document.getElementById('download-video-btn');
+  if (!b) return;
+  b.disabled = rec; showRecUi(rec); if (rec) holdScreenOn(); else releaseScreen();
+  b.innerHTML = rec ? '⏳ 書き出し中…' : `<i data-lucide="download" class="w-3.5 h-3.5"></i> ${t('downloadMovieBtn')}`;
+  if (!rec && window.lucide) lucide.createIcons();
+}
 
-    async function runSlideShowSequence() {
-      if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
-      const videoEl = document.getElementById("movie-slide-video");
-      videoEl.onended = null;
+async function startVlog(record) {
+  stopVlog();
+  const run = vlogRunId;
+  const bgm = currentBgm();
+  const canvas = document.getElementById('movie-canvas'), ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+  const picked = pickHighlights(activeMovieMediaItems, vlogMaxItems()).slice()
+    .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+  const assets = (await Promise.all(picked.map(loadAsset))).filter(a => a.ok);
+  if (run !== vlogRunId) return;
+  if (!assets.length) { alert(t('noMediaMessage')); return; }
+  const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm);
+  const player = document.getElementById('bgm-player');
+  player.src = bgm.url; player.loop = true; player.volume = 0.35; player.currentTime = 0;
+  const v = { canvas, ctx, tl, total, player, idx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
+  vlog = v;
+  if (record) startRecorder(v);
+  await player.play().catch(() => {});
+  if (run !== vlogRunId) return;
+  v.t0 = performance.now();
+  v.raf = requestAnimationFrame(vlogTick);
+}
 
-      if (currentSlideIdx >= activeMovieMediaItems.length) {
-        currentSlideIdx = 0;
-      }
+// ---------- 録画（映像＋BGMを1本にして保存。mp4が使えればmp4） ----------
+function startRecorder(v) {
+  if (!window.MediaRecorder) { alert('このブラウザは動画の書き出しに対応していません'); return; }
+  if (!bgmCtx) {
+    bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = bgmCtx.createMediaElementSource(v.player);
+    bgmDest = bgmCtx.createMediaStreamDestination();
+    src.connect(bgmDest); src.connect(bgmCtx.destination);
+  }
+  bgmCtx.resume();
+  const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
+  const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m)) || '';
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined);
+  const chunks = [];
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    if (v.saveOnStop) saveRecording(new Blob(chunks, { type: rec.mimeType || mime || 'video/webm' }));
+  };
+  v.rec = rec;
+  setDlBtn(true);
+  rec.start(1000);
+}
+function saveRecording(blob) {
+  const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `LogSnap_Vlog_${Date.now()}.${ext}`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || 'Vlog Recap', createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems });
+  saveMovieHistory();
+  renderMovieHistory();
+  setDlBtn(false);
+  setTimeout(() => startVlog(false), 300);
+}
 
-      const m = activeMovieMediaItems[currentSlideIdx];
-      const imgEl = document.getElementById("movie-slide-img");
-      const titleEl = document.getElementById("movie-slide-title");
-      const metaEl = document.getElementById("movie-slide-meta");
-      const timestampEl = document.getElementById("movie-timestamp");
-
-      imgEl.style.opacity = 0;
-      videoEl.style.opacity = 0;
-      videoEl.pause();
-
-      const mediaUrl = m.url;
-      const isVideo = m.type === 'video';
-      titleEl.innerText = m.title;
-      metaEl.innerText = `${m.location} / ${m.date}`;
-      timestampEl.innerText = formatVlogTime(m.time);
-
-      setTimeout(() => {
-        if (isVideo) {
-          imgEl.classList.add("hidden");
-          videoEl.classList.remove("hidden");
-          videoEl.src = mediaUrl;
-          videoEl.currentTime = 0;
-          videoEl.volume = 0.8;
-          videoEl.style.opacity = 1;
-
-          let hasAdvanced = false;
-          const advanceSlide = () => {
-            if (hasAdvanced) return;
-            hasAdvanced = true;
-            currentSlideIdx++;
-            runSlideShowSequence();
-          };
-
-          videoEl.onended = advanceSlide;
-          activeSlideTimeout = setTimeout(advanceSlide, 10500);
-
-          videoEl.play().catch(() => {
-            advanceSlide();
-          });
-        } else {
-          videoEl.classList.add("hidden");
-          imgEl.classList.remove("hidden");
-          imgEl.src = mediaUrl;
-          imgEl.classList.remove("animate-zoom");
-          void imgEl.offsetWidth;
-          imgEl.classList.add("animate-zoom");
-          imgEl.style.opacity = 1;
-
-          currentSlideIdx++;
-          activeSlideTimeout = setTimeout(runSlideShowSequence, 3000);
-        }
-      }, 200);
-    }
-
-    function formatVlogTime(timeStr) {
+// ---------- 既存ボタンから呼ばれる入口（関数名は元のまま） ----------
+function openVlogModal() {
+  document.getElementById('movie-modal').classList.remove('hidden');
+  fillBgmSelect();
+  startVlog(false);
+}
+function playHighlightMovie() {
+  activeMovieMediaItems = getAllFilteredMediaItems();
+  if (activeMovieMediaItems.length === 0) { alert(t('noMediaMessage')); return; }
+  const sel = document.getElementById('recap-target-select');
+  currentMovieTitle = sel.options[sel.selectedIndex].text;
+  openVlogModal();
+}
+async function playArchivedMovie(historyId) {
+  const h = movieHistory.find(x => x.id === historyId);
+  if (!h || !h.mediaItems.length) return;
+  activeMovieMediaItems = h.mediaItems;
+  currentMovieTitle = h.title;
+  openVlogModal();
+}
+function closeMovieModal() {
+  stopVlog();
+  document.getElementById('movie-modal').classList.add('hidden');
+}
+function restartMovie() {
+  if (activeMovieMediaItems.length) startVlog(false);
+}
+function recordAndDownloadMovie() {
+  if (!activeMovieMediaItems.length) return;
+  const sec = vlog ? Math.ceil(vlog.total) : 60;
+  if (!confirm(`書き出しには約${sec}秒かかります。完了するまで画面を開いたままにしてください。始めますか？`)) return;
+  startVlog(true);
+}
+                        function formatVlogTime(timeStr) {
       if (!timeStr) return "9:45 am";
       const parts = timeStr.split(":");
       let h = parseInt(parts[0], 10);
@@ -1550,53 +1876,7 @@
       return `${h % 12 || 12}:${m} ${h >= 12 ? "pm" : "am"}`;
     }
 
-    function restartMovie() {
-      if (activeMovieMediaItems.length > 0) {
-        if (activeSlideTimeout) clearTimeout(activeSlideTimeout);
-        const videoEl = document.getElementById("movie-slide-video");
-        videoEl.pause();
-        currentSlideIdx = 0;
-        startAutoBgm();
-        runSlideShowSequence();
-      }
-    }
-
-    async function recordAndDownloadMovie() {
-      const screenEl = document.getElementById("movie-screen");
-      const btn = document.getElementById("download-video-btn");
-      try {
-        btn.innerText = "⏳ Recording...";
-        btn.disabled = true;
-        const stream = screenEl.captureStream ? screenEl.captureStream(30) : null;
-        if (!stream) { alert("Not supported browser"); btn.disabled = false; return; }
-
-        let chunks = [];
-        let rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
-        rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-        rec.onstop = () => {
-          const blob = new Blob(chunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `LogSnap_Vlog_${Date.now()}.webm`;
-          a.click();
-          movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || "Vlog Recap", createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems });
-          saveMovieHistory();
-          renderMovieHistory();
-          btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> ${t('downloadMovieBtn')}`;
-          btn.disabled = false;
-          lucide.createIcons();
-          alert("Vlog video saved successfully!");
-        };
-        rec.start();
-        setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, 20000);
-      } catch (err) {
-        alert("An error occurred during recording.");
-        btn.disabled = false;
-      }
-    }
-
-    // 🌍 i18n 辞書データ
+            // 🌍 i18n 辞書データ
     const i18n = {
       ja: {
         photoAestheticMode: "写真映えモード",
@@ -1618,7 +1898,7 @@
         movieHistoryTitle: "作成済みまとめ動画の履歴",
         galleryTitle: "Gallery（複数メディア一覧）",
         guestUser: "ゲストユーザー",
-        offlineMode: "Firebase Storage 超高速化モード",
+        offlineMode: "端末内保存モード",
         settingsHeader: "アプリ設定 (Settings)",
         languageSettingTitle: "言語設定 (Language)",
         languageSettingDesc: "表示言語と対応する祝日を切り替えます",
@@ -1639,7 +1919,7 @@
         locationLabel: "場所（スポット）",
         saveBtn: "保存する",
         addMediaModalTitle: "写真・動画を追加",
-        selectFileLabel: "📁 Firebase Cloud Storageへアップロード",
+        selectFileLabel: "📁 写真・動画を選ぶ",
         fileLoadingHint: "※iOS対応・超高速リサイズ＆サムネイル自動生成に対応。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
@@ -1676,7 +1956,7 @@
         movieHistoryTitle: "Saved Vlog History",
         galleryTitle: "Gallery (All Media)",
         guestUser: "Guest User",
-        offlineMode: "Firebase Storage Fast Mode",
+        offlineMode: "On-device storage mode",
         settingsHeader: "App Settings",
         languageSettingTitle: "Language",
         languageSettingDesc: "Switch display language & regional holidays",
@@ -1831,20 +2111,7 @@
 
     let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
 
-    function saveSchedules() {
-      monthCellCache.clear();
-      try {
-        localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules));
-      } catch (e) {
-        console.error("Storage quota exceeded", e);
-      }
-    }
-
-    function saveMovieHistory() {
-      localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory));
-    }
-
-    let currentCheckinId = null;
+            let currentCheckinId = null;
     let tempMediaList = []; 
 
     // ===== 🔥 メール/パスワード認証関連の処理 =====
@@ -1913,6 +2180,8 @@
         document.getElementById("current-timezone-display").innerText = "Asia/Tokyo (Auto)";
       }
 
+      navigator.storage?.persist?.();
+      await hydrateAllMedia();
       updateUIStrings();
       await renderAllPanels();
       updateTrackPosition(false);
