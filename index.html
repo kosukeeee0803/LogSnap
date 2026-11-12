@@ -133,11 +133,12 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-xs min-h-[510px]">
+        <!-- 🚀 常に6行（515pxに固定）にするため auto-rows-[85px] を適用 -->
+        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-xs min-h-[515px]">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
-            <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 border-slate-200 bg-slate-200 gap-px"></div>
-            <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 border-slate-200 bg-slate-200 gap-px"></div>
-            <div id="panel-next" class="w-full flex-shrink-0 grid grid-cols-7 border-slate-200 bg-slate-200 gap-px"></div>
+            <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
+            <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
+            <div id="panel-next" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
           </div>
         </div>
       </div>
@@ -521,7 +522,7 @@
       cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
       cell.innerHTML = `
         <div class="flex justify-between items-center z-10">${makeDayNumHtml(dateStr === todayStr, getDateColorClass(y, m, d), d)}</div>
-        <div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">${makeBadgesHtml(daySchedules)}</div>
+        <div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[42px]">${makeBadgesHtml(daySchedules)}</div>
       `;
       return cell;
     }
@@ -540,7 +541,7 @@
         : '';
       let contentHtml = '';
       if (viewMode === 'schedule') {
-        contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">${makeBadgesHtml(daySchedules)}</div>`;
+        contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[42px]">${makeBadgesHtml(daySchedules)}</div>`;
       } else if (!thumbnail && daySchedules.length > 0) {
         contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
       }
@@ -569,15 +570,16 @@
       for (let day = 1; day <= totalDays; day++) {
         cells.push(makeDayCell(year, month, day, todayStr));
       }
+      // 🚀 常に6週（42マス）にそろえる
       const total = firstDayIndex + totalDays;
-      const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+      const remaining = 42 - total;
       for (let day = 1; day <= remaining; day++) {
         cells.push(makeGrayCell(nextYear, nextMonth, day, todayStr));
       }
       return cells;
     }
 
-    // ===== 復元された9個の重要関数 =====
+    // ===== 基本関数群 =====
     function getDaysInMonth(year, month) {
       return new Date(year, month, 0).getDate();
     }
@@ -728,7 +730,6 @@
       container.innerHTML = html;
       lucide.createIcons();
     }
-    // ===================================
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
       const key = `${year}-${month}-${viewMode}-${currentLang}`;
@@ -1281,65 +1282,125 @@
       });
     }
 
-    // 🚀 iOS対応・堅牢な動画サムネイル生成（preload='auto' & 統合 finish 処理）
-    async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+    // 🚀 次のフレームが描画されるまで待つ（最大250ms）
+    function waitForVideoFrame(video) {
       return new Promise((resolve) => {
-        const video = document.createElement('video');
-        const blobUrl = URL.createObjectURL(file);
-        let done = false;
-        let seeking = false;
-        let timeoutId = null;
+        let finished = false;
+        const done = () => { if (!finished) { finished = true; resolve(); } };
+        if (typeof video.requestVideoFrameCallback === 'function') {
+          video.requestVideoFrameCallback(() => done());
+        }
+        setTimeout(done, 250);
+      });
+    }
 
-        const finish = (result) => {
-          if (done) return;
-          done = true;
-          clearTimeout(timeoutId);
-          URL.revokeObjectURL(blobUrl);
-          video.removeAttribute('src');
-          video.load();
-          resolve(result);
-        };
+    function drawVideoFrameToCanvas(video, maxWidth, maxHeight) {
+      const scale = Math.min(1, maxWidth / video.videoWidth, maxHeight / video.videoHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+      canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      return canvas;
+    }
 
-        const capture = () => {
-          try {
-            if (!video.videoWidth || !video.videoHeight) return finish(null);
-            const scale = Math.min(1, maxWidth / video.videoWidth, maxHeight / video.videoHeight);
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.round(video.videoWidth * scale);
-            canvas.height = Math.round(video.videoHeight * scale);
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => {
-              finish(blob ? new File([blob], 'thumb_video.jpg', { type: 'image/jpeg', lastModified: Date.now() }) : null);
-            }, 'image/jpeg', quality);
-          } catch (e) {
-            finish(null);
-          }
-        };
+    // 🚀 画像の平均の明るさ（0〜255）
+    function measureCanvasBrightness(canvas) {
+      const size = 24;
+      const s = document.createElement('canvas');
+      s.width = size;
+      s.height = size;
+      const ctx = s.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(canvas, 0, 0, size, size);
+      const d = ctx.getImageData(0, 0, size, size).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      }
+      return sum / (d.length / 4);
+    }
 
-        const seek = () => {
-          if (seeking || done) return;
-          seeking = true;
-          const d = isFinite(video.duration) ? video.duration : 0;
-          try {
-            video.currentTime = Math.min(0.5, d / 2 || 0.1);
-          } catch (e) {
-            finish(null);
-          }
-        };
+    function waitForEvent(target, evt, ms) {
+      return new Promise((resolve, reject) => {
+        let timer = null;
+        const onEvt = () => { clearTimeout(timer); target.removeEventListener('error', onErr); resolve(); };
+        const onErr = () => { clearTimeout(timer); target.removeEventListener(evt, onEvt); reject(new Error('video error')); };
+        timer = setTimeout(() => {
+          target.removeEventListener(evt, onEvt);
+          target.removeEventListener('error', onErr);
+          reject(new Error(evt + ' timeout'));
+        }, ms);
+        target.addEventListener(evt, onEvt, { once: true });
+        target.addEventListener('error', onErr, { once: true });
+      });
+    }
 
-        timeoutId = setTimeout(() => finish(null), 15000);
-        video.muted = true;
-        video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('webkit-playsinline', '');
-        video.preload = 'auto';
-        video.onloadedmetadata = seek;
-        video.onloadeddata = seek;
-        video.onseeked = capture;
-        video.onerror = () => finish(null);
+    // 🚀 iOS対応・黒潰れ防止の高度な動画サムネイル生成エンジン
+    async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+      const blobUrl = URL.createObjectURL(file);
+      const video = document.createElement('video');
+      video.muted = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.preload = 'auto';
+      // iOS対策：DOMに載せておかないとフレームが描画されないことがある
+      video.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;';
+      document.body.appendChild(video);
+
+      const cleanup = () => {
+        try { video.pause(); } catch (e) {}
+        URL.revokeObjectURL(blobUrl);
+        video.removeAttribute('src');
+        video.load();
+        video.remove();
+      };
+
+      const work = async () => {
         video.src = blobUrl;
         video.load();
-      });
+        if (video.readyState < 1) await waitForEvent(video, 'loadedmetadata', 10000);
+        const duration = isFinite(video.duration) ? video.duration : 0;
+        const maxT = Math.max(duration - 0.1, 0.05);
+        const raw = duration > 0
+          ? [0.5, duration * 0.15, duration * 0.35, duration * 0.6, 0.1]
+          : [0.1, 0.5, 1];
+        const times = [...new Set(raw.map(v => +Math.max(0.05, Math.min(v, maxT)).toFixed(2)))];
+        let best = null;
+
+        for (const time of times) {
+          try {
+            const seeked = waitForEvent(video, 'seeked', 5000);
+            video.currentTime = time;
+            await seeked;
+            await waitForVideoFrame(video);
+          } catch (e) {
+            continue;
+          }
+          if (!video.videoWidth || !video.videoHeight) continue;
+          const canvas = drawVideoFrameToCanvas(video, maxWidth, maxHeight);
+          const brightness = measureCanvasBrightness(canvas);
+          if (!best || brightness > best.brightness) best = { canvas, brightness };
+          if (brightness >= 25) break;   // 十分明るければ採用
+        }
+
+        // 真っ黒しか取れなかった場合は null（一覧では再生マークが出る）
+        if (!best || best.brightness < 4) return null;
+        const blob = await new Promise((res) => best.canvas.toBlob(res, 'image/jpeg', quality));
+        return blob ? new File([blob], 'thumb_video.jpg', { type: 'image/jpeg', lastModified: Date.now() }) : null;
+      };
+
+      try {
+        return await Promise.race([
+          work(),
+          new Promise((res) => setTimeout(() => res(null), 20000))
+        ]);
+      } catch (e) {
+        console.warn("動画サムネイル生成に失敗:", e);
+        return null;
+      } finally {
+        cleanup();
+      }
     }
 
     function startAutoBgm() {
