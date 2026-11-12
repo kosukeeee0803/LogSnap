@@ -224,7 +224,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">Firebase Storage 高速化モード</p>
+            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">Firebase Storage 超高速化モード</p>
           </div>
         </div>
 
@@ -361,7 +361,7 @@
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 Firebase Cloud Storageへアップロード</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※高速サムネイル自動生成により、アプリは常にサクサク軽く動作します。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※超高速リサイズ・サムネイル自動生成に対応しています。</p>
       </div>
 
       <div class="pt-2">
@@ -449,8 +449,13 @@
     const storageRef = firebase.storage().ref();
     const metadataOptions = { cacheControl: 'public,max-age=31536000' };
 
-    // 🚀 インメモリキャッシュ
+    // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
     const downloadUrlCache = new Map();
+    const monthCellCache = new Map();
+    const SELECTED_CLASSES = ['bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10'];
+    const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f172a"/><polygon points="40,32 40,68 70,50" fill="#f472b6"/></svg>'
+    );
 
     async function getCachedDownloadURL(fileRef) {
       const path = fileRef.fullPath;
@@ -462,7 +467,139 @@
       return url;
     }
 
-    // 🚀 画像リサイズ・圧縮関数（長辺最大1600px）
+    // 🚀 一覧用URL（動画のURLは <img> に渡さない）
+    function getThumbUrl(m) {
+      if (m.thumbnailUrl) return m.thumbnailUrl;
+      return m.type === 'image' ? m.url : null;
+    }
+
+    function getCalendarThumb(daySchedules) {
+      for (const s of daySchedules) {
+        for (const m of (s.mediaList || [])) {
+          const u = getThumbUrl(m);
+          if (u) return u;
+        }
+      }
+      return null;
+    }
+
+    function makeDateStr(y, m, d) {
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    function makeDayNumHtml(isToday, colorClass, day, extraClass = '') {
+      return isToday
+        ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
+        : `<span class="text-xs ${extraClass || colorClass}">${day}</span>`;
+    }
+
+    function makeBadgesHtml(daySchedules) {
+      return daySchedules.map(s =>
+        `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`
+      ).join('');
+    }
+
+    function makeGrayCell(y, m, d, todayStr) {
+      const dateStr = makeDateStr(y, m, d);
+      const daySchedules = schedules.filter(s => s.date === dateStr);
+      const cell = document.createElement("div");
+      cell.dataset.date = dateStr;
+      cell.dataset.gray = "1";
+      cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
+      cell.innerHTML = `
+        <div class="flex justify-between items-center z-10">${makeDayNumHtml(dateStr === todayStr, getDateColorClass(y, m, d), d)}</div>
+        <div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">${makeBadgesHtml(daySchedules)}</div>
+      `;
+      return cell;
+    }
+
+    function makeDayCell(year, month, day, todayStr) {
+      const dateStr = makeDateStr(year, month, day);
+      const daySchedules = schedules.filter(s => s.date === dateStr);
+      const colorClass = getDateColorClass(year, month, day);
+      const thumbnail = getCalendarThumb(daySchedules);
+      const cell = document.createElement("div");
+      cell.dataset.date = dateStr;
+      cell.className = "relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white hover:bg-slate-50/80";
+      
+      const bgHtml = (viewMode === 'photo' && thumbnail)
+        ? `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-60" decoding="async">`
+        : '';
+      let contentHtml = '';
+      if (viewMode === 'schedule') {
+        contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">${makeBadgesHtml(daySchedules)}</div>`;
+      } else if (!thumbnail && daySchedules.length > 0) {
+        contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
+      }
+      const numClass = (viewMode === 'photo' && thumbnail) ? 'text-white photo-stamp font-bold' : colorClass;
+      cell.innerHTML = `
+        ${bgHtml}
+        <div class="flex justify-between items-center z-10">${makeDayNumHtml(dateStr === todayStr, colorClass, day, numClass)}</div>
+        ${contentHtml}
+      `;
+      return cell;
+    }
+
+    function buildCalendarCells(year, month) {
+      const cells = [];
+      const todayStr = formatDateString(new Date());
+      const firstDayIndex = new Date(year, month - 1, 1).getDay();
+      const totalDays = getDaysInMonth(year, month);
+      const prevYear = month === 1 ? year - 1 : year;
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
+      const nextYear = month === 12 ? year + 1 : year;
+      const nextMonth = month === 12 ? 1 : month + 1;
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        cells.push(makeGrayCell(prevYear, prevMonth, daysInPrevMonth - i, todayStr));
+      }
+      for (let day = 1; day <= totalDays; day++) {
+        cells.push(makeDayCell(year, month, day, todayStr));
+      }
+      const total = firstDayIndex + totalDays;
+      const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+      for (let day = 1; day <= remaining; day++) {
+        cells.push(makeGrayCell(nextYear, nextMonth, day, todayStr));
+      }
+      return cells;
+    }
+
+    async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
+      const key = `${year}-${month}-${viewMode}-${currentLang}`;
+      let cells = monthCellCache.get(key);
+      if (!cells) {
+        cells = buildCalendarCells(year, month);
+        monthCellCache.set(key, cells);
+      }
+      grid.replaceChildren(...cells);
+      if (isCurrentPanel) applySelectionHighlight();
+    }
+
+    function applySelectionHighlight() {
+      document.querySelectorAll('#calendar-track .ring-2').forEach(el => el.classList.remove(...SELECTED_CLASSES));
+      const el = document.querySelector(`#panel-curr [data-date="${selectedDate}"]:not([data-gray="1"])`);
+      if (el) el.classList.add(...SELECTED_CLASSES);
+    }
+
+    function setupCalendarClicks() {
+      [["panel-prev", -1], ["panel-curr", 0], ["panel-next", 1]].forEach(([id, panelOffset]) => {
+        document.getElementById(id).addEventListener("click", async (e) => {
+          const cell = e.target.closest("[data-date]");
+          if (!cell) return;
+          const dateStr = cell.dataset.date;
+          const isGray = cell.dataset.gray === "1";
+          let shift = panelOffset;
+          if (panelOffset === 0 && isGray) {
+            shift = dateStr < `${currentYear}-${String(currentMonth).padStart(2, '0')}` ? -1 : 1;
+          }
+          if (shift !== 0) await shiftMonth(shift);
+          if (!isGray && selectedDate === dateStr) openAddModalForDate(dateStr);
+          else selectDate(dateStr);
+        });
+      });
+    }
+
+    // 🚀 画像リサイズ・圧縮関数
     async function resizeImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.8) {
       return new Promise((resolve) => {
         if (!file.type.startsWith("image/")) return resolve(file);
@@ -500,7 +637,7 @@
       });
     }
 
-    // 🚀 サムネイル生成（長辺300px）
+    // 🚀 サムネイル生成
     async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -537,7 +674,7 @@
       });
     }
 
-    // 🚀 動画サムネイル生成（10秒タイムアウト付き・安全対策済）
+    // 🚀 動画サムネイル生成（10秒タイムアウト付き）
     async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
         const video = document.createElement('video');
@@ -550,7 +687,7 @@
 
         let timeoutId = setTimeout(() => {
           URL.revokeObjectURL(blobUrl);
-          resolve(null); // タイムアウト時はnull（フォールバック）
+          resolve(null);
         }, 10000);
 
         video.onloadeddata = () => {
@@ -607,7 +744,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "超高速化エンジン（DOM差分更新・キャッシュ最適化）適用済みです。",
+        welcomeNoteDesc: "DOMキャッシュ＆イベント委譲による完全ノーラグ・超高速カレンダー稼働中。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -665,7 +802,7 @@
         newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "Ultra-fast rendering engine with DOM differential updates enabled.",
+        welcomeNoteDesc: "Zero-lag ultra-fast calendar powered by DOM caching & event delegation.",
         vlogStudioTitle: "Create Vlog Recap",
         recapModeLabel: "Recap Range Mode",
         modeWeek: "Specific Week (Sun - Sat)",
@@ -750,11 +887,11 @@
     function changeLanguage(lang) {
       currentLang = lang;
       localStorage.setItem('logsnap_lang', lang);
+      monthCellCache.clear();
       updateUIStrings();
       renderAllPanels();
       renderSchedules();
       updateRecapOptions();
-      renderAlbumGallery();
     }
 
     function getEnglishHolidays(year) {
@@ -831,6 +968,7 @@
     let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
 
     function saveSchedules() {
+      monthCellCache.clear();
       try {
         localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules));
       } catch (e) {
@@ -864,6 +1002,7 @@
       renderNotifications();
       updateRecapOptions();
       setupCarouselSwipe();
+      setupCalendarClicks();
     });
 
     function renderNotifications() {
@@ -879,7 +1018,7 @@
             <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
             <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
           </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">超高速化エンジン（DOM差分更新・キャッシュ最適化）適用済みです。</p>
+          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">DOMキャッシュ＆イベント委譲による完全ノーラグ・超高速カレンダー稼働中。</p>
         </div>
       `;
 
@@ -915,6 +1054,7 @@
         viewMode = 'photo';
         btnText.innerText = t('photoAestheticMode');
       }
+      monthCellCache.clear();
       renderAllPanels();
     }
 
@@ -1058,175 +1198,44 @@
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
-      grid.innerHTML = "";
-      const firstDayIndex = new Date(year, month - 1, 1).getDay();
-      const totalDays = getDaysInMonth(year, month);
-      
-      const prevYear = month === 1 ? year - 1 : year;
-      const prevMonth = month === 1 ? 12 : month - 1;
-      const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
-      const todayStr = formatDateString(new Date());
-
-      for (let i = firstDayIndex - 1; i >= 0; i--) {
-        const dayNum = daysInPrevMonth - i;
-        const mm = String(prevMonth).padStart(2, '0');
-        const dd = String(dayNum).padStart(2, '0');
-        const dateStr = `${prevYear}-${mm}-${dd}`;
-        const colorClass = getDateColorClass(prevYear, prevMonth, dayNum);
-        const daySchedules = schedules.filter(s => s.date === dateStr);
-        const isToday = (dateStr === todayStr);
-        
-        const cell = document.createElement("div");
-        cell.dataset.date = dateStr;
-        cell.onclick = async () => { 
-          await shiftMonth(-1); 
-          selectDate(dateStr); 
-        };
-        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
-        
-        let badgesHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
-        daySchedules.forEach(s => {
-          badgesHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
-        });
-        badgesHtml += `</div>`;
-
-        const dayNumHtml = isToday 
-          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${dayNum}</span></span>`
-          : `<span class="text-xs ${colorClass}">${dayNum}</span>`;
-
-        cell.innerHTML = `
-          <div class="flex justify-between items-center z-10">
-            ${dayNumHtml}
-          </div>
-          ${badgesHtml}
-        `;
-        grid.appendChild(cell);
+      const key = `${year}-${month}-${viewMode}-${currentLang}`;
+      let cells = monthCellCache.get(key);
+      if (!cells) {
+        cells = buildCalendarCells(year, month);
+        monthCellCache.set(key, cells);
       }
-
-      for (let day = 1; day <= totalDays; day++) {
-        const mm = String(month).padStart(2, '0');
-        const dd = String(day).padStart(2, '0');
-        const dateStr = `${year}-${mm}-${dd}`;
-        const daySchedules = schedules.filter(s => s.date === dateStr);
-        const isSelected = selectedDate === dateStr && isCurrentPanel;
-        const isToday = (dateStr === todayStr);
-        const colorClass = getDateColorClass(year, month, day);
-
-        let firstCompletedMedia = null;
-        for (const s of daySchedules) {
-          if (s.mediaList && s.mediaList.length > 0) {
-            firstCompletedMedia = s.mediaList[0];
-            break;
-          }
-        }
-        let thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnailUrl || firstCompletedMedia.url) : null;
-
-        const cell = document.createElement("div");
-        cell.dataset.date = dateStr;
-        cell.onclick = async () => {
-          if (!isCurrentPanel) {
-            if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
-            else await shiftMonth(-1);
-          }
-          if (selectedDate === dateStr) {
-            openAddModalForDate(dateStr);
-          } else {
-            selectDate(dateStr);
-          }
-        };
-        
-        // 🚀 改善③: 重複画像を排除し、背景 <img> 1つに統一
-        cell.className = `relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white ${
-          isSelected ? 'bg-indigo-50/50 ring-2 ring-indigo-500/40 z-10' : 'hover:bg-slate-50/80'
-        }`;
-
-        let bgHtml = '';
-        if (viewMode === 'photo' && thumbnail) {
-          bgHtml = `<img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover opacity-60" loading="lazy">`;
-        }
-
-        let contentHtml = '';
-        if (viewMode === 'schedule') {
-          contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
-          daySchedules.forEach(s => {
-            contentHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
-          });
-          contentHtml += `</div>`;
-        } else {
-          if (!thumbnail && daySchedules.length > 0) {
-            contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
-          }
-        }
-
-        const dayNumHtml = isToday
-          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
-          : `<span class="text-xs ${viewMode === 'photo' && thumbnail ? 'text-white photo-stamp font-bold' : colorClass} ${isSelected ? 'underline decoration-2' : ''}">${day}</span>`;
-
-        cell.innerHTML = `
-          ${bgHtml}
-          <div class="flex justify-between items-center z-10">
-            ${dayNumHtml}
-          </div>
-          ${contentHtml}
-        `;
-        grid.appendChild(cell);
-      }
-
-      const totalCellsSoFar = firstDayIndex + totalDays;
-      const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
-      const nextYear = month === 12 ? year + 1 : year;
-      const nextMonth = month === 12 ? 1 : month + 1;
-
-      for (let day = 1; day <= remainingCells; day++) {
-        const mm = String(nextMonth).padStart(2, '0');
-        const dd = String(day).padStart(2, '0');
-        const dateStr = `${nextYear}-${mm}-${dd}`;
-        const colorClass = getDateColorClass(nextYear, nextMonth, day);
-        const daySchedules = schedules.filter(s => s.date === dateStr);
-        const isToday = (dateStr === todayStr);
-
-        const cell = document.createElement("div");
-        cell.dataset.date = dateStr;
-        cell.onclick = async () => { 
-          await shiftMonth(1); 
-          selectDate(dateStr); 
-        };
-        cell.className = "bg-slate-50/60 opacity-40 hover:opacity-75 transition-all p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer overflow-hidden";
-        
-        let badgesHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[50px]">`;
-        daySchedules.forEach(s => {
-          badgesHtml += `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`;
-        });
-        badgesHtml += `</div>`;
-
-        const dayNumHtml = isToday
-          ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
-          : `<span class="text-xs ${colorClass}">${day}</span>`;
-
-        cell.innerHTML = `
-          <div class="flex justify-between items-center z-10">
-            ${dayNumHtml}
-          </div>
-          ${badgesHtml}
-        `;
-        grid.appendChild(cell);
-      }
+      grid.replaceChildren(...cells);
+      if (isCurrentPanel) applySelectionHighlight();
     }
 
-    // 🚀 改善①: 日付選択時に全再描画せず、DOMクラス（枠線）の付け替えだけで完了させる
+    function applySelectionHighlight() {
+      document.querySelectorAll('#calendar-track .ring-2').forEach(el => el.classList.remove(...SELECTED_CLASSES));
+      const el = document.querySelector(`#panel-curr [data-date="${selectedDate}"]:not([data-gray="1"])`);
+      if (el) el.classList.add(...SELECTED_CLASSES);
+    }
+
+    function setupCalendarClicks() {
+      [["panel-prev", -1], ["panel-curr", 0], ["panel-next", 1]].forEach(([id, panelOffset]) => {
+        document.getElementById(id).addEventListener("click", async (e) => {
+          const cell = e.target.closest("[data-date]");
+          if (!cell) return;
+          const dateStr = cell.dataset.date;
+          const isGray = cell.dataset.gray === "1";
+          let shift = panelOffset;
+          if (panelOffset === 0 && isGray) {
+            shift = dateStr < `${currentYear}-${String(currentMonth).padStart(2, '0')}` ? -1 : 1;
+          }
+          if (shift !== 0) await shiftMonth(shift);
+          if (!isGray && selectedDate === dateStr) openAddModalForDate(dateStr);
+          else selectDate(dateStr);
+        });
+      });
+    }
+
     function selectDate(dateStr) {
-      const prevDate = selectedDate;
       selectedDate = dateStr;
       document.getElementById("selected-date-title").innerText = `${selectedDate} の予定 ＆ 思い出`;
-
-      const prevCell = document.querySelector(`#panel-curr [data-date="${prevDate}"]`);
-      if (prevCell) {
-        prevCell.classList.remove('bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10');
-      }
-      const newCell = document.querySelector(`#panel-curr [data-date="${dateStr}"]`);
-      if (newCell) {
-        newCell.classList.add('bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10');
-      }
+      applySelectionHighlight();
       renderSchedules();
     }
 
@@ -1248,7 +1257,6 @@
         saveSchedules();
         await renderAllPanels();
         await renderSchedules();
-        renderAlbumGallery();
       }
     }
 
@@ -1313,7 +1321,7 @@
           thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
           for (const m of item.mediaList) {
             const isVideo = m.type === 'video';
-            const displayUrl = m.thumbnailUrl || m.url;
+            const displayUrl = getThumbUrl(m) || VIDEO_PLACEHOLDER;
             thumbnailDisplay += `
               <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${timeDisplay}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
                 <img src="${displayUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
@@ -1360,7 +1368,6 @@
       lucide.createIcons();
     }
 
-    // 🚀 改善②: LOOKBOOKタブが表示されているときだけギャラリーを描画
     async function switchTab(tab) {
       const tabs = ['calendar', 'notifications', 'lookbook', 'account'];
       tabs.forEach(t => {
@@ -1382,7 +1389,6 @@
         renderNotifications();
       } else if (tab === 'lookbook') {
         updateRecapOptions();
-        await renderAlbumGallery();
         renderMovieHistory();
       }
     }
@@ -1438,7 +1444,6 @@
         }
       }
       
-      // 🚀 改善②: LOOKBOOKタブが表示されているときだけ安全にギャラリーを描画
       const lookbookTab = document.getElementById("tab-lookbook");
       if (lookbookTab && !lookbookTab.classList.contains("hidden")) {
         renderAlbumGallery();
@@ -1490,7 +1495,7 @@
         const itemEl = document.createElement("div");
         itemEl.className = "relative aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer bg-slate-900";
         const isVideo = m.type === 'video';
-        const displayUrl = m.thumbnailUrl || m.url;
+        const displayUrl = getThumbUrl(m) || VIDEO_PLACEHOLDER;
         
         itemEl.onclick = () => openMediaViewer(m, m.title, `${m.date} / ${m.location}`);
         itemEl.innerHTML = `
@@ -1603,7 +1608,6 @@
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
-    // 🚀 改善④: キャッシュコントロール付きアップロード ＆ 安全な動画サムネイル生成
     async function handleFileSelect(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -1617,24 +1621,19 @@
           const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
           const mediaId = "cloud_" + Math.random().toString(36).substring(2, 9);
           
-          // 1. オリジナルファイルをリサイズ・圧縮してアップロード（cacheControl付き）
           const optimizedFile = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
           const fileRef = storageRef.child('logsnap_media/' + Date.now() + '_' + file.name);
           const snapshot = await fileRef.put(optimizedFile, metadataOptions);
           const downloadURL = await getCachedDownloadURL(snapshot.ref);
 
-          let thumbUrl = downloadURL;
+          let thumbUrl = null;
 
-          // 2. サムネイル生成
           if (isVideo) {
             const thumbFile = await createVideoThumbnail(file, 300, 300, 0.7);
             if (thumbFile) {
               const thumbRef = storageRef.child('logsnap_media/thumb_vid_' + Date.now() + '.jpg');
               const thumbSnapshot = await thumbRef.put(thumbFile, metadataOptions);
               thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
-            } else {
-              // 生成失敗/タイムアウト時はサムネイルなし（または動画のプレビューを使わない）
-              thumbUrl = null; 
             }
           } else {
             const thumbFile = await createImageThumbnail(file, 300, 300, 0.7);
@@ -1668,6 +1667,7 @@
         item.mediaList.push(...tempMediaList);
       }
       saveSchedules();
+      closeAddModal(); // closeCheckinModal
       closeCheckinModal();
       await renderAllPanels();
       await renderSchedules();
@@ -1849,6 +1849,21 @@
         alert("An error occurred during recording.");
         btn.disabled = false;
       }
+    }
+
+    // 🚀 ⑤ 既存ファイルのキャッシュ設定を付与する関数（コンソールから手動実行可能）
+    async function applyCacheControlToExistingFiles() {
+      for (const s of schedules) {
+        for (const m of (s.mediaList || [])) {
+          for (const u of [m.url, m.thumbnailUrl]) {
+            if (!u) continue;
+            try {
+              await firebase.storage().refFromURL(u).updateMetadata({ cacheControl: 'public,max-age=31536000' });
+            } catch (e) { console.warn(u, e); }
+          }
+        }
+      }
+      console.log("Cache-Control metadata update done.");
     }
   </script>
 </body>
