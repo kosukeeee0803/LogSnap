@@ -189,7 +189,7 @@
           </div>
           <div>
             <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" id="recap-target-label" data-i18n="targetPeriodLabel">対象週 / 月</label>
-            <select id="recap-target-select" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
+            <select id="recap-target-select" onchange="renderAlbumGallery()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
           </div>
         </div>
 
@@ -224,7 +224,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">Firebase Storage 本番連携モード</p>
+            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">Firebase Storage 高速化モード</p>
           </div>
         </div>
 
@@ -361,7 +361,7 @@
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 Firebase Cloud Storageへアップロード</label>
         <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※ファイルは本番クラウドに保存され、アプリは常にサクサク軽く動作します。</p>
+        <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※高速サムネイル自動生成により、アプリは常にサクサク軽く動作します。</p>
       </div>
 
       <div class="pt-2">
@@ -447,8 +447,9 @@
     // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
     const storageRef = firebase.storage().ref();
+    const metadataOptions = { cacheControl: 'public,max-age=31536000' };
 
-    // 🚀 ダウンロードURLのインメモリキャッシュ
+    // 🚀 インメモリキャッシュ
     const downloadUrlCache = new Map();
 
     async function getCachedDownloadURL(fileRef) {
@@ -461,7 +462,45 @@
       return url;
     }
 
-    // 🚀 画像のサムネイル（縮小画像）自動生成関数
+    // 🚀 画像リサイズ・圧縮関数（長辺最大1600px）
+    async function resizeImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.8) {
+      return new Promise((resolve) => {
+        if (!file.type.startsWith("image/")) return resolve(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (!blob) return resolve(file);
+              const resizedFile = new File([blob], file.name, { type: "image/jpeg", lastModified: Date.now() });
+              resolve(resizedFile);
+            }, "image/jpeg", quality);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 🚀 サムネイル生成（長辺300px）
     async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -498,7 +537,7 @@
       });
     }
 
-    // 🚀 【新規追加】動画の最初のフレーム（または冒頭）をキャプチャして静止画サムネイルを生成する関数
+    // 🚀 動画サムネイル生成（10秒タイムアウト付き・安全対策済）
     async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
         const video = document.createElement('video');
@@ -509,12 +548,17 @@
         const blobUrl = URL.createObjectURL(file);
         video.src = blobUrl;
 
+        let timeoutId = setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          resolve(null); // タイムアウト時はnull（フォールバック）
+        }, 10000);
+
         video.onloadeddata = () => {
-          // 0.5秒目のフレームにジャンプ（黒い画面を避けるため）
           video.currentTime = Math.min(0.5, video.duration || 0.1);
         };
 
         video.onseeked = () => {
+          clearTimeout(timeoutId);
           let width = video.videoWidth || 300;
           let height = video.videoHeight || 300;
           if (width > height) {
@@ -538,12 +582,13 @@
 
           canvas.toBlob((blob) => {
             if (!blob) return resolve(null);
-            const thumbFile = new File([blob], "thumb_video_" + file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg", lastModified: Date.now() });
+            const thumbFile = new File([blob], "thumb_video.jpg", { type: "image/jpeg", lastModified: Date.now() });
             resolve(thumbFile);
           }, "image/jpeg", quality);
         };
 
         video.onerror = () => {
+          clearTimeout(timeoutId);
           URL.revokeObjectURL(blobUrl);
           resolve(null);
         };
@@ -562,7 +607,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "動画サムネイルの自動切り出し対応により、カレンダー動作がさらに高速化しました。",
+        welcomeNoteDesc: "超高速化エンジン（DOM差分更新・キャッシュ最適化）適用済みです。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -572,7 +617,7 @@
         movieHistoryTitle: "作成済みまとめ動画の履歴",
         galleryTitle: "Gallery（複数メディア一覧）",
         guestUser: "ゲストユーザー",
-        offlineMode: "Firebase Storage 高速化モード",
+        offlineMode: "Firebase Storage 超高速化モード",
         settingsHeader: "アプリ設定 (Settings)",
         languageSettingTitle: "言語設定 (Language)",
         languageSettingDesc: "表示言語と対応する祝日を切り替えます",
@@ -594,7 +639,7 @@
         saveBtn: "保存する",
         addMediaModalTitle: "写真・動画を追加",
         selectFileLabel: "📁 Firebase Cloud Storageへアップロード",
-        fileLoadingHint: "※動画の静止画サムネイル自動生成により、アプリは常にサクサク軽く動作します。",
+        fileLoadingHint: "※超高速リサイズ・サムネイル自動生成に対応しています。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
         restartMovieBtn: "最初から再生",
@@ -620,7 +665,7 @@
         newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "Video thumbnail auto-generation enabled for ultimate calendar performance.",
+        welcomeNoteDesc: "Ultra-fast rendering engine with DOM differential updates enabled.",
         vlogStudioTitle: "Create Vlog Recap",
         recapModeLabel: "Recap Range Mode",
         modeWeek: "Specific Week (Sun - Sat)",
@@ -652,7 +697,7 @@
         saveBtn: "Save Event",
         addMediaModalTitle: "Add Photos & Videos",
         selectFileLabel: "📁 Select Media Files",
-        fileLoadingHint: "Video thumbnails are optimized for maximum app performance.",
+        fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
         confirmSaveBtn: "Confirm & Save",
         vlogModalTitle: "Cinematic Vlog Recap",
         restartMovieBtn: "Replay",
@@ -818,8 +863,6 @@
       await renderSchedules();
       renderNotifications();
       updateRecapOptions();
-      await renderAlbumGallery();
-      renderMovieHistory();
       setupCarouselSwipe();
     });
 
@@ -836,7 +879,7 @@
             <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
             <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
           </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">動画サムネイルの自動切り出し対応により、カレンダー動作がさらに高速化しました。</p>
+          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">超高速化エンジン（DOM差分更新・キャッシュ最適化）適用済みです。</p>
         </div>
       `;
 
@@ -936,7 +979,7 @@
         let diff = e.clientX - startX;
         let pxWidth = viewport.offsetWidth;
 
-        track.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+        track.style.transform = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
 
         if (diff < -pxWidth * 0.25) {
           track.style.transform = 'translateX(-200%)';
@@ -972,7 +1015,6 @@
       await renderAllPanels();
       updateTrackPosition(false);
       updateRecapOptions();
-      await renderAlbumGallery();
     }
 
     async function changeYearMonthFromSelect() {
@@ -981,7 +1023,6 @@
       await renderAllPanels();
       updateTrackPosition(false);
       updateRecapOptions();
-      await renderAlbumGallery();
     }
 
     function getDaysInMonth(year, month) {
@@ -1036,6 +1077,7 @@
         const isToday = (dateStr === todayStr);
         
         const cell = document.createElement("div");
+        cell.dataset.date = dateStr;
         cell.onclick = async () => { 
           await shiftMonth(-1); 
           selectDate(dateStr); 
@@ -1080,6 +1122,7 @@
         let thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnailUrl || firstCompletedMedia.url) : null;
 
         const cell = document.createElement("div");
+        cell.dataset.date = dateStr;
         cell.onclick = async () => {
           if (!isCurrentPanel) {
             if (month > currentMonth || (month === 1 && currentMonth === 12)) await shiftMonth(1);
@@ -1092,6 +1135,7 @@
           }
         };
         
+        // 🚀 改善③: 重複画像を排除し、背景 <img> 1つに統一
         cell.className = `relative p-1.5 flex flex-col justify-between min-h-[85px] cursor-pointer transition-all overflow-hidden bg-white ${
           isSelected ? 'bg-indigo-50/50 ring-2 ring-indigo-500/40 z-10' : 'hover:bg-slate-50/80'
         }`;
@@ -1109,9 +1153,7 @@
           });
           contentHtml += `</div>`;
         } else {
-          if (thumbnail) {
-            contentHtml = `<div class="mt-1 z-10 w-full h-7 rounded bg-cover bg-center border border-white/80 shadow-xs" style="background-image: url('${thumbnail}')"></div>`;
-          } else if (daySchedules.length > 0) {
+          if (!thumbnail && daySchedules.length > 0) {
             contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
           }
         }
@@ -1144,6 +1186,7 @@
         const isToday = (dateStr === todayStr);
 
         const cell = document.createElement("div");
+        cell.dataset.date = dateStr;
         cell.onclick = async () => { 
           await shiftMonth(1); 
           selectDate(dateStr); 
@@ -1170,10 +1213,20 @@
       }
     }
 
+    // 🚀 改善①: 日付選択時に全再描画せず、DOMクラス（枠線）の付け替えだけで完了させる
     function selectDate(dateStr) {
+      const prevDate = selectedDate;
       selectedDate = dateStr;
       document.getElementById("selected-date-title").innerText = `${selectedDate} の予定 ＆ 思い出`;
-      renderAllPanels();
+
+      const prevCell = document.querySelector(`#panel-curr [data-date="${prevDate}"]`);
+      if (prevCell) {
+        prevCell.classList.remove('bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10');
+      }
+      const newCell = document.querySelector(`#panel-curr [data-date="${dateStr}"]`);
+      if (newCell) {
+        newCell.classList.add('bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10');
+      }
       renderSchedules();
     }
 
@@ -1185,7 +1238,6 @@
         await renderSchedules();
         renderNotifications();
         updateRecapOptions();
-        await renderAlbumGallery();
       }
     }
 
@@ -1196,7 +1248,7 @@
         saveSchedules();
         await renderAllPanels();
         await renderSchedules();
-        await renderAlbumGallery();
+        renderAlbumGallery();
       }
     }
 
@@ -1308,6 +1360,7 @@
       lucide.createIcons();
     }
 
+    // 🚀 改善②: LOOKBOOKタブが表示されているときだけギャラリーを描画
     async function switchTab(tab) {
       const tabs = ['calendar', 'notifications', 'lookbook', 'account'];
       tabs.forEach(t => {
@@ -1384,7 +1437,12 @@
           currSunday.setDate(currSunday.getDate() + 7);
         }
       }
-      renderAlbumGallery();
+      
+      // 🚀 改善②: LOOKBOOKタブが表示されているときだけ安全にギャラリーを描画
+      const lookbookTab = document.getElementById("tab-lookbook");
+      if (lookbookTab && !lookbookTab.classList.contains("hidden")) {
+        renderAlbumGallery();
+      }
     }
 
     function getAllFilteredMediaItems() {
@@ -1526,6 +1584,7 @@
       saveSchedules();
       closeAddModal();
       document.getElementById("add-schedule-form").reset();
+      await renderAllPanels();
       selectDate(date);
       renderNotifications();
       updateRecapOptions();
@@ -1544,6 +1603,7 @@
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
+    // 🚀 改善④: キャッシュコントロール付きアップロード ＆ 安全な動画サムネイル生成
     async function handleFileSelect(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -1557,33 +1617,37 @@
           const isVideo = file.type.startsWith("video") || /\.(mp4|mov|webm)$/i.test(file.name);
           const mediaId = "cloud_" + Math.random().toString(36).substring(2, 9);
           
-          // 1. オリジナルファイルをアップロード
+          // 1. オリジナルファイルをリサイズ・圧縮してアップロード（cacheControl付き）
+          const optimizedFile = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
           const fileRef = storageRef.child('logsnap_media/' + Date.now() + '_' + file.name);
-          const snapshot = await fileRef.put(file);
+          const snapshot = await fileRef.put(optimizedFile, metadataOptions);
           const downloadURL = await getCachedDownloadURL(snapshot.ref);
 
           let thumbUrl = downloadURL;
 
-          // 2. 画像または動画の場合、軽量サムネイル（静止画）を自動生成してアップロード
+          // 2. サムネイル生成
           if (isVideo) {
             const thumbFile = await createVideoThumbnail(file, 300, 300, 0.7);
             if (thumbFile) {
-              const thumbRef = storageRef.child('logsnap_media/thumb_vid_' + Date.now() + '_' + file.name + '.jpg');
-              const thumbSnapshot = await thumbRef.put(thumbFile);
+              const thumbRef = storageRef.child('logsnap_media/thumb_vid_' + Date.now() + '.jpg');
+              const thumbSnapshot = await thumbRef.put(thumbFile, metadataOptions);
               thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
+            } else {
+              // 生成失敗/タイムアウト時はサムネイルなし（または動画のプレビューを使わない）
+              thumbUrl = null; 
             }
           } else {
             const thumbFile = await createImageThumbnail(file, 300, 300, 0.7);
-            const thumbRef = storageRef.child('logsnap_media/thumb_img_' + Date.now() + '_' + file.name);
-            const thumbSnapshot = await thumbRef.put(thumbFile);
+            const thumbRef = storageRef.child('logsnap_media/thumb_img_' + Date.now() + '.jpg');
+            const thumbSnapshot = await thumbRef.put(thumbFile, metadataOptions);
             thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
           }
 
           tempMediaList.push({ 
             id: mediaId, 
             type: isVideo ? "video" : "image",
-            url: downloadURL,       // フルサイズ（再生・拡大用）
-            thumbnailUrl: thumbUrl  // サムネイル静止画（カレンダー・一覧用）
+            url: downloadURL,
+            thumbnailUrl: thumbUrl
           });
         }
         confirmBtn.innerText = t('confirmSaveBtn');
@@ -1608,7 +1672,6 @@
       await renderAllPanels();
       await renderSchedules();
       updateRecapOptions();
-      await renderAlbumGallery();
     }
 
     const vlogPlaylist = [
