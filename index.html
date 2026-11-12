@@ -448,7 +448,7 @@
     firebase.initializeApp(firebaseConfig);
     const storageRef = firebase.storage().ref();
 
-    // 🚀 【改善策②】ダウンロードURLのインメモリキャッシュ（同じURLを何度も取得しに行かないようにする）
+    // 🚀 ダウンロードURLのインメモリキャッシュ
     const downloadUrlCache = new Map();
 
     async function getCachedDownloadURL(fileRef) {
@@ -461,13 +461,9 @@
       return url;
     }
 
-    // 🚀 【改善策①】アップロード時にブラウザ側で軽量なサムネイル（縮小画像）を自動生成する関数
-    async function createThumbnailFile(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+    // 🚀 画像のサムネイル（縮小画像）自動生成関数
+    async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
-        // 動画の場合はCanvasでサムネイル化できないため元のファイルをそのまま返す
-        if (!file.type.startsWith("image/")) {
-          return resolve(file);
-        }
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
@@ -502,6 +498,58 @@
       });
     }
 
+    // 🚀 【新規追加】動画の最初のフレーム（または冒頭）をキャプチャして静止画サムネイルを生成する関数
+    async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.muted = true;
+        video.playsInline = true;
+        
+        const blobUrl = URL.createObjectURL(file);
+        video.src = blobUrl;
+
+        video.onloadeddata = () => {
+          // 0.5秒目のフレームにジャンプ（黒い画面を避けるため）
+          video.currentTime = Math.min(0.5, video.duration || 0.1);
+        };
+
+        video.onseeked = () => {
+          let width = video.videoWidth || 300;
+          let height = video.videoHeight || 300;
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, width, height);
+          
+          URL.revokeObjectURL(blobUrl);
+
+          canvas.toBlob((blob) => {
+            if (!blob) return resolve(null);
+            const thumbFile = new File([blob], "thumb_video_" + file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg", lastModified: Date.now() });
+            resolve(thumbFile);
+          }, "image/jpeg", quality);
+        };
+
+        video.onerror = () => {
+          URL.revokeObjectURL(blobUrl);
+          resolve(null);
+        };
+      });
+    }
+
     // ===== 🌍 i18n 辞書データ =====
     const i18n = {
       ja: {
@@ -514,7 +562,7 @@
         newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "Firebase Storage本番連携、サムネイル最適化およびキャッシュによる高速化に対応しました。",
+        welcomeNoteDesc: "動画サムネイルの自動切り出し対応により、カレンダー動作がさらに高速化しました。",
         vlogStudioTitle: "まとめ動画の作成",
         recapModeLabel: "対象期間モード",
         modeWeek: "特定の一週間 (日曜〜土曜)",
@@ -546,7 +594,7 @@
         saveBtn: "保存する",
         addMediaModalTitle: "写真・動画を追加",
         selectFileLabel: "📁 Firebase Cloud Storageへアップロード",
-        fileLoadingHint: "※サムネイル自動生成により、アプリは常にサクサク軽く動作します。",
+        fileLoadingHint: "※動画の静止画サムネイル自動生成により、アプリは常にサクサク軽く動作します。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
         restartMovieBtn: "最初から再生",
@@ -572,7 +620,7 @@
         newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "Firebase Storage live integration with thumbnail optimization & caching enabled.",
+        welcomeNoteDesc: "Video thumbnail auto-generation enabled for ultimate calendar performance.",
         vlogStudioTitle: "Create Vlog Recap",
         recapModeLabel: "Recap Range Mode",
         modeWeek: "Specific Week (Sun - Sat)",
@@ -604,7 +652,7 @@
         saveBtn: "Save Event",
         addMediaModalTitle: "Add Photos & Videos",
         selectFileLabel: "📁 Select Media Files",
-        fileLoadingHint: "Thumbnails are optimized for maximum app performance.",
+        fileLoadingHint: "Video thumbnails are optimized for maximum app performance.",
         confirmSaveBtn: "Confirm & Save",
         vlogModalTitle: "Cinematic Vlog Recap",
         restartMovieBtn: "Replay",
@@ -788,7 +836,7 @@
             <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
             <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
           </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">Firebase Storage本番連携、サムネイル最適化およびキャッシュによる高速化に対応しました。</p>
+          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">動画サムネイルの自動切り出し対応により、カレンダー動作がさらに高速化しました。</p>
         </div>
       `;
 
@@ -1029,7 +1077,6 @@
             break;
           }
         }
-        // 🚀 プレビューやカレンダーでは軽量なサムネイルURLを使用（なければオリジナルURL）
         let thumbnail = firstCompletedMedia ? (firstCompletedMedia.thumbnailUrl || firstCompletedMedia.url) : null;
 
         const cell = document.createElement("div");
@@ -1160,7 +1207,6 @@
       document.getElementById("viewer-title").innerText = title;
       document.getElementById("viewer-meta").innerText = meta;
 
-      // 🔍 拡大表示では高画質なフルサイズ（url）を使用
       const url = mediaItem.url;
       const isVideo = mediaItem.type === 'video';
 
@@ -1518,10 +1564,17 @@
 
           let thumbUrl = downloadURL;
 
-          // 2. 画像の場合は軽量サムネイルも生成して別途アップロード
-          if (!isVideo) {
-            const thumbFile = await createThumbnailFile(file, 300, 300, 0.7);
-            const thumbRef = storageRef.child('logsnap_media/thumb_' + Date.now() + '_' + file.name);
+          // 2. 画像または動画の場合、軽量サムネイル（静止画）を自動生成してアップロード
+          if (isVideo) {
+            const thumbFile = await createVideoThumbnail(file, 300, 300, 0.7);
+            if (thumbFile) {
+              const thumbRef = storageRef.child('logsnap_media/thumb_vid_' + Date.now() + '_' + file.name + '.jpg');
+              const thumbSnapshot = await thumbRef.put(thumbFile);
+              thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
+            }
+          } else {
+            const thumbFile = await createImageThumbnail(file, 300, 300, 0.7);
+            const thumbRef = storageRef.child('logsnap_media/thumb_img_' + Date.now() + '_' + file.name);
             const thumbSnapshot = await thumbRef.put(thumbFile);
             thumbUrl = await getCachedDownloadURL(thumbSnapshot.ref);
           }
@@ -1530,7 +1583,7 @@
             id: mediaId, 
             type: isVideo ? "video" : "image",
             url: downloadURL,       // フルサイズ（再生・拡大用）
-            thumbnailUrl: thumbUrl  // サムネイル（カレンダー・一覧用）
+            thumbnailUrl: thumbUrl  // サムネイル静止画（カレンダー・一覧用）
           });
         }
         confirmBtn.innerText = t('confirmSaveBtn');
@@ -1637,7 +1690,6 @@
       videoEl.style.opacity = 0;
       videoEl.pause();
 
-      // 🎬 まとめ動画では高画質なオリジナルURL（url）を使用
       const mediaUrl = m.url;
       const isVideo = m.type === 'video';
       titleEl.innerText = m.title;
