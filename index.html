@@ -1571,7 +1571,7 @@ async function resetAllData() {
 // ============================================================
 // ---------- 書き出しの待ち時間対策 ----------
 let vlogAborted = false, screenLock = null;
-function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 15 : 20; }
+function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 9 : 12; }
 function showRecUi(on) {
   const el = document.getElementById('rec-status');
   if (el) el.classList.toggle('hidden', !on);
@@ -1729,11 +1729,16 @@ function buildTimeline(assets, title, bgm, seed) {
   assets.forEach((a, i) => {
     const ev = a.m.title, newEv = ev !== prevEvent;
     prevEvent = ev;
+    const isVid = a.m.type === 'video';
     let r = rnd();
-    let cls = newEv ? (r < 0.4 ? 'long' : 'mid') : (r < 0.4 ? 'short' : (r < 0.9 ? 'mid' : 'long'));
+    let cls = r < 0.2 ? 'short' : (r < 0.75 ? 'mid' : 'long');
+    if (newEv && cls === 'short') cls = 'mid';
     if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(c => c !== cls));
     run = cls === prevCls ? run + 1 : 1; prevCls = cls;
-    const target = cls === 'short' ? range(0.9, 1.5) : cls === 'mid' ? range(1.5, 3) : range(3, 5.5);
+    // 本編はダイジェスト（約1秒）より、はっきり長くする。動画はフル〜最大20秒
+    const target = isVid
+      ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
+      : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
     const extra = {};
     if (newEv && i - lastTextIdx >= 2) {   // 予定の最初のカットだけ、短く文字を出す
       lastTextIdx = i;
