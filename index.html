@@ -440,13 +440,14 @@
       </div>
       <div class="flex gap-2 items-center">
         <select id="bgm-select" onchange="restartMovie()" class="flex-1 min-w-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
+        <button onclick="restartMovie()" class="text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-600 px-3 py-2 rounded-lg whitespace-nowrap">別の編集</button>
         <label class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg cursor-pointer whitespace-nowrap">自分の曲<input type="file" id="bgm-file" accept="audio/*" class="hidden" onchange="pickCustomBgm(event)"></label>
       </div>
 
       <audio id="bgm-player" loop></audio>
 
       <div class="flex gap-2 pt-1">
-        <button onclick="restartMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="restartMovieBtn">
+        <button onclick="replayMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="restartMovieBtn">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 最初から再生
         </button>
         <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="downloadMovieBtn">
@@ -480,10 +481,14 @@
 
     // 🎬 Vlog 関連の変数宣言
     const vlogPlaylist = [
-      { name: "Avatar's Love", url: "7_BPM69.mp3", bpm: 69 },
       { name: "異国のグルメ", url: "082_BPM97.mp3", bpm: 97 },
-      { name: "Sunday Chill", url: "sunday.mp3", bpm: 90 },
-      { name: "Velvet Mood", url: "velvet.mp3", bpm: 90 },
+      { name: "Lofi Polaroids", url: "fassounds-lofi-polaroids-632981.mp3", bpm: 86, vol: 0.30 },
+      { name: "Cooking Show", url: "ikoliks_aj-cooking-cooking-show-634959.mp3", bpm: 118, vol: 0.39 },
+      { name: "Reality", url: "sonicmystery-reality-634743.mp3", bpm: 85, vol: 0.62 },
+      { name: "Luxury Real Estate", url: "danyvin-this-is-luxury-real-estate-634726.mp3", bpm: 115, vol: 0.27 },
+      { name: "Hymn to the Streets", url: "cloudsystem-hymn-to-the-streets-background-hip-hop-beat-main-632836.mp3", bpm: 75, vol: 0.37 },
+      { name: "Fashion Music", url: "blesksound-fashion-music-634256.mp3", bpm: 92, vol: 0.35 },
+      { name: "Copper Nights", url: "pink_sound-copper-nights-jazz-background-music-for-video-stories-full-version-633222.mp3", bpm: 90, vol: 0.35 },
       // 曲を増やすときはここに足す（bpm は曲のテンポ。切り替えがビートに合う）
       // { name: "曲名", url: "ファイル名.mp3", bpm: 100 },
     ];
@@ -1600,6 +1605,7 @@ let bgmCtx = null, bgmDest = null;
 
 // ---------- BGM ----------
 function currentBgm() {
+  if (vlogNext && vlogNext.bgm) { const b = vlogPlaylist.find(x => x.url === vlogNext.bgm); if (b) return b; }
   const v = (document.getElementById('bgm-select') || {}).value || 'auto';
   if (v === 'custom' && customBgm) return customBgm;
   if (v !== 'auto' && vlogPlaylist[+v]) return vlogPlaylist[+v];
@@ -1657,19 +1663,152 @@ async function loadAsset(m) {
 }
 
 // ---------- タイムライン（切り替えをBGMのビートに合わせる） ----------
-function buildTimeline(assets, title, bgm) {
+// ============================================================
+// Vlog v2：動画ごとに少しずつ違う編集（シード方式）＋曲ごとの音量補正
+// 同じシードなら同じ編集になる（履歴から再生しても同じ見た目）
+// ============================================================
+let vlogBaseVol = 0.35, vlogNext = null, lastSeed = 0, lastBgmUrl = '';
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function takeSeed() {
+  const s = (vlogNext && vlogNext.seed != null) ? vlogNext.seed : (Math.random() * 4294967296) >>> 0;
+  vlogNext = null;
+  return s;
+}
+
+// ---------- タイムライン ----------
+function buildTimeline(assets, title, bgm, seed) {
+  const rnd = mulberry32(seed);
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const range = (a, b) => a + rnd() * (b - a);
   const beat = 60 / (bgm.bpm || 90);
-  const beats = (sec) => beat * Math.max(2, Math.round(sec / beat));
-  const tl = [{ kind: 'intro', start: 0, dur: beats(2.2), title, count: assets.length }];
-  let t = tl[0].dur;
-  for (const a of assets) {
-    const dur = a.m.type === 'video'
-      ? Math.max(beat * 2, Math.floor(Math.min(a.vdur, 6) / beat) * beat)
-      : beats(2.8);
-    tl.push({ kind: 'clip', a, start: t, dur });
-    t += dur;
-  }
+  const q = (sec) => beat * Math.max(1, Math.round(sec / beat));   // 切り替えを拍に合わせる
+  const palette = ['#312e81', '#9d174d', '#14532d', '#7c2d12', '#1e3a5f'];
+  const ts = { size: Math.round(range(40, 54)), w: pick(['300', '400', '500']) };
+
+  // 直前と同じオープニングは避ける
+  let last = null;
+  try { last = localStorage.getItem('logsnap_last_open'); } catch (e) {}
+  const open = pick(['digest', 'long', 'direct'].filter(o => o !== last));
+  try { localStorage.setItem('logsnap_last_open', open); } catch (e) {}
+
+  const tl = []; let t = 0;
+  const push = (seg) => { seg.start = t; tl.push(seg); t += seg.dur; };
+  const clipSeg = (a, dur, extra) => {
+    const vlen = a.m.type === 'video' ? a.vdur : 0;
+    if (vlen) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
+    const voff = vlen > dur + 1 ? Math.min(range(0.3, vlen * 0.35), vlen - dur - 0.1) : 0;
+    const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.09);
+    const fade = (tl.length && rnd() < 0.4) ? range(0.25, 0.4) : 0;
+    return Object.assign({ kind: 'clip', a, dur, voff, zoom, fade }, extra);
+  };
+  const card = (d) => push({ kind: 'card', dur: d, title, bg: pick(palette), fade: 0 });
+  const n = assets.length;
+  const digest = (k, withTitle) => {
+    const c = Math.min(k, n), pos = pick(['bl', 'bc', 'ml']);
+    for (let i = 0; i < c; i++) {
+      push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.8, 1.3)),
+        withTitle ? { text: title, tOff: 0, tDur: 99, tPos: pos, tSize: ts.size, tW: ts.w } : {}));
+    }
+  };
+
+  // ---------- オープニング（3種類から抽選） ----------
+  if (open === 'digest') { digest(Math.round(range(6, 9)), true); card(q(range(2, 3))); }
+  else if (open === 'long') {
+    push(clipSeg(assets[0], q(range(4, 5.5)), { text: title, tOff: 0.3, tDur: 2.5, tPos: pick(['bl', 'bc']), tSize: ts.size, tW: ts.w }));
+    digest(Math.round(range(4, 6)), false);
+  } else { card(q(range(2, 2.8))); }
+
+  // ---------- 本編（長さは分布から抽選・同じ長さが続かない） ----------
+  let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
+  assets.forEach((a, i) => {
+    const ev = a.m.title, newEv = ev !== prevEvent;
+    prevEvent = ev;
+    let r = rnd();
+    let cls = newEv ? (r < 0.4 ? 'long' : 'mid') : (r < 0.4 ? 'short' : (r < 0.9 ? 'mid' : 'long'));
+    if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(c => c !== cls));
+    run = cls === prevCls ? run + 1 : 1; prevCls = cls;
+    const target = cls === 'short' ? range(0.9, 1.5) : cls === 'mid' ? range(1.5, 3) : range(3, 5.5);
+    const extra = {};
+    if (newEv && i - lastTextIdx >= 2) {   // 予定の最初のカットだけ、短く文字を出す
+      lastTextIdx = i;
+      Object.assign(extra, { text: ev, tOff: range(0.1, 0.6), tDur: range(1.8, 2.6), tPos: pick(['bl', 'bc', 'ml']), tSize: ts.size, tW: ts.w });
+    }
+    push(clipSeg(a, q(target), extra));
+  });
+  tl.tint = range(0.05, 0.12);   // ごく弱い暖色
   return { tl, total: t };
+}
+
+// ---------- 描画 ----------
+function drawCaption(ctx, seg, local) {
+  if (!seg.text) return;
+  const t0 = seg.tOff, t1 = Math.min(seg.dur, seg.tOff + seg.tDur);
+  if (local < t0 || local > t1) return;
+  const a = Math.min(1, (local - t0) / 0.25, (t1 - local) / 0.25);
+  let txt = String(seg.text);
+  if (/^[\x00-\x7F]*$/.test(txt)) txt = txt.toLowerCase();
+  ctx.save();
+  ctx.globalAlpha *= Math.max(0, a);
+  ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 6;
+  fitText(ctx, txt, VLOG_W - 100, seg.tSize, seg.tW);
+  if (seg.tPos === 'bc') { ctx.textAlign = 'center'; ctx.fillText(txt, VLOG_W / 2, VLOG_H - 170); }
+  else if (seg.tPos === 'ml') { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H * 0.5); }
+  else { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H - 150); }
+  ctx.restore();
+}
+function drawSegment(ctx, seg, local, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (seg.kind === 'card') {
+    ctx.fillStyle = seg.bg; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    fitText(ctx, seg.title, VLOG_W - 100, 60, '300');
+    ctx.fillText(seg.title, VLOG_W / 2, VLOG_H / 2);
+  } else {
+    const p = Math.min(1, local / seg.dur);
+    const s = seg.zoom > 0 ? 1 + seg.zoom * p : seg.zoom < 0 ? 1 - seg.zoom * (1 - p) : 1;
+    drawCover(ctx, seg.a.el, VLOG_W, VLOG_H, s);
+    drawCaption(ctx, seg, local);
+  }
+  ctx.restore();
+}
+function renderFrame(t) {
+  const { ctx, tl, total } = vlog;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+  let i = tl.findIndex(s => t < s.start + s.dur);
+  if (i < 0) i = tl.length - 1;
+  if (i !== vlog.idx) {
+    const prev = tl[vlog.idx], cur = tl[i];
+    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
+    if (cur.a && cur.a.m.type === 'video') { cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
+    vlog.idx = i;
+  }
+  const seg = tl[i], local = t - seg.start;
+  if (i > 0 && seg.fade > 0 && local < seg.fade) {
+    drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
+    drawSegment(ctx, seg, local, local / seg.fade);
+  } else {
+    drawSegment(ctx, seg, local, 1);
+  }
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
+  ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+  ctx.globalCompositeOperation = 'source-over';
+  const left = total - t;
+  if (left < 1.5) vlog.player.volume = vlogBaseVol * Math.max(0, left / 1.5);
+}
+
+// 「最初から再生」＝同じ編集をもう一度（「別の編集」は restartMovie ＝ 新しいシード）
+function replayMovie() {
+  if (activeMovieMediaItems.length) { vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(false); }
 }
 
 // ---------- 描画 ----------
@@ -1683,61 +1822,6 @@ function fitText(ctx, text, maxW, size, weight) {
   let s = size;
   do { ctx.font = `${weight} ${s}px sans-serif`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 18);
 }
-function drawOverlay(ctx, m) {
-  const g = ctx.createLinearGradient(0, VLOG_H * 0.62, 0, VLOG_H);
-  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.75)');
-  ctx.fillStyle = g; ctx.fillRect(0, VLOG_H * 0.62, VLOG_W, VLOG_H * 0.38);
-  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 8;
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
-  fitText(ctx, m.title, VLOG_W - 80, 46, 'bold');
-  ctx.fillText(m.title, 40, VLOG_H - 150);
-  ctx.font = '26px "Courier New", monospace'; ctx.fillStyle = '#cbd5e1';
-  ctx.fillText(`${m.location} / ${m.date}`, 40, VLOG_H - 105);
-  ctx.font = 'italic bold 40px "Courier New", monospace'; ctx.fillStyle = '#bef264'; ctx.textAlign = 'right';
-  ctx.fillText(formatVlogTime(m.time), VLOG_W - 40, VLOG_H - 50);
-  ctx.shadowBlur = 0;
-}
-function drawSegment(ctx, seg, local, alpha) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  if (seg.kind === 'intro') {
-    const g = ctx.createLinearGradient(0, 0, VLOG_W, VLOG_H);
-    g.addColorStop(0, '#312e81'); g.addColorStop(1, '#be185d');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-    fitText(ctx, seg.title, VLOG_W - 100, 64, 'bold');
-    ctx.fillText(seg.title, VLOG_W / 2, VLOG_H / 2 - 10);
-    ctx.font = '28px sans-serif';
-    ctx.fillText(`${seg.count} moments  ·  LogSnap`, VLOG_W / 2, VLOG_H / 2 + 50);
-  } else {
-    const { el, m } = seg.a;
-    drawCover(ctx, el, VLOG_W, VLOG_H, m.type === 'video' ? 1 : 1 + 0.08 * Math.min(1, local / seg.dur));
-    drawOverlay(ctx, m);
-  }
-  ctx.restore();
-}
-function renderFrame(t) {
-  const { ctx, tl, total } = vlog;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-  let i = tl.findIndex(s => t < s.start + s.dur);
-  if (i < 0) i = tl.length - 1;
-  if (i !== vlog.idx) {
-    const prev = tl[vlog.idx], cur = tl[i];
-    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
-    if (cur.a && cur.a.m.type === 'video') { cur.a.el.currentTime = 0; cur.a.el.play().catch(() => {}); }
-    vlog.idx = i;
-  }
-  const seg = tl[i], local = t - seg.start;
-  if (i > 0 && local < VLOG_FADE) {
-    drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
-    drawSegment(ctx, seg, local, local / VLOG_FADE);
-  } else {
-    drawSegment(ctx, seg, local, 1);
-  }
-  const left = total - t;
-  if (left < 1.5) vlog.player.volume = 0.35 * Math.max(0, left / 1.5);
-}
-
 // ---------- 再生ループ ----------
 function vlogTick(now) {
   if (!vlog) return;
@@ -1751,7 +1835,7 @@ function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
   v.t0 = now; v.idx = -1;
-  v.player.currentTime = 0; v.player.volume = 0.35; v.player.play().catch(() => {});
+  v.player.currentTime = 0; v.player.volume = vlogBaseVol; v.player.play().catch(() => {});
   v.raf = requestAnimationFrame(vlogTick);
 }
 function stopVlog() {
@@ -1778,7 +1862,7 @@ function setDlBtn(rec) {
 async function startVlog(record) {
   stopVlog();
   const run = vlogRunId;
-  const bgm = currentBgm();
+  const bgm = currentBgm(); lastBgmUrl = bgm.url;
   const canvas = document.getElementById('movie-canvas'), ctx = canvas.getContext('2d');
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   const picked = pickHighlights(activeMovieMediaItems, vlogMaxItems()).slice()
@@ -1786,9 +1870,9 @@ async function startVlog(record) {
   const assets = (await Promise.all(picked.map(loadAsset))).filter(a => a.ok);
   if (run !== vlogRunId) return;
   if (!assets.length) { alert(t('noMediaMessage')); return; }
-  const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm);
+  lastSeed = takeSeed(); const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
   const player = document.getElementById('bgm-player');
-  player.src = bgm.url; player.loop = true; player.volume = 0.35; player.currentTime = 0;
+  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35; player.volume = vlogBaseVol; player.currentTime = 0;
   const v = { canvas, ctx, tl, total, player, idx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
   vlog = v;
   if (record) startRecorder(v);
@@ -1828,11 +1912,11 @@ function saveRecording(blob) {
   a.download = `LogSnap_Vlog_${Date.now()}.${ext}`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-  movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || 'Vlog Recap', createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems });
+  movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || 'Vlog Recap', createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems, seed: lastSeed, bgmUrl: lastBgmUrl });
   saveMovieHistory();
   renderMovieHistory();
   setDlBtn(false);
-  setTimeout(() => startVlog(false), 300);
+  setTimeout(() => replayMovie(), 300);
 }
 
 // ---------- 既存ボタンから呼ばれる入口（関数名は元のまま） ----------
@@ -1852,7 +1936,7 @@ async function playArchivedMovie(historyId) {
   const h = movieHistory.find(x => x.id === historyId);
   if (!h || !h.mediaItems.length) return;
   activeMovieMediaItems = h.mediaItems;
-  currentMovieTitle = h.title;
+  currentMovieTitle = h.title; vlogNext = { seed: h.seed, bgm: h.bgmUrl };
   openVlogModal();
 }
 function closeMovieModal() {
@@ -1866,7 +1950,7 @@ function recordAndDownloadMovie() {
   if (!activeMovieMediaItems.length) return;
   const sec = vlog ? Math.ceil(vlog.total) : 60;
   if (!confirm(`書き出しには約${sec}秒かかります。完了するまで画面を開いたままにしてください。始めますか？`)) return;
-  startVlog(true);
+  vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(true);
 }
                         function formatVlogTime(timeStr) {
       if (!timeStr) return "9:45 am";
