@@ -1721,10 +1721,8 @@ function buildTimeline(assets, title, bgm, seed) {
 
   // ---------- オープニング（3種類から抽選） ----------
   if (open === 'digest') { digest(Math.round(range(6, 9)), true); card(q(range(2, 3))); }
-  else if (open === 'long') {
-    push(clipSeg(assets[0], q(range(4, 5.5)), { text: title, tOff: 0.3, tDur: 2.5, tPos: pick(['bl', 'bc']), tSize: ts.size, tW: ts.w }));
-    digest(Math.round(range(4, 6)), false);
-  } else { card(q(range(2, 2.8))); }
+  else if (open === 'long') { digest(Math.round(range(5, 8)), true); }
+  else { digest(Math.round(range(5, 7)), false); card(q(range(1.2, 1.8))); }
 
   // ---------- 本編（長さは分布から抽選・同じ長さが続かない） ----------
   let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
@@ -1782,16 +1780,19 @@ function drawSegment(ctx, seg, local, alpha) {
 }
 function renderFrame(t) {
   const { ctx, tl, total } = vlog;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   let i = tl.findIndex(s => t < s.start + s.dur);
   if (i < 0) i = tl.length - 1;
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
     if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
-    if (cur.a && cur.a.m.type === 'video') { cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
+    if (cur.a && cur.a.m.type === 'video') { if (!cur.warm) cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
     vlog.idx = i;
   }
+  for (const nx of [tl[i + 1], tl[i + 2]]) {
+    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) { nx.warm = true; try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {} }
+  }
   const seg = tl[i], local = t - seg.start;
+  if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
   if (i > 0 && seg.fade > 0 && local < seg.fade) {
     drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
     drawSegment(ctx, seg, local, local / seg.fade);
@@ -1834,7 +1835,7 @@ function vlogTick(now) {
 function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
-  v.t0 = now; v.idx = -1;
+  v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; });
   v.player.currentTime = 0; v.player.volume = vlogBaseVol; v.player.play().catch(() => {});
   v.raf = requestAnimationFrame(vlogTick);
 }
