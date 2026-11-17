@@ -434,6 +434,7 @@
       </div>
 
       <canvas id="movie-canvas" width="720" height="1280" class="mx-auto block rounded-2xl bg-black" style="height:52vh;max-width:100%"></canvas>
+      <p id="vlog-info" class="text-[11px] text-slate-500 text-center"></p>
       <div id="rec-status" class="hidden space-y-1">
         <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="rec-bar" class="h-full bg-pink-500" style="width:0%"></div></div>
         <p id="rec-text" class="text-[11px] text-slate-500 text-center"></p>
@@ -1669,23 +1670,24 @@ function takeSeed() {
 }
 
 // ---------- タイムライン ----------
+// ---------- タイムライン（v3）：30〜60秒ごとに音の区間（BGM or 元動画の音声）を切り替える ----------
 function buildTimeline(assets, title, bgm, seed) {
   const rnd = mulberry32(seed);
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
   const range = (a, b) => a + rnd() * (b - a);
-  const beat = 60 / (bgm.bpm || 90);
-  const q = (sec) => beat * Math.max(1, Math.round(sec / beat));   // 切り替えを拍に合わせる
+  let beat = 60 / (bgm.bpm || 90);
+  const q = (sec) => beat * Math.max(1, Math.round(sec / beat));   // 切り替えを今のBGMの拍に合わせる
   const palette = ['#312e81', '#9d174d', '#14532d', '#7c2d12', '#1e3a5f'];
   const ts = { size: Math.round(range(40, 54)), w: pick(['300', '400', '500']) };
-
-  // 直前と同じオープニングは避ける
   let last = null;
   try { last = localStorage.getItem('logsnap_last_open'); } catch (e) {}
   const open = pick(['digest', 'long', 'direct'].filter(o => o !== last));
   try { localStorage.setItem('logsnap_last_open', open); } catch (e) {}
 
   const tl = []; let t = 0;
-  const push = (seg) => { seg.start = t; tl.push(seg); t += seg.dur; };
+  const blocks = [{ start: 0, mode: 'bgm', track: bgm }];   // 音の区間
+  let blkLen = range(30, 60), lastTrack = bgm;
+  const push = (seg) => { seg.start = t; seg.blk = blocks.length - 1; tl.push(seg); t += seg.dur; };
   const clipSeg = (a, dur, extra) => {
     const vlen = a.m.type === 'video' ? a.vdur : 0;
     if (vlen) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
@@ -1703,35 +1705,47 @@ function buildTimeline(assets, title, bgm, seed) {
         Object.assign({ digest: true }, withTitle ? { text: title, tOff: 0, tDur: 99, tPos: pos, tSize: ts.size, tW: ts.w } : {})));
     }
   };
-
-  // ---------- オープニング（3種類から抽選） ----------
+  // オープニング：必ずダイジェストから
   if (open === 'digest') { digest(Math.round(range(6, 9)), true); card(q(range(2, 3))); }
   else if (open === 'long') { digest(Math.round(range(5, 8)), true); }
   else { digest(Math.round(range(5, 7)), false); card(q(range(1.2, 1.8))); }
 
-  // ---------- 本編（長さは分布から抽選・同じ長さが続かない） ----------
+  // 本編
   let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
   assets.forEach((a, i) => {
-    const ev = a.m.title, newEv = ev !== prevEvent;
+    const cur = blocks[blocks.length - 1];
+    if (t - cur.start >= blkLen) {   // 30〜60秒たったら、音の区間を切り替える
+      const nxt = assets.slice(i, i + 6);
+      const vr = nxt.filter(x => x.m.type === 'video').length / nxt.length;
+      const original = false;   // 動画が多いところだけ、元の音声だけにする
+      let track = null;
+      if (!original) {
+        const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
+        track = cands.length ? pick(cands) : lastTrack; lastTrack = track;
+      }
+      blocks.push({ start: t, mode: original ? 'original' : 'bgm', track });
+      beat = original ? 0.5 : 60 / (track.bpm || 90);
+      blkLen = range(30, 60);
+    }
+    const ev = a.m.title, newEv = ev !== prevEvent, isVid = a.m.type === 'video';
     prevEvent = ev;
-    const isVid = a.m.type === 'video';
     let r = rnd();
     let cls = r < 0.2 ? 'short' : (r < 0.75 ? 'mid' : 'long');
     if (newEv && cls === 'short') cls = 'mid';
     if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(c => c !== cls));
     run = cls === prevCls ? run + 1 : 1; prevCls = cls;
-    // 本編はダイジェスト（約1秒）より、はっきり長くする。動画はフル〜最大20秒
     const target = isVid
       ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
       : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
     const extra = {};
-    if (newEv && i - lastTextIdx >= 2) {   // 予定の最初のカットだけ、短く文字を出す
+    if (newEv && i - lastTextIdx >= 2) {
       lastTextIdx = i;
       Object.assign(extra, { text: ev, tOff: range(0.1, 0.6), tDur: range(1.8, 2.6), tPos: pick(['bl', 'bc', 'ml']), tSize: ts.size, tW: ts.w });
     }
     push(clipSeg(a, q(target), extra));
   });
-  tl.tint = range(0.05, 0.12);   // ごく弱い暖色
+  tl.tint = range(0.05, 0.12);
+  tl.blocks = blocks;
   return { tl, total: t };
 }
 
@@ -1768,21 +1782,44 @@ function drawSegment(ctx, seg, local, alpha) {
   }
   ctx.restore();
 }
+// ---------- 描画と音（v3）：BGMと元動画の音声は同時に流さない ----------
 function renderFrame(t) {
   const { ctx, tl, total } = vlog;
   let i = tl.findIndex(s => t < s.start + s.dur);
   if (i < 0) i = tl.length - 1;
+  const blocks = tl.blocks, bi = Math.min(tl[i].blk || 0, blocks.length - 1), blk = blocks[bi];
+  if (vlog.blkIdx !== bi) {   // 音の区間が変わった
+    if (vlog.trackUrl === undefined) vlog.trackUrl = blocks[0].track.url;
+    if (blk.mode === 'bgm') {
+      vlogBaseVol = blk.track.vol || 0.35;
+      if (vlog.trackUrl !== blk.track.url) { vlog.player.src = blk.track.url; vlog.trackUrl = blk.track.url; }
+      vlog.player.currentTime = 0;
+      vlog.player.play().catch(() => {});
+    } else {
+      vlog.player.pause();
+    }
+    vlog.blkIdx = bi;
+  }
+  const orig = blk.mode === 'original';
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
     if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
-    if (cur.a && cur.a.m.type === 'video') { setVideoAudio(cur.a.el, !cur.digest); if (!cur.warm) cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
+    if (cur.a && cur.a.m.type === 'video') {
+      setVideoAudio(cur.a.el, orig && !cur.digest);
+      if (!cur.warm) cur.a.el.currentTime = cur.voff || 0;
+      cur.a.el.play().catch(() => {});
+    }
     vlog.idx = i;
   }
-  for (const nx of [tl[i + 1], tl[i + 2]]) {
-    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) { nx.warm = true; setVideoAudio(nx.a.el, !nx.digest); try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {} }
+  for (const nx of [tl[i + 1], tl[i + 2]]) {   // 次の動画を先に頭出し
+    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
+      nx.warm = true;
+      setVideoAudio(nx.a.el, blocks[nx.blk].mode === 'original' && !nx.digest);
+      try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {}
+    }
   }
   const seg = tl[i], local = t - seg.start;
-  if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
+  if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;   // 準備中は直前の画面を保つ
   if (i > 0 && seg.fade > 0 && local < seg.fade) {
     drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
     drawSegment(ctx, seg, local, local / seg.fade);
@@ -1793,25 +1830,17 @@ function renderFrame(t) {
   ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
   ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   ctx.globalCompositeOperation = 'source-over';
-  let target = seg.digest ? DUCK.digest : DUCK.photo;
-  if (!seg.digest && seg.a && seg.a.m.type === 'video') {
-    const el = seg.a.el;
-    if (local > 0.6 && typeof el.webkitAudioDecodedByteCount === 'number' && el.webkitAudioDecodedByteCount === 0) seg.silent = true;
-    target = seg.silent ? DUCK.photo : DUCK.video;
-  }
-  vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
-  const left = total - t;
-  const lvl = vlogBaseVol * vlog.duck * (left < 1.5 ? Math.max(0, left / 1.5) : 1);
+  const bEnd = blocks[bi + 1] ? blocks[bi + 1].start : total, isLast = bi >= blocks.length - 1;
+  const lvl = orig ? 0 : vlogBaseVol * Math.max(0, Math.min(1, (t - blk.start) / 0.5, (bEnd - t) / (isLast ? 1.5 : 0.5)));
   if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.01) { vlog.lastLvl = lvl; setBgmLevel(lvl); }
 }
-
 // 「最初から再生」＝同じ編集をもう一度（「別の編集」は restartMovie ＝ 新しいシード）
 // ---------- 元動画の音声を使う／BGMを自動で下げる ----------
 let bgmGain = null;
 // BGMの大きさ（1.0＝曲本来の音量）。動画の音声が出ている間だけ下げる。聞こえ方に合わせて数字を変えてよい
 const DUCK = { photo: 1.0, video: 0.45, digest: 1.0 };
 // 動画の音声を使うか。切り替えのラグの原因を調べたいときは false にする
-const VIDEO_AUDIO = true;
+const VIDEO_AUDIO = false;   // いったん使わない。また使うときは true
 function setBgmLevel(x) {
   if (bgmGain) bgmGain.gain.value = x;
   else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
@@ -1830,12 +1859,25 @@ function routeVideo(el) {   // 書き出し用：動画の音声を録音に混�
     el._g = g;
   } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
 }
+// ---------- 追加した素材を必ず使う／使用件数の表示 ----------
+let vlogPrevMade = 0;   // 同じ期間で、前回まとめ動画を作った時刻
+function vlogPeriodKey() {
+  const m = document.getElementById('recap-mode'), s = document.getElementById('recap-target-select');
+  return 'logsnap_made_' + (m ? m.value : '') + '_' + (s ? s.value : '');
+}
+function showVlogInfo(picked, assets) {
+  const el = document.getElementById('vlog-info');
+  if (!el) return;
+  const all = activeMovieMediaItems.length, failed = picked.length - assets.length;
+  const fresh = picked.filter(m => m.addedAt && m.addedAt > vlogPrevMade).length;
+  el.textContent = `使用 ${assets.length}/${all}件` + (fresh ? `（前回のあとに追加した${fresh}件を含む）` : '') + (failed > 0 ? `／読み込めなかった${failed}件` : '');
+}
 function pickHighlights(items, max) {
   if (items.length <= max) return items;
-  const picked = new Set(), week = 7 * 86400000;
-  // 最近追加した素材を優先して入れる（最大で枠の1/3）
-  items.filter(m => m.addedAt && Date.now() - m.addedAt < week)
-    .sort((a, b) => b.addedAt - a.addedAt).slice(0, Math.max(2, Math.floor(max / 3)))
+  const picked = new Set();
+  // 前回のまとめ動画のあとに追加した素材を、先に枠へ入れる（枠の半分まで）
+  items.filter(m => m.addedAt && m.addedAt > vlogPrevMade)
+    .sort((a, b) => b.addedAt - a.addedAt).slice(0, Math.max(2, Math.floor(max / 2)))
     .forEach(m => picked.add(m));
   const byDate = new Map();
   items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
@@ -1878,7 +1920,7 @@ function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
   v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; });
-  v.player.currentTime = 0; setBgmLevel(vlogBaseVol); v.player.play().catch(() => {});
+  v.blkIdx = -1;
   v.raf = requestAnimationFrame(vlogTick);
 }
 function stopVlog() {
@@ -1913,7 +1955,7 @@ async function startVlog(record) {
   const assets = (await Promise.all(picked.map(loadAsset))).filter(a => a.ok);
   if (run !== vlogRunId) return;
   if (!assets.length) { alert(t('noMediaMessage')); return; }
-  lastSeed = takeSeed(); const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
+  lastSeed = takeSeed(); showVlogInfo(picked, assets); const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
   const player = document.getElementById('bgm-player');
   player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35; if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol; player.currentTime = 0;
   const v = { canvas, ctx, tl, total, player, idx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
@@ -1935,7 +1977,7 @@ function startRecorder(v) {
     bgmGain = bgmCtx.createGain(); src.connect(bgmGain); bgmGain.connect(bgmDest); bgmGain.connect(bgmCtx.destination); v.player.volume = 1;
   }
   bgmCtx.resume();
-  v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
+  if (VIDEO_AUDIO) v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
   const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
   const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
     .find(m => MediaRecorder.isTypeSupported(m)) || '';
@@ -1974,6 +2016,7 @@ function playHighlightMovie() {
   if (activeMovieMediaItems.length === 0) { alert(t('noMediaMessage')); return; }
   const sel = document.getElementById('recap-target-select');
   currentMovieTitle = sel.options[sel.selectedIndex].text;
+  { const k = vlogPeriodKey(); try { vlogPrevMade = Number(localStorage.getItem(k) || 0); localStorage.setItem(k, String(Date.now())); } catch (e) {} }
   openVlogModal();
 }
 async function playArchivedMovie(historyId) {
