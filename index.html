@@ -1779,7 +1779,7 @@ function renderFrame(t) {
     vlog.idx = i;
   }
   for (const nx of [tl[i + 1], tl[i + 2]]) {
-    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) { nx.warm = true; try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {} }
+    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) { nx.warm = true; setVideoAudio(nx.a.el, !nx.digest); try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {} }
   }
   const seg = tl[i], local = t - seg.start;
   if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
@@ -1793,25 +1793,31 @@ function renderFrame(t) {
   ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
   ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   ctx.globalCompositeOperation = 'source-over';
-  let target = seg.digest ? 0.8 : 0.6;
+  let target = seg.digest ? DUCK.digest : DUCK.photo;
   if (!seg.digest && seg.a && seg.a.m.type === 'video') {
     const el = seg.a.el;
     if (local > 0.6 && typeof el.webkitAudioDecodedByteCount === 'number' && el.webkitAudioDecodedByteCount === 0) seg.silent = true;
-    target = seg.silent ? 0.6 : 0.2;
+    target = seg.silent ? DUCK.photo : DUCK.video;
   }
   vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
   const left = total - t;
-  setBgmLevel(vlogBaseVol * vlog.duck * (left < 1.5 ? Math.max(0, left / 1.5) : 1));
+  const lvl = vlogBaseVol * vlog.duck * (left < 1.5 ? Math.max(0, left / 1.5) : 1);
+  if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.01) { vlog.lastLvl = lvl; setBgmLevel(lvl); }
 }
 
 // 「最初から再生」＝同じ編集をもう一度（「別の編集」は restartMovie ＝ 新しいシード）
 // ---------- 元動画の音声を使う／BGMを自動で下げる ----------
 let bgmGain = null;
+// BGMの大きさ（1.0＝曲本来の音量）。動画の音声が出ている間だけ下げる。聞こえ方に合わせて数字を変えてよい
+const DUCK = { photo: 1.0, video: 0.45, digest: 1.0 };
+// 動画の音声を使うか。切り替えのラグの原因を調べたいときは false にする
+const VIDEO_AUDIO = true;
 function setBgmLevel(x) {
   if (bgmGain) bgmGain.gain.value = x;
   else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
 }
 function setVideoAudio(el, on) {
+  on = on && VIDEO_AUDIO;
   if (el._g) el._g.gain.value = on ? 1 : 0;
   else el.muted = !on;
 }

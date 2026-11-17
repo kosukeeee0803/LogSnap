@@ -652,7 +652,7 @@ async function handleFileSelect(event) {
         thumbBlob: thumb || null
       });
 
-      const m = { id: mediaId, type: isVideo ? 'video' : 'image' };
+      const m = { id: mediaId, type: isVideo ? 'video' : 'image', addedAt: Date.now() };
       await attachMediaUrls(m);
       tempMediaList.push(m);
     }
@@ -1571,7 +1571,7 @@ async function resetAllData() {
 // ============================================================
 // ---------- 書き出しの待ち時間対策 ----------
 let vlogAborted = false, screenLock = null;
-function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 9 : 12; }
+function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 10 : 14; }
 function showRecUi(on) {
   const el = document.getElementById('rec-status');
   if (el) el.classList.toggle('hidden', !on);
@@ -1631,21 +1631,6 @@ function pickCustomBgm(e) {
 }
 
 // ---------- 素材の選別（日ごとに1つずつ順番に拾い、30件まで） ----------
-function pickHighlights(items, max) {
-  if (items.length <= max) return items;
-  const byDate = new Map();
-  items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
-  const picked = new Set();
-  for (let round = 0; picked.size < max; round++) {
-    let added = false;
-    for (const list of byDate.values()) {
-      if (list[round] && picked.size < max) { picked.add(list[round]); added = true; }
-    }
-    if (!added) break;
-  }
-  return items.filter(m => picked.has(m));
-}
-
 async function loadAsset(m) {
   if (m.type === 'video') {
     const v = document.createElement('video');
@@ -1715,7 +1700,7 @@ function buildTimeline(assets, title, bgm, seed) {
     const c = Math.min(k, n), pos = pick(['bl', 'bc', 'ml']);
     for (let i = 0; i < c; i++) {
       push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.8, 1.3)),
-        withTitle ? { text: title, tOff: 0, tDur: 99, tPos: pos, tSize: ts.size, tW: ts.w } : {}));
+        Object.assign({ digest: true }, withTitle ? { text: title, tOff: 0, tDur: 99, tPos: pos, tSize: ts.size, tW: ts.w } : {})));
     }
   };
 
@@ -1790,7 +1775,7 @@ function renderFrame(t) {
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
     if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
-    if (cur.a && cur.a.m.type === 'video') { if (!cur.warm) cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
+    if (cur.a && cur.a.m.type === 'video') { setVideoAudio(cur.a.el, !cur.digest); if (!cur.warm) cur.a.el.currentTime = cur.voff || 0; cur.a.el.play().catch(() => {}); }
     vlog.idx = i;
   }
   for (const nx of [tl[i + 1], tl[i + 2]]) {
@@ -1808,11 +1793,57 @@ function renderFrame(t) {
   ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
   ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   ctx.globalCompositeOperation = 'source-over';
+  let target = seg.digest ? 0.8 : 0.6;
+  if (!seg.digest && seg.a && seg.a.m.type === 'video') {
+    const el = seg.a.el;
+    if (local > 0.6 && typeof el.webkitAudioDecodedByteCount === 'number' && el.webkitAudioDecodedByteCount === 0) seg.silent = true;
+    target = seg.silent ? 0.6 : 0.2;
+  }
+  vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
   const left = total - t;
-  if (left < 1.5) vlog.player.volume = vlogBaseVol * Math.max(0, left / 1.5);
+  setBgmLevel(vlogBaseVol * vlog.duck * (left < 1.5 ? Math.max(0, left / 1.5) : 1));
 }
 
 // 「最初から再生」＝同じ編集をもう一度（「別の編集」は restartMovie ＝ 新しいシード）
+// ---------- 元動画の音声を使う／BGMを自動で下げる ----------
+let bgmGain = null;
+function setBgmLevel(x) {
+  if (bgmGain) bgmGain.gain.value = x;
+  else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
+}
+function setVideoAudio(el, on) {
+  if (el._g) el._g.gain.value = on ? 1 : 0;
+  else el.muted = !on;
+}
+function routeVideo(el) {   // 書き出し用：動画の音声を録音に混ぜる
+  if (el._g) return;
+  try {
+    const s = bgmCtx.createMediaElementSource(el), g = bgmCtx.createGain();
+    el.muted = false; el.volume = 1; g.gain.value = 0;
+    s.connect(g); g.connect(bgmDest); g.connect(bgmCtx.destination);
+    el._g = g;
+  } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
+}
+function pickHighlights(items, max) {
+  if (items.length <= max) return items;
+  const picked = new Set(), week = 7 * 86400000;
+  // 最近追加した素材を優先して入れる（最大で枠の1/3）
+  items.filter(m => m.addedAt && Date.now() - m.addedAt < week)
+    .sort((a, b) => b.addedAt - a.addedAt).slice(0, Math.max(2, Math.floor(max / 3)))
+    .forEach(m => picked.add(m));
+  const byDate = new Map();
+  items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
+  while (picked.size < max) {   // 残りは日ごとにまんべんなく
+    let added = false;
+    for (const list of byDate.values()) {
+      const m = list.find(x => !picked.has(x));
+      if (m && picked.size < max) { picked.add(m); added = true; }
+    }
+    if (!added) break;
+  }
+  return items.filter(m => picked.has(m));
+}
+
 function replayMovie() {
   if (activeMovieMediaItems.length) { vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(false); }
 }
@@ -1841,7 +1872,7 @@ function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
   v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; });
-  v.player.currentTime = 0; v.player.volume = vlogBaseVol; v.player.play().catch(() => {});
+  v.player.currentTime = 0; setBgmLevel(vlogBaseVol); v.player.play().catch(() => {});
   v.raf = requestAnimationFrame(vlogTick);
 }
 function stopVlog() {
@@ -1878,7 +1909,7 @@ async function startVlog(record) {
   if (!assets.length) { alert(t('noMediaMessage')); return; }
   lastSeed = takeSeed(); const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
   const player = document.getElementById('bgm-player');
-  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35; player.volume = vlogBaseVol; player.currentTime = 0;
+  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35; if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol; player.currentTime = 0;
   const v = { canvas, ctx, tl, total, player, idx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
   vlog = v;
   if (record) startRecorder(v);
@@ -1895,9 +1926,10 @@ function startRecorder(v) {
     bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
     const src = bgmCtx.createMediaElementSource(v.player);
     bgmDest = bgmCtx.createMediaStreamDestination();
-    src.connect(bgmDest); src.connect(bgmCtx.destination);
+    bgmGain = bgmCtx.createGain(); src.connect(bgmGain); bgmGain.connect(bgmDest); bgmGain.connect(bgmCtx.destination); v.player.volume = 1;
   }
   bgmCtx.resume();
+  v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
   const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
   const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
     .find(m => MediaRecorder.isTypeSupported(m)) || '';
