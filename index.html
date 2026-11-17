@@ -1641,6 +1641,7 @@ async function loadAsset(m) {
     v.muted = true; v.playsInline = true; v.preload = 'metadata';
     if (!m.url.startsWith('blob:')) v.crossOrigin = 'anonymous';
     v.src = m.url;
+    const ae = new Audio(); ae.preload = 'auto'; ae.muted = true; if (!m.url.startsWith('blob:')) ae.crossOrigin = 'anonymous'; ae.src = m.url; v._ael = ae;
     await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; setTimeout(r, 4000); });
     return { m, el: v, ok: !!v.videoWidth, vdur: isFinite(v.duration) ? v.duration : 3 };
   }
@@ -1822,9 +1823,8 @@ function renderFrame(t) {
   const orig = blk.mode === 'original';
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
-    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
+    if (prev && prev.a && prev.a.m.type === 'video') { prev.a.el.pause(); if (prev.a.el._ael) prev.a.el._ael.pause(); }
     if (cur.a && cur.a.m.type === 'video') {
-      setVideoAudio(cur.a.el, !cur.digest);
       if (!cur.warm) cur.a.el.currentTime = cur.voff || 0;
       cur.a.el.play().catch(() => {});
     }
@@ -1833,12 +1833,22 @@ function renderFrame(t) {
   for (const nx of [tl[i + 1], tl[i + 2]]) {
     if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
       nx.warm = true;
-      setVideoAudio(nx.a.el, !nx.digest);
+      if (nx.a.el._ael) { try { nx.a.el._ael.currentTime = nx.voff || 0; } catch (e) {} }
       try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {}
     }
   }
   const seg = tl[i], local = t - seg.start;
   if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
+  if (seg.a && seg.a.m.type === 'video' && !seg.digest && VIDEO_AUDIO && !seg.aOn) {
+    seg.aOn = true;
+    const ae = seg.a.el._ael;
+    if (ae) {
+      const pos = (seg.voff || 0) + local;
+      try { if (Math.abs(ae.currentTime - pos) > 0.15) ae.currentTime = pos; } catch (e) {}
+      setVideoAudio(seg.a.el, true);
+      ae.play().catch(() => {});
+    }
+  }
   if (i > 0 && seg.fade > 0 && local < seg.fade) {
     drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
     drawSegment(ctx, seg, local, local / seg.fade);
@@ -1908,18 +1918,21 @@ function setBgmLevel(x) {
   if (bgmGain) bgmGain.gain.value = x;
   else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
 }
+// 元動画の音声は、映像とは別の「音声専用の再生」で流す（映像の切り替えを軽く保つため）
 function setVideoAudio(el, on) {
+  const ae = el._ael;
+  if (!ae) return;
   on = on && VIDEO_AUDIO;
-  if (el._g) el._g.gain.value = on ? 1 : 0;
-  else el.muted = !on;
+  if (ae._g) ae._g.gain.value = on ? 1 : 0; else ae.muted = !on;
 }
-function routeVideo(el) {   // 書き出し用：動画の音声を録音に混ぜる
-  if (el._g) return;
+function routeVideo(el) {   // 書き出し用：音声専用の再生を録音に混ぜる
+  const ae = el._ael;
+  if (!ae || ae._g) return;
   try {
-    const s = bgmCtx.createMediaElementSource(el), g = bgmCtx.createGain();
-    el.muted = false; el.volume = 1; g.gain.value = 0;
+    const s = bgmCtx.createMediaElementSource(ae), g = bgmCtx.createGain();
+    ae.muted = false; ae.volume = 1; g.gain.value = 0;
     s.connect(g); g.connect(bgmDest); g.connect(bgmCtx.destination);
-    el._g = g;
+    ae._g = g;
   } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
 }
 // ---------- 追加した素材を必ず使う／使用件数の表示 ----------
@@ -1982,7 +1995,7 @@ function vlogTick(now) {
 function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
-  v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; });
+  v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; s.aOn = false; });
   v.blkIdx = -1;
   v.raf = requestAnimationFrame(vlogTick);
 }
@@ -1993,7 +2006,8 @@ function stopVlog() {
   vlog.saveOnStop = false;
   if (vlog.rec && vlog.rec.state !== 'inactive') vlog.rec.stop();
   vlog.tl.forEach(s => {
-    if (s.a && s.a.m.type === 'video') { s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load(); }
+    if (s.a && s.a.m.type === 'video') { s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load();
+      if (s.a.el._ael) { s.a.el._ael.pause(); s.a.el._ael.removeAttribute('src'); s.a.el._ael.load(); } }
   });
   vlog.player.pause();
   vlog = null;
