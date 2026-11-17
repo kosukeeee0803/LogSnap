@@ -70,7 +70,7 @@
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300&family=Great+Vibes&family=Montserrat:wght@300;400&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Great+Vibes&family=Montserrat:wght@400;500&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pt-16 pb-32 selection:bg-indigo-500 selection:text-white">
 
@@ -1676,15 +1676,15 @@ function takeSeed() {
 // ---------- タイムライン ----------
 // ---------- タイムライン（v3）：30〜60秒ごとに音の区間（BGM or 元動画の音声）を切り替える ----------
 // ---------- v4：英語タイトル（ダイジェストを背景に）／BGMのフェード／元動画の音声 ----------
-const BGM_FADE = 1.2, DUCK_VIDEO = 0.45;   // BGMのフェード秒数／動画の音声が出ている間のBGMの大きさ（1.0=そのまま）
+const BGM_FADE = 1.2, DUCK_VIDEO = 0.33;   // BGMのフェード秒数／動画の音声が出ている間のBGMの大きさ（1.0=そのまま）
 let vlogPeriod = null;
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const TITLE_STYLES = [
-  { id: 'serif', font: s => `italic 400 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0 },
+  { id: 'serif', font: s => `italic 600 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0 },
   { id: 'script', font: s => `400 ${s}px "Great Vibes", cursive`, size: [90, 106], upper: false, ls: 0 },
-  { id: 'caps', font: s => `300 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8 },
-  { id: 'cormorant', font: s => `italic 300 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2 }
+  { id: 'caps', font: s => `500 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8 },
+  { id: 'cormorant', font: s => `italic 600 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2 }
 ];
 function vlogTitleFor(rnd) {   // まとめる期間に合わせた英語タイトル
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
@@ -1700,6 +1700,39 @@ function vlogTitleFor(rnd) {   // まとめる期間に合わせた英語タイ�
   }
   return { main: 'A Moment in My Life', sub: '' };
 }
+const VLOG_BUDGET = 150;   // 本編の長さの目安の上限（秒）
+let sfxCtx = null;
+function vlogTrimBudget(assets) {
+  const prev = (typeof vlogPrevMade !== 'undefined') ? vlogPrevMade : Infinity;
+  const est = (a) => a.m.type === 'video' ? Math.min(a.vdur || 5, 30) : 3.7;
+  const list = assets.slice();
+  let total = list.reduce((s, a) => s + est(a), 0);
+  while (total > VLOG_BUDGET && list.length > 6) {   // 長い素材から外す（前回のあとに追加した素材は残す）
+    let k = -1, best = -1;
+    list.forEach((a, i) => { if (!(a.m.addedAt && a.m.addedAt > prev) && est(a) > best) { best = est(a); k = i; } });
+    if (k < 0) break;
+    total -= est(list[k]); list.splice(k, 1);
+  }
+  return list;
+}
+function playClickSfx() {   // パソコンのクリックのような音（その場で合成。音源ファイル不要）
+  try {
+    const ctx = bgmCtx || sfxCtx || (sfxCtx = new (window.AudioContext || window.webkitAudioContext)());
+    if (ctx.resume) ctx.resume();
+    const now = ctx.currentTime;
+    [[0, 0.9], [0.075, 0.45]].forEach(([dt, vol]) => {
+      const len = Math.floor(ctx.sampleRate * 0.012), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.18));
+      const s = ctx.createBufferSource(); s.buffer = buf;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+      const g = ctx.createGain(); g.gain.value = vol;
+      s.connect(hp); hp.connect(g); g.connect(ctx.destination);
+      if (ctx === bgmCtx && bgmDest) g.connect(bgmDest);
+      s.start(now + dt);
+    });
+  } catch (e) {}
+}
+
 function fitFont(ctx, text, maxW, size, fontFn) {
   let s = size;
   do { ctx.font = fontFn(s); s -= 2; } while (ctx.measureText(text).width > maxW && s > 20);
@@ -1707,7 +1740,7 @@ function fitFont(ctx, text, maxW, size, fontFn) {
 }
 function vlogLoadFonts() {   // おしゃれなフォントを使う前に読み込む（最大3秒待つ）
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
-  const specs = ['italic 400 40px "Playfair Display"', '400 40px "Great Vibes"', '300 40px "Montserrat"', 'italic 300 40px "Cormorant Garamond"'];
+  const specs = ['italic 600 40px "Playfair Display"', '400 40px "Great Vibes"', '500 40px "Montserrat"', '400 28px "Montserrat"', 'italic 600 40px "Cormorant Garamond"'];
   return Promise.race([Promise.all(specs.map(s => document.fonts.load(s, 'Aa'))), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
 }
 function drawOpeningTitle(ctx, ti, t) {
@@ -1722,9 +1755,10 @@ function drawOpeningTitle(ctx, ti, t) {
   ctx.textAlign = center ? 'center' : 'left';
   const x = center ? VLOG_W / 2 : 70, y = ti.pos === 'center' ? VLOG_H * 0.46 : VLOG_H - 360;
   ctx.fillText(main, x, y);
+  if (st.id === 'script') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.2; ctx.strokeText(main, x, y); }
   if (ti.sub) {
     if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
-    ctx.font = '300 26px "Montserrat", sans-serif';
+    ctx.font = '400 28px "Montserrat", sans-serif';
     ctx.fillText(ti.sub.toUpperCase(), x, y + size * 0.55 + 28);
   }
   ctx.restore();
@@ -1732,6 +1766,7 @@ function drawOpeningTitle(ctx, ti, t) {
 
 
 function buildTimeline(assets, title, bgm, seed) {
+  assets = vlogTrimBudget(assets);   // 長くなりすぎないよう、全体の長さに上限をかける
   const rnd = mulberry32(seed);
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
   const range = (a, b) => a + rnd() * (b - a);
@@ -1750,7 +1785,7 @@ function buildTimeline(assets, title, bgm, seed) {
   const push = (seg) => { seg.start = t; seg.blk = blocks.length - 1; tl.push(seg); t += seg.dur; };
   const clipSeg = (a, dur, extra) => {
     const vlen = a.m.type === 'video' ? a.vdur : 0;
-    if (vlen) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
+    if (vlen && !(extra && extra.full)) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
     const voff = vlen > dur + 1 ? Math.min(range(0.3, vlen * 0.35), vlen - dur - 0.1) : 0;
     const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.09);
     const fade = (tl.length && rnd() < 0.4) ? range(0.25, 0.4) : 0;
@@ -1762,6 +1797,17 @@ function buildTimeline(assets, title, bgm, seed) {
   const t0 = range(0.4, 1.4);
   tl.title = { main: T.main, sub: T.sub, style, size: Math.round(range(style.size[0], style.size[1])), pos: pick(['center', 'lowerleft', 'lowercenter']),
     t0, t1: Math.max(t0 + 2, Math.min(t - 0.2, t0 + range(4, 5.5))) };
+
+  // ダイジェストの終わり：BGMをすぐ止めて、本編に入ってからしばらくして、次のBGMを少しずつ上げる
+  tl.mainStart = t;
+  {
+    const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
+    const track = cands.length ? pick(cands) : lastTrack; lastTrack = track;
+    blocks[0].fadeOut = 0.08;
+    blocks.push({ start: t, mode: 'bgm', track, delay: range(4, 7), fadeIn: range(4, 6) });
+    beat = 60 / (track.bpm || 90);
+    blkLen = range(30, 60);
+  }
 
   // 本編
   let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
@@ -1787,6 +1833,7 @@ function buildTimeline(assets, title, bgm, seed) {
     if (newEv && cls === 'short') cls = 'mid';
     if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(x => x !== cls));
     run = cls === prevCls ? run + 1 : 1; prevCls = cls;
+    const vlen = isVid ? a.vdur : 0, full = isVid && vlen <= 30;   // 30秒以内の動画は、カットせず最後まで使う
     const target = isVid
       ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
       : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
@@ -1795,13 +1842,13 @@ function buildTimeline(assets, title, bgm, seed) {
       lastTextIdx = i;
       Object.assign(extra, { text: ev, tOff: range(0.1, 0.6), tDur: range(1.8, 2.6), tPos: pick(['bl', 'bc', 'ml']), tSize: ts.size, tW: ts.w });
     }
-    push(clipSeg(a, q(target), extra));
+    if (full) extra.full = true;
+    push(clipSeg(a, full ? vlen : q(target), extra));
   });
   tl.tint = range(0.05, 0.12);
   tl.blocks = blocks;
   return { tl, total: t };
 }
-
 
 function renderFrame(t) {
   const { ctx, tl, total } = vlog;
@@ -1809,22 +1856,27 @@ function renderFrame(t) {
   if (i < 0) i = tl.length - 1;
   const blocks = tl.blocks, bi = Math.min(tl[i].blk || 0, blocks.length - 1), blk = blocks[bi];
   if (vlog.blkIdx !== bi) {   // 音の区間が変わった
+    vlog.pendingPlay = null;
     if (vlog.trackUrl === undefined) vlog.trackUrl = blocks[0].track.url;
     if (blk.mode === 'bgm') {
       vlogBaseVol = blk.track.vol || 0.35;
       if (vlog.trackUrl !== blk.track.url) { vlog.player.src = blk.track.url; vlog.trackUrl = blk.track.url; }
       vlog.player.currentTime = 0;
-      vlog.player.play().catch(() => {});
+      if (blk.delay) { vlog.player.pause(); vlog.pendingPlay = blk.start + blk.delay; }   // しばらく無音にしてから流す
+      else vlog.player.play().catch(() => {});
     } else {
       vlog.player.pause();
     }
     vlog.blkIdx = bi;
   }
+  if (vlog.pendingPlay != null && t >= vlog.pendingPlay) { vlog.pendingPlay = null; vlog.player.currentTime = 0; vlog.player.play().catch(() => {}); }
+  if (!vlog.clicked && tl.mainStart && t >= tl.mainStart) { vlog.clicked = true; playClickSfx(); }   // 本編に切り替わる合図のクリック音
   const orig = blk.mode === 'original';
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
-    if (prev && prev.a && prev.a.m.type === 'video') { prev.a.el.pause(); if (prev.a.el._ael) prev.a.el._ael.pause(); }
+    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
     if (cur.a && cur.a.m.type === 'video') {
+      setVideoAudio(cur.a.el, !cur.digest);
       if (!cur.warm) cur.a.el.currentTime = cur.voff || 0;
       cur.a.el.play().catch(() => {});
     }
@@ -1833,22 +1885,12 @@ function renderFrame(t) {
   for (const nx of [tl[i + 1], tl[i + 2]]) {
     if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
       nx.warm = true;
-      if (nx.a.el._ael) { try { nx.a.el._ael.currentTime = nx.voff || 0; } catch (e) {} }
+      setVideoAudio(nx.a.el, !nx.digest);
       try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {}
     }
   }
   const seg = tl[i], local = t - seg.start;
   if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
-  if (seg.a && seg.a.m.type === 'video' && !seg.digest && VIDEO_AUDIO && !seg.aOn) {
-    seg.aOn = true;
-    const ae = seg.a.el._ael;
-    if (ae) {
-      const pos = (seg.voff || 0) + local;
-      try { if (Math.abs(ae.currentTime - pos) > 0.15) ae.currentTime = pos; } catch (e) {}
-      setVideoAudio(seg.a.el, true);
-      ae.play().catch(() => {});
-    }
-  }
   if (i > 0 && seg.fade > 0 && local < seg.fade) {
     drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
     drawSegment(ctx, seg, local, local / seg.fade);
@@ -1869,10 +1911,10 @@ function renderFrame(t) {
   }
   vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
   const bEnd = blocks[bi + 1] ? blocks[bi + 1].start : total, isLast = bi >= blocks.length - 1;
-  const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, (t - blk.start) / BGM_FADE, (bEnd - t) / (isLast ? 2 : BGM_FADE)));
+  const dly = blk.delay || 0, fi = blk.fadeIn || BGM_FADE, fo = (blk.fadeOut != null) ? blk.fadeOut : (isLast ? 2 : BGM_FADE);
+  const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, (t - blk.start - dly) / fi, (bEnd - t) / fo));
   if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.005) { vlog.lastLvl = lvl; setBgmLevel(lvl); }
 }
-
 // ---------- 描画 ----------
 function drawCaption(ctx, seg, local) {
   if (!seg.text) return;
@@ -1995,7 +2037,7 @@ function vlogTick(now) {
 function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
-  v.t0 = now; v.idx = -1; v.tl.forEach(s => { s.warm = false; s.aOn = false; });
+  v.t0 = now; v.idx = -1; v.clicked = false; v.pendingPlay = null; v.tl.forEach(s => { s.warm = false; s.aOn = false; });
   v.blkIdx = -1;
   v.raf = requestAnimationFrame(vlogTick);
 }
