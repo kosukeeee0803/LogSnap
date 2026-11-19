@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogSnap - 予定×シネマティックVlog・アルバム</title>
+  <link id="app-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%234f46e5'/%3E%3Cstop offset='100%25' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='10' y='14' width='44' height='42' rx='8' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2'/%3E%3Cpath d='M10 22a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v4H10z' fill='url(%23g)'/%3E%3Ccircle cx='22' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Ccircle cx='42' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Crect x='18' y='32' width='28' height='18' rx='4' fill='%231e1b4b'/%3E%3Cpath d='M26 32l2-3h8l2 3z' fill='%231e1b4b'/%3E%3Ccircle cx='32' cy='41' r='5' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='41' r='2.5' fill='%231e1b4b'/%3E%3C/svg%3E">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -109,6 +110,46 @@
     .animate-slide-up {
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* 🚀 アプリアイコン起動アニメーション */
+    #splash-screen {
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+    #splash-screen.splash-hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    @keyframes splashIconPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.76) translateY(14px);
+      }
+      55% {
+        opacity: 1;
+        transform: scale(1.04) translateY(-2px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    @keyframes splashRingPulse {
+      0% {
+        opacity: 0.45;
+        transform: scale(0.92);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.38);
+      }
+    }
+    .splash-icon-anim {
+      animation: splashIconPop 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .splash-pulse-ring {
+      animation: splashRingPulse 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,11 +157,67 @@
 </head>
 <body class="bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 text-slate-800 font-sans antialiased min-h-screen pt-16 pb-32">
 
+  <!-- 🚀 起動時スプラッシュアニメーション -->
+  <div id="splash-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-white via-slate-50 to-slate-100 flex flex-col items-center justify-center">
+    <div class="relative flex items-center justify-center">
+      <div id="splash-ring" class="splash-pulse-ring absolute w-28 h-28 rounded-3xl border-2" style="border-color: var(--theme-primary);"></div>
+      <div class="splash-icon-anim w-24 h-24 rounded-3xl bg-white border border-slate-200 shadow-xl flex items-center justify-center p-2">
+        <svg viewBox="0 0 96 96" class="w-full h-full" aria-hidden="true">
+          <defs>
+            <linearGradient id="splashHeaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--theme-grad-from)" />
+              <stop offset="100%" stop-color="var(--theme-grad-to)" />
+            </linearGradient>
+          </defs>
+          <!-- カレンダー台紙 -->
+          <rect x="16" y="22" width="64" height="60" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5" />
+          <!-- 上部グラデーション帯 -->
+          <path d="M16 34a12 12 0 0 1 12-12h40a12 12 0 0 1 12 12v7H16z" fill="url(#splashHeaderGrad)" />
+          <!-- カレンダーリング -->
+          <rect x="31" y="13" width="6" height="16" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" />
+          <rect x="59" y="13" width="6" height="16" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" />
+          <!-- 薄い日付グリッド -->
+          <g fill="#f1f5f9">
+            <rect x="25" y="48" width="8" height="8" rx="2" />
+            <rect x="37" y="48" width="8" height="8" rx="2" />
+            <rect x="49" y="48" width="8" height="8" rx="2" />
+            <rect x="61" y="48" width="8" height="8" rx="2" />
+            <rect x="25" y="61" width="8" height="8" rx="2" />
+            <rect x="61" y="61" width="8" height="8" rx="2" />
+          </g>
+          <!-- 中央カメラアイコン -->
+          <rect x="27" y="51" width="42" height="25" rx="6" fill="#1e1b4b" />
+          <path d="M39 51l3-5h12l3 5z" fill="#1e1b4b" />
+          <circle cx="48" cy="63.5" r="7.5" fill="#ffffff" />
+          <circle cx="48" cy="63.5" r="4" fill="#1e1b4b" />
+          <circle cx="61.5" cy="56.5" r="2.2" fill="#ffffff" />
+        </svg>
+      </div>
+    </div>
+    <p class="splash-icon-anim mt-4 text-sm font-bold tracking-wider theme-brand-gradient bg-clip-text text-transparent">LogSnap</p>
+  </div>
+
   <!-- ヘッダー（完全固定） -->
   <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-4 py-3 flex items-center justify-between shadow-sm max-w-md mx-auto">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg theme-avatar-gradient flex items-center justify-center font-bold text-white shadow-md">
-        L
+      <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-xs overflow-hidden p-0.5">
+        <svg viewBox="0 0 96 96" class="w-full h-full" aria-hidden="true">
+          <defs>
+            <linearGradient id="headerMiniGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--theme-grad-from)" />
+              <stop offset="100%" stop-color="var(--theme-grad-to)" />
+            </linearGradient>
+          </defs>
+          <rect x="16" y="22" width="64" height="60" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+          <path d="M16 34a12 12 0 0 1 12-12h40a12 12 0 0 1 12 12v7H16z" fill="url(#headerMiniGrad)" />
+          <rect x="31" y="13" width="6" height="16" rx="3" fill="#cbd5e1" />
+          <rect x="59" y="13" width="6" height="16" rx="3" fill="#cbd5e1" />
+          <rect x="27" y="51" width="42" height="25" rx="6" fill="#1e1b4b" />
+          <path d="M39 51l3-5h12l3 5z" fill="#1e1b4b" />
+          <circle cx="48" cy="63.5" r="7.5" fill="#ffffff" />
+          <circle cx="48" cy="63.5" r="4" fill="#1e1b4b" />
+          <circle cx="61.5" cy="56.5" r="2.2" fill="#ffffff" />
+        </svg>
       </div>
       <h1 class="text-xl font-bold tracking-tight theme-brand-gradient bg-clip-text text-transparent">
         LogSnap
@@ -640,6 +737,14 @@
     let currentTheme = localStorage.getItem('logsnap_theme') || 'indigo';
     if (!THEME_PRESETS[currentTheme]) currentTheme = 'indigo';
 
+    function updateFaviconForTheme(preset) {
+      const faviconEl = document.getElementById('app-favicon');
+      if (!faviconEl) return;
+      const c1 = encodeURIComponent(preset.gradFrom);
+      const c2 = encodeURIComponent(preset.gradTo);
+      faviconEl.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='${c1}'/%3E%3Cstop offset='100%25' stop-color='${c2}'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='10' y='14' width='44' height='42' rx='8' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2'/%3E%3Cpath d='M10 22a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v4H10z' fill='url(%23g)'/%3E%3Ccircle cx='22' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Ccircle cx='42' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Crect x='18' y='32' width='28' height='18' rx='4' fill='%231e1b4b'/%3E%3Cpath d='M26 32l2-3h8l2 3z' fill='%231e1b4b'/%3E%3Ccircle cx='32' cy='41' r='5' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='41' r='2.5' fill='%231e1b4b'/%3E%3C/svg%3E`;
+    }
+
     function applyThemeColor(themeKey) {
       const preset = THEME_PRESETS[themeKey] || THEME_PRESETS.indigo;
       const root = document.documentElement;
@@ -652,6 +757,7 @@
       root.style.setProperty('--theme-ring', preset.ring);
       root.style.setProperty('--theme-grad-from', preset.gradFrom);
       root.style.setProperty('--theme-grad-to', preset.gradTo);
+      updateFaviconForTheme(preset);
 
       document.querySelectorAll('.theme-swatch').forEach(btn => {
         const isSelected = btn.getAttribute('data-theme') === themeKey;
@@ -674,6 +780,14 @@
       monthCellCache.clear();
       renderAllPanels();
       renderSchedules();
+    }
+
+    function runSplashAnimation() {
+      const splash = document.getElementById('splash-screen');
+      if (!splash) return;
+      setTimeout(() => {
+        splash.classList.add('splash-hide');
+      }, 950);
     }
 
     // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
@@ -2799,6 +2913,7 @@ function recordAndDownloadMovie() {
       updateRecapOptions();
       setupCarouselSwipe();
       setupCalendarClicks();
+      runSplashAnimation();
     });
   </script>
 </body>
