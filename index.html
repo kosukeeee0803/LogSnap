@@ -5,6 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogSnap - 予定×シネマティックVlog・アルバム</title>
   <link id="app-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%234f46e5'/%3E%3Cstop offset='100%25' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='10' y='14' width='44' height='42' rx='8' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2'/%3E%3Cpath d='M10 22a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v4H10z' fill='url(%23g)'/%3E%3Ccircle cx='22' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Ccircle cx='42' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Crect x='18' y='32' width='28' height='18' rx='4' fill='%231e1b4b'/%3E%3Cpath d='M26 32l2-3h8l2 3z' fill='%231e1b4b'/%3E%3Ccircle cx='32' cy='41' r='5' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='41' r='2.5' fill='%231e1b4b'/%3E%3C/svg%3E">
+  <script>
+    // 🚀 描画前にテーマカラーを即座に適用し、起動アイコンの色チラつきを防止
+    const THEME_PRESETS = {
+      indigo: {
+        primary: '#4f46e5',
+        primaryHover: '#6366f1',
+        primarySoft: 'rgba(79, 70, 229, 0.08)',
+        primaryBorder: 'rgba(79, 70, 229, 0.22)',
+        accent: '#ec4899',
+        accentHover: '#db2777',
+        ring: 'rgba(99, 102, 241, 0.35)',
+        gradFrom: '#6366f1',
+        gradTo: '#ec4899'
+      },
+      emerald: {
+        primary: '#059669',
+        primaryHover: '#10b981',
+        primarySoft: 'rgba(5, 150, 105, 0.09)',
+        primaryBorder: 'rgba(5, 150, 105, 0.24)',
+        accent: '#0891b2',
+        accentHover: '#0e7490',
+        ring: 'rgba(16, 185, 129, 0.35)',
+        gradFrom: '#059669',
+        gradTo: '#06b6d4'
+      },
+      sunset: {
+        primary: '#ea580c',
+        primaryHover: '#f97316',
+        primarySoft: 'rgba(234, 88, 12, 0.09)',
+        primaryBorder: 'rgba(234, 88, 12, 0.24)',
+        accent: '#e11d48',
+        accentHover: '#be123c',
+        ring: 'rgba(249, 115, 22, 0.35)',
+        gradFrom: '#ea580c',
+        gradTo: '#e11d48'
+      },
+      midnight: {
+        primary: '#1e293b',
+        primaryHover: '#334155',
+        primarySoft: 'rgba(30, 41, 59, 0.08)',
+        primaryBorder: 'rgba(30, 41, 59, 0.24)',
+        accent: '#6366f1',
+        accentHover: '#4f46e5',
+        ring: 'rgba(51, 65, 85, 0.35)',
+        gradFrom: '#1e293b',
+        gradTo: '#6366f1'
+      }
+    };
+    let currentTheme = localStorage.getItem('logsnap_theme') || 'indigo';
+    if (!THEME_PRESETS[currentTheme]) currentTheme = 'indigo';
+    (function applyInitialThemeVars() {
+      const preset = THEME_PRESETS[currentTheme];
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', preset.primary);
+      root.style.setProperty('--theme-primary-hover', preset.primaryHover);
+      root.style.setProperty('--theme-primary-soft', preset.primarySoft);
+      root.style.setProperty('--theme-primary-border', preset.primaryBorder);
+      root.style.setProperty('--theme-accent', preset.accent);
+      root.style.setProperty('--theme-accent-hover', preset.accentHover);
+      root.style.setProperty('--theme-ring', preset.ring);
+      root.style.setProperty('--theme-grad-from', preset.gradFrom);
+      root.style.setProperty('--theme-grad-to', preset.gradTo);
+      const faviconEl = document.getElementById('app-favicon');
+      if (faviconEl) {
+        const c1 = encodeURIComponent(preset.gradFrom);
+        const c2 = encodeURIComponent(preset.gradTo);
+        faviconEl.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='${c1}'/%3E%3Cstop offset='100%25' stop-color='${c2}'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='10' y='14' width='44' height='42' rx='8' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2'/%3E%3Cpath d='M10 22a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v4H10z' fill='url(%23g)'/%3E%3Ccircle cx='22' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Ccircle cx='42' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Crect x='18' y='32' width='28' height='18' rx='4' fill='%231e1b4b'/%3E%3Cpath d='M26 32l2-3h8l2 3z' fill='%231e1b4b'/%3E%3Ccircle cx='32' cy='41' r='5' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='41' r='2.5' fill='%231e1b4b'/%3E%3C/svg%3E`;
+      }
+    })();
+  </script>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -111,7 +181,7 @@
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* 🚀 アプリアイコン起動アニメーション */
+    /* 🚀 アプリアイコン起動アニメーション（その場からすっとフェードイン） */
     #splash-screen {
       transition: opacity 0.45s ease, visibility 0.45s ease;
     }
@@ -120,35 +190,31 @@
       visibility: hidden;
       pointer-events: none;
     }
-    @keyframes splashIconPop {
+    @keyframes splashIconFade {
       0% {
         opacity: 0;
-        transform: scale(0.76) translateY(14px);
-      }
-      55% {
-        opacity: 1;
-        transform: scale(1.04) translateY(-2px);
+        transform: scale(0.95);
       }
       100% {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: scale(1);
       }
     }
     @keyframes splashRingPulse {
       0% {
-        opacity: 0.45;
-        transform: scale(0.92);
+        opacity: 0.4;
+        transform: scale(0.96);
       }
       100% {
         opacity: 0;
-        transform: scale(1.38);
+        transform: scale(1.32);
       }
     }
     .splash-icon-anim {
-      animation: splashIconPop 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: splashIconFade 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .splash-pulse-ring {
-      animation: splashRingPulse 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: splashRingPulse 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -588,7 +654,7 @@
     </div>
   </div>
 
-  <!-- シネマティックまとめ動画再生モーダル -->
+  <!-- シネマティックまとめ動画再生モーダル（BGM・編集はアプリ側固定） -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -606,11 +672,6 @@
       <div id="rec-status" class="hidden space-y-1">
         <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="rec-bar" class="h-full theme-accent-bg" style="width:0%"></div></div>
         <p id="rec-text" class="text-[11px] text-slate-500 text-center"></p>
-      </div>
-      <div class="flex gap-2 items-center">
-        <select id="bgm-select" onchange="restartMovie()" class="flex-1 min-w-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none"></select>
-        <button onclick="restartMovie()" class="text-xs font-semibold bg-pink-50 hover:bg-pink-100 theme-accent-text px-3 py-2 rounded-lg whitespace-nowrap" data-i18n="anotherEditBtn">別の編集</button>
-        <label class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg cursor-pointer whitespace-nowrap"><span data-i18n="customBgmBtn">自分の曲</span><input type="file" id="bgm-file" accept="audio/*" class="hidden" onchange="pickCustomBgm(event)"></label>
       </div>
 
       <audio id="bgm-player" loop></audio>
@@ -686,57 +747,6 @@
     }
 // ===== ここまで追加 =====
 
-    // 🎨 テーマカラー定義
-    const THEME_PRESETS = {
-      indigo: {
-        primary: '#4f46e5',
-        primaryHover: '#6366f1',
-        primarySoft: 'rgba(79, 70, 229, 0.08)',
-        primaryBorder: 'rgba(79, 70, 229, 0.22)',
-        accent: '#ec4899',
-        accentHover: '#db2777',
-        ring: 'rgba(99, 102, 241, 0.35)',
-        gradFrom: '#6366f1',
-        gradTo: '#ec4899'
-      },
-      emerald: {
-        primary: '#059669',
-        primaryHover: '#10b981',
-        primarySoft: 'rgba(5, 150, 105, 0.09)',
-        primaryBorder: 'rgba(5, 150, 105, 0.24)',
-        accent: '#0891b2',
-        accentHover: '#0e7490',
-        ring: 'rgba(16, 185, 129, 0.35)',
-        gradFrom: '#059669',
-        gradTo: '#06b6d4'
-      },
-      sunset: {
-        primary: '#ea580c',
-        primaryHover: '#f97316',
-        primarySoft: 'rgba(234, 88, 12, 0.09)',
-        primaryBorder: 'rgba(234, 88, 12, 0.24)',
-        accent: '#e11d48',
-        accentHover: '#be123c',
-        ring: 'rgba(249, 115, 22, 0.35)',
-        gradFrom: '#ea580c',
-        gradTo: '#e11d48'
-      },
-      midnight: {
-        primary: '#1e293b',
-        primaryHover: '#334155',
-        primarySoft: 'rgba(30, 41, 59, 0.08)',
-        primaryBorder: 'rgba(30, 41, 59, 0.24)',
-        accent: '#6366f1',
-        accentHover: '#4f46e5',
-        ring: 'rgba(51, 65, 85, 0.35)',
-        gradFrom: '#1e293b',
-        gradTo: '#6366f1'
-      }
-    };
-
-    let currentTheme = localStorage.getItem('logsnap_theme') || 'indigo';
-    if (!THEME_PRESETS[currentTheme]) currentTheme = 'indigo';
-
     function updateFaviconForTheme(preset) {
       const faviconEl = document.getElementById('app-favicon');
       if (!faviconEl) return;
@@ -797,31 +807,31 @@
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f172a"/><polygon points="40,32 40,68 70,50" fill="#f472b6"/></svg>'
     );
 
-    // 🎬 Vlog 関連の変数宣言
+    // 🎬 Vlog 関連の変数宣言（BGM・効果音はアプリ側固定）
     const vlogPlaylist = [
-      { name: "異国のグルメ", url: "082_BPM97.mp3", bpm: 97 },
+      { name: "異国のグルメ", url: "082_BPM97.mp3", bpm: 97, vol: 0.35 },
       { name: "Lofi Polaroids", url: "fassounds-lofi-polaroids-632981.mp3", bpm: 86, vol: 0.30 },
       { name: "Cooking Show", url: "ikoliks_aj-cooking-cooking-show-634959.mp3", bpm: 118, vol: 0.39 },
       { name: "Reality", url: "sonicmystery-reality-634743.mp3", bpm: 85, vol: 0.62 },
       { name: "Luxury Real Estate", url: "danyvin-this-is-luxury-real-estate-634726.mp3", bpm: 115, vol: 0.27 },
       { name: "Hymn to the Streets", url: "cloudsystem-hymn-to-the-streets-background-hip-hop-beat-main-632836.mp3", bpm: 75, vol: 0.37 },
       { name: "Fashion Music", url: "blesksound-fashion-music-634256.mp3", bpm: 92, vol: 0.35 },
-      { name: "Copper Nights", url: "pink_sound-copper-nights-jazz-background-music-for-video-stories-full-version-633222.mp3", bpm: 90, vol: 0.35 },
-      // 曲を増やすときはここに足す（bpm は曲のテンポ。切り替えがビートに合う）
-      // { name: "曲名", url: "ファイル名.mp3", bpm: 100 },
+      { name: "Copper Nights", url: "pink_sound-copper-nights-jazz-background-music-for-video-stories-full-version-633222.mp3", bpm: 90, vol: 0.35 }
+    ];
+
+    // 🔊 BGM切り替わり時にランダム再生する効果音アセット
+    const VLOG_SFX_FILES = [
+      "決定ボタンを押す7.mp3",
+      "決定ボタンを押す34.mp3",
+      "決定ボタンを押す44.mp3",
+      "決定ボタンを押す50.mp3"
     ];
 
     let activeMovieMediaItems = [];
-    let currentSlideIdx = 0;
-    let activeSlideTimeout = null;
     let currentMovieTitle = "";
 
     // ============================================================
 // LogSnap 端末内メディア保存（IndexedDB版）
-// index.html の script 内に貼り付けて使う。
-// 置き換え対象：Firebase Storage関連（storageRef / getCachedDownloadURL /
-// downloadUrlCache / handleFileSelect / saveSchedules / saveMovieHistory /
-// deleteSchedule / deleteMediaFromSchedule）
 // ============================================================
 
 // ---------- 1) IndexedDB の土台 ----------
@@ -849,7 +859,7 @@ async function mediaPut(record) {
     tx.objectStore('media').put(record);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error); // 容量不足(QuotaExceededError)もここに来る
+    tx.onabort = () => reject(tx.error);
   });
 }
 
@@ -872,10 +882,9 @@ async function mediaDelete(id) {
   });
 }
 
-// ---------- 2) Blob → 表示用URL（既存コードの m.url / m.thumbnailUrl をそのまま使える） ----------
-const objectUrls = new Map(); // id -> { url, thumbnailUrl }
+// ---------- 2) Blob → 表示用URL ----------
+const objectUrls = new Map();
 
-// 成功したら true。IndexedDBに実体が無ければ false
 async function attachMediaUrls(m) {
   let cached = objectUrls.get(m.id);
   if (!cached) {
@@ -902,8 +911,6 @@ async function removeMedia(id) {
   await mediaDelete(id);
 }
 
-// 起動時に全メディアへURLを付け直す。
-// 以前Firebaseに保存した古いデータ（http URLを持つもの）は、そのまま残す。
 async function hydrateMediaList(list) {
   const kept = [];
   for (const m of (list || [])) {
@@ -961,7 +968,7 @@ async function handleFileSelect(event) {
 
       const optimized = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
       const thumb = isVideo
-        ? await createVideoThumbnail(file, 300, 300, 0.7)   // 真っ黒な場合は null
+        ? await createVideoThumbnail(file, 300, 300, 0.7)
         : await createImageThumbnail(file, 300, 300, 0.7);
 
       await mediaPut({
@@ -1011,7 +1018,7 @@ async function deleteSchedule(id) {
   updateRecapOptions();
 }
 
-// ---------- 6) 他に必要な修正（コメント） ----------
+// ---------- 6) データ初期化 ----------
 async function resetAllData() {
   try { (await openMediaDb()).close(); } catch (e) {}
   await new Promise((res) => {
@@ -1022,7 +1029,7 @@ async function resetAllData() {
   location.reload();
 }
 
-    // 🚀 一覧用URL（動画のURLは <img> に渡さない）
+    // 🚀 一覧用URL
     function getThumbUrl(m) {
       if (m.thumbnailUrl) return m.thumbnailUrl;
       return m.type === 'image' ? m.url : null;
@@ -1111,7 +1118,6 @@ async function resetAllData() {
       for (let day = 1; day <= totalDays; day++) {
         cells.push(makeDayCell(year, month, day, todayStr));
       }
-      // 🚀 常に6週（42マス）にそろえる
       const total = firstDayIndex + totalDays;
       const remaining = 42 - total;
       for (let day = 1; day <= remaining; day++) {
@@ -1806,7 +1812,6 @@ async function resetAllData() {
       });
     }
 
-    // 🚀 次のフレームが描画されるまで待つ（最大250ms）
     function waitForVideoFrame(video) {
       return new Promise((resolve) => {
         let finished = false;
@@ -1827,7 +1832,6 @@ async function resetAllData() {
       return canvas;
     }
 
-    // 🚀 画像の平均の明るさ（0〜255）
     function measureCanvasBrightness(canvas) {
       const size = 24;
       const s = document.createElement('canvas');
@@ -1858,7 +1862,6 @@ async function resetAllData() {
       });
     }
 
-    // 🚀 iOS対応・黒潰れ防止の高度な動画サムネイル生成エンジン
     async function createVideoThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       const blobUrl = URL.createObjectURL(file);
       const video = document.createElement('video');
@@ -1868,7 +1871,6 @@ async function resetAllData() {
       video.setAttribute('playsinline', '');
       video.setAttribute('webkit-playsinline', '');
       video.preload = 'auto';
-      // iOS対策：DOMに載せておかないとフレームが描画されないことがある
       video.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;';
       document.body.appendChild(video);
 
@@ -1905,10 +1907,9 @@ async function resetAllData() {
           const canvas = drawVideoFrameToCanvas(video, maxWidth, maxHeight);
           const brightness = measureCanvasBrightness(canvas);
           if (!best || brightness > best.brightness) best = { canvas, brightness };
-          if (brightness >= 25) break;   // 十分明るければ採用
+          if (brightness >= 25) break;
         }
 
-        // 真っ黒しか取れなかった場合は null（一覧では再生マークが出る）
         if (!best || best.brightness < 4) return null;
         const blob = await new Promise((res) => best.canvas.toBlob(res, 'image/jpeg', quality));
         return blob ? new File([blob], 'thumb_video.jpg', { type: 'image/jpeg', lastModified: Date.now() }) : null;
@@ -1928,9 +1929,10 @@ async function resetAllData() {
     }
 
     // ============================================================
-// LogSnap Vlog エンジン：Canvasに描画し、プレビューと録画の両方に使う
+// LogSnap Vlog エンジン（ダイジェスト＋おしゃれタイトル／アイキャッチ → 本編）
+// ・BGM・編集スタイルはアプリ側で自動決定・固定
+// ・BGMが切り替わるタイミングのみ4種の効果音をランダム再生
 // ============================================================
-// ---------- 書き出しの待ち時間対策 ----------
 let vlogAborted = false, screenLock = null;
 function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 10 : 14; }
 function showRecUi(on) {
@@ -1950,7 +1952,6 @@ function releaseScreen() {
   try { if (screenLock) screenLock.release(); } catch (e) {}
   screenLock = null;
 }
-// 書き出し中に画面を離れたら、壊れた動画を作らず中断して知らせる
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && vlog && vlog.rec) { stopVlog(); vlogAborted = true; }
   else if (!document.hidden && vlogAborted) {
@@ -1960,42 +1961,64 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-const VLOG_W = 720, VLOG_H = 1280, VLOG_FADE = 0.4;
-let vlog = null, vlogRunId = 0, customBgm = null;
-let bgmCtx = null, bgmDest = null;
+const VLOG_W = 720, VLOG_H = 1280;
+let vlog = null, vlogRunId = 0;
+let bgmCtx = null, bgmDest = null, bgmGain = null;
+let sfxAudioPool = [];
 
-// ---------- BGM ----------
-function currentBgm() {
-  if (vlogNext && vlogNext.bgm) { const b = vlogPlaylist.find(x => x.url === vlogNext.bgm); if (b) return b; }
-  const v = (document.getElementById('bgm-select') || {}).value || 'auto';
-  if (v === 'custom' && customBgm) return customBgm;
-  if (v !== 'auto' && vlogPlaylist[+v]) return vlogPlaylist[+v];
-  return vlogPlaylist[Math.floor(Math.random() * vlogPlaylist.length)];
-}
-function fillBgmSelect() {
-  const sel = document.getElementById('bgm-select');
-  if (!sel) return;
-  const keep = sel.value;
-  sel.innerHTML = '<option value="auto">BGM: おまかせ</option>' +
-    vlogPlaylist.map((b, i) => `<option value="${i}">${b.name}</option>`).join('') +
-    (customBgm ? `<option value="custom">自分の曲: ${customBgm.name}</option>` : '');
-  sel.value = [...sel.options].some(o => o.value === keep) ? keep : 'auto';
-}
-function pickCustomBgm(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  if (customBgm) URL.revokeObjectURL(customBgm.url);
-  customBgm = { name: f.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(f), bpm: 90 };
-  fillBgmSelect();
-  document.getElementById('bgm-select').value = 'custom';
-  restartMovie();
+// ---------- BGM選択（アプリ側固定・シードで決定） ----------
+function pickAutoBgm(rnd) {
+  if (vlogNext && vlogNext.bgm) {
+    const b = vlogPlaylist.find(x => x.url === vlogNext.bgm);
+    if (b) return b;
+  }
+  return vlogPlaylist[Math.floor(rnd() * vlogPlaylist.length)];
 }
 
-// ---------- 素材の選別（日ごとに1つずつ順番に拾い、30件まで） ----------
+// ---------- 効果音（BGM切り替わり時のみランダム再生） ----------
+function ensureSfxPool() {
+  if (sfxAudioPool.length > 0) return;
+  sfxAudioPool = VLOG_SFX_FILES.map(url => {
+    const a = new Audio();
+    a.preload = 'auto';
+    a.src = url;
+    a.volume = 0.65;
+    return a;
+  });
+}
+
+function routeSfxToRecorder(audioEl) {
+  if (!bgmCtx || !bgmDest || audioEl._routed) return;
+  try {
+    const src = bgmCtx.createMediaElementSource(audioEl);
+    const g = bgmCtx.createGain();
+    g.gain.value = 0.75;
+    src.connect(g);
+    g.connect(bgmDest);
+    g.connect(bgmCtx.destination);
+    audioEl._routed = true;
+  } catch (e) {}
+}
+
+function triggerRandomTransitionSfx(sfxIndex) {
+  ensureSfxPool();
+  const idx = (typeof sfxIndex === 'number' && sfxAudioPool[sfxIndex])
+    ? sfxIndex
+    : Math.floor(Math.random() * sfxAudioPool.length);
+  const el = sfxAudioPool[idx];
+  if (!el) return;
+  if (bgmCtx && bgmDest) routeSfxToRecorder(el);
+  try {
+    el.currentTime = 0;
+    el.play().catch(() => {});
+  } catch (e) {}
+}
+
+// ---------- 素材の読み込み ----------
 async function loadAsset(m) {
   if (m.type === 'video') {
     const v = document.createElement('video');
-    v.muted = true; v.playsInline = true; v.preload = 'metadata';
+    v.muted = true; v.playsInline = true; v.preload = 'auto';
     if (!m.url.startsWith('blob:')) v.crossOrigin = 'anonymous';
     v.src = m.url;
     const ae = new Audio(); ae.preload = 'auto'; ae.muted = true; if (!m.url.startsWith('blob:')) ae.crossOrigin = 'anonymous'; ae.src = m.url; v._ael = ae;
@@ -2009,11 +2032,6 @@ async function loadAsset(m) {
   return { m, el: img, ok: !!img.naturalWidth };
 }
 
-// ---------- タイムライン（切り替えをBGMのビートに合わせる） ----------
-// ============================================================
-// Vlog v2：動画ごとに少しずつ違う編集（シード方式）＋曲ごとの音量補正
-// 同じシードなら同じ編集になる（履歴から再生しても同じ見た目）
-// ============================================================
 let vlogBaseVol = 0.35, vlogNext = null, lastSeed = 0, lastBgmUrl = '';
 
 function mulberry32(a) {
@@ -2030,41 +2048,57 @@ function takeSeed() {
   return s;
 }
 
-// ---------- タイムライン ----------
-// ---------- タイムライン（v3）：30〜60秒ごとに音の区間（BGM or 元動画の音声）を切り替える ----------
-// ---------- v4：英語タイトル（ダイジェストを背景に）／BGMのフェード／元動画の音声 ----------
-const BGM_FADE = 1.2, DUCK_VIDEO = 0.33;   // BGMのフェード秒数／動画の音声が出ている間のBGMの大きさ（1.0=そのまま）
+const BGM_FADE = 1.0, DUCK_VIDEO = 0.32;
 let vlogPeriod = null;
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const TITLE_STYLES = [
-  { id: 'serif', font: s => `italic 600 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0 },
-  { id: 'script', font: s => `400 ${s}px "Great Vibes", cursive`, size: [90, 106], upper: false, ls: 0 },
-  { id: 'caps', font: s => `500 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8 },
-  { id: 'cormorant', font: s => `italic 600 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2 }
+
+// ✨ ダイジェスト用おしゃれタイトルテンプレート群
+const TITLE_TEMPLATES = [
+  { id: 'serif_italic', font: s => `italic 600 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0, prefix: 'coming up:' },
+  { id: 'script_flow', font: s => `400 ${s}px "Great Vibes", cursive`, size: [92, 108], upper: false, ls: 0, prefix: '' },
+  { id: 'minimal_caps', font: s => `500 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8, prefix: 'DAY IN MY LIFE' },
+  { id: 'editorial', font: s => `italic 600 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2, prefix: 'moments' }
 ];
-function vlogTitleFor(rnd) {   // まとめる期間に合わせた英語タイトル
+
+// 🎨 アイキャッチ背景パレット
+const EYECATCH_PALETTES = [
+  { bg1: '#f8e8ee', bg2: '#f3d8e2', text: '#5c414d', sub: '#8c6b79' },
+  { bg1: '#f4efe6', bg2: '#e9e0d2', text: '#4a4238', sub: '#7c7163' },
+  { bg1: '#eaeff5', bg2: '#dce4ee', text: '#364152', sub: '#64748b' },
+  { bg1: '#1e1b24', bg2: '#2c2735', text: '#f8fafc', sub: '#cbd5e1' }
+];
+
+function vlogTitleFor(rnd) {
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
   const p = vlogPeriod;
   if (p && p.mode === 'week' && p.value) {
     const [s, e] = p.value.split('_').map(x => x.split('-').map(Number));
-    return { main: pick(['A Week in My Life', 'My Week', 'One Week, Lately', 'This Week']), sub: `${MON3[s[1] - 1]} ${s[2]} – ${MON3[e[1] - 1]} ${e[2]}` };
+    return {
+      main: pick(['a week in my life', 'my week vlog', 'one week, lately', 'this week']),
+      sub: `${MON3[s[1] - 1]} ${s[2]} – ${MON3[e[1] - 1]} ${e[2]}`,
+      eyecatchNote: pick(['enjoy !!', 'let’s begin', 'weekly diary'])
+    };
   }
   if (p && p.mode === 'month' && p.value) {
     const [y, m] = p.value.split('-').map(Number), name = MON[m - 1];
-    const main = pick(['A Month in My Life', name + ' Diaries', 'Hello, ' + name, name + ', Lately']);
-    return { main, sub: main.includes(name) ? String(y) : name + ' ' + y };
+    const main = pick(['a month in my life', name.toLowerCase() + ' diaries', 'hello, ' + name.toLowerCase(), name.toLowerCase() + ', lately']);
+    return {
+      main,
+      sub: main.includes(name.toLowerCase()) ? String(y) : name + ' ' + y,
+      eyecatchNote: pick(['enjoy !!', 'monthly recap', 'memories'])
+    };
   }
-  return { main: 'A Moment in My Life', sub: '' };
+  return { main: 'a day in my life vlog', sub: '', eyecatchNote: 'enjoy !!' };
 }
-const VLOG_BUDGET = 150;   // 本編の長さの目安の上限（秒）
-let sfxCtx = null;
+
+const VLOG_BUDGET = 150;
 function vlogTrimBudget(assets) {
   const prev = (typeof vlogPrevMade !== 'undefined') ? vlogPrevMade : Infinity;
   const est = (a) => a.m.type === 'video' ? Math.min(a.vdur || 5, 30) : 3.7;
   const list = assets.slice();
   let total = list.reduce((s, a) => s + est(a), 0);
-  while (total > VLOG_BUDGET && list.length > 6) {   // 長い素材から外す（前回のあとに追加した素材は残す）
+  while (total > VLOG_BUDGET && list.length > 6) {
     let k = -1, best = -1;
     list.forEach((a, i) => { if (!(a.m.addedAt && a.m.addedAt > prev) && est(a) > best) { best = est(a); k = i; } });
     if (k < 0) break;
@@ -2072,125 +2106,242 @@ function vlogTrimBudget(assets) {
   }
   return list;
 }
-function playClickSfx() {   // パソコンのクリックのような音（その場で合成。音源ファイル不要）
-  try {
-    const ctx = bgmCtx || sfxCtx || (sfxCtx = new (window.AudioContext || window.webkitAudioContext)());
-    if (ctx.resume) ctx.resume();
-    const now = ctx.currentTime;
-    [[0, 0.9], [0.075, 0.45]].forEach(([dt, vol]) => {
-      const len = Math.floor(ctx.sampleRate * 0.012), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.18));
-      const s = ctx.createBufferSource(); s.buffer = buf;
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
-      const g = ctx.createGain(); g.gain.value = vol;
-      s.connect(hp); hp.connect(g); g.connect(ctx.destination);
-      if (ctx === bgmCtx && bgmDest) g.connect(bgmDest);
-      s.start(now + dt);
-    });
-  } catch (e) {}
-}
 
 function fitFont(ctx, text, maxW, size, fontFn) {
   let s = size;
   do { ctx.font = fontFn(s); s -= 2; } while (ctx.measureText(text).width > maxW && s > 20);
   return s + 2;
 }
-function vlogLoadFonts() {   // おしゃれなフォントを使う前に読み込む（最大3秒待つ）
+function vlogLoadFonts() {
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   const specs = ['italic 600 40px "Playfair Display"', '400 40px "Great Vibes"', '500 40px "Montserrat"', '400 28px "Montserrat"', 'italic 600 40px "Cormorant Garamond"'];
   return Promise.race([Promise.all(specs.map(s => document.fonts.load(s, 'Aa'))), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
 }
+
+// ダイジェスト映像上に直接表示するおしゃれタイトル
 function drawOpeningTitle(ctx, ti, t) {
   if (!ti || t < ti.t0 || t > ti.t1) return;
-  const a = Math.max(0, Math.min(1, (t - ti.t0) / 0.7, (ti.t1 - t) / 0.7));
+  const a = Math.max(0, Math.min(1, (t - ti.t0) / 0.55, (ti.t1 - t) / 0.55));
   const st = ti.style, main = st.upper ? ti.main.toUpperCase() : ti.main;
   ctx.save();
-  ctx.globalAlpha = a; ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 14;
+  ctx.globalAlpha = a;
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 16;
   if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
   const size = fitFont(ctx, main, VLOG_W - 140, ti.size, st.font);
   const center = ti.pos !== 'lowerleft';
   ctx.textAlign = center ? 'center' : 'left';
-  const x = center ? VLOG_W / 2 : 70, y = ti.pos === 'center' ? VLOG_H * 0.46 : VLOG_H - 360;
+  const x = center ? VLOG_W / 2 : 70, y = ti.pos === 'center' ? VLOG_H * 0.48 : VLOG_H - 360;
+
+  if (ti.prefix) {
+    ctx.save();
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+    ctx.font = '400 26px "Montserrat", sans-serif';
+    ctx.fillText(ti.prefix, x, y - size * 0.72);
+    ctx.restore();
+  }
+
   ctx.fillText(main, x, y);
-  if (st.id === 'script') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.2; ctx.strokeText(main, x, y); }
+  if (st.id === 'script_flow') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.0; ctx.strokeText(main, x, y); }
   if (ti.sub) {
     if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
-    ctx.font = '400 28px "Montserrat", sans-serif';
-    ctx.fillText(ti.sub.toUpperCase(), x, y + size * 0.55 + 28);
+    ctx.font = '400 26px "Montserrat", sans-serif';
+    ctx.fillText(ti.sub.toUpperCase(), x, y + size * 0.55 + 26);
   }
   ctx.restore();
 }
 
+// アイキャッチ（背景＋おしゃれタイトル画面）描画
+function drawEyecatchCard(ctx, seg, local) {
+  const pal = seg.palette;
+  const grad = ctx.createLinearGradient(0, 0, 0, VLOG_H);
+  grad.addColorStop(0, pal.bg1);
+  grad.addColorStop(1, pal.bg2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, VLOG_W, VLOG_H);
 
+  const fadeAlpha = Math.max(0, Math.min(1, local / 0.35, (seg.dur - local) / 0.35));
+  ctx.save();
+  ctx.globalAlpha *= fadeAlpha;
+  ctx.textAlign = 'center';
+
+  const st = seg.style;
+  const main = st.upper ? seg.main.toUpperCase() : seg.main;
+  ctx.fillStyle = pal.text;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
+  const size = fitFont(ctx, main, VLOG_W - 140, seg.size, st.font);
+  const cy = VLOG_H * 0.47;
+  ctx.fillText(main, VLOG_W / 2, cy);
+
+  if (seg.sub) {
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '5px';
+    ctx.fillStyle = pal.sub;
+    ctx.font = '400 24px "Montserrat", sans-serif';
+    ctx.fillText(seg.sub.toUpperCase(), VLOG_W / 2, cy + size * 0.6 + 24);
+  }
+  if (seg.note) {
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+    ctx.fillStyle = pal.sub;
+    ctx.font = 'italic 600 32px "Playfair Display", serif';
+    ctx.fillText(seg.note, VLOG_W / 2, cy + size * 0.6 + 84);
+  }
+  ctx.restore();
+}
+
+// ---------- タイムライン組み立て（ルールベース確定） ----------
 function buildTimeline(assets, title, bgm, seed) {
-  assets = vlogTrimBudget(assets);   // 長くなりすぎないよう、全体の長さに上限をかける
+  assets = vlogTrimBudget(assets);
   const rnd = mulberry32(seed);
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
   const range = (a, b) => a + rnd() * (b - a);
   let beat = 60 / (bgm.bpm || 90);
   const q = (sec) => beat * Math.max(1, Math.round(sec / beat));
-  const ts = { size: Math.round(range(40, 54)), w: pick(['300', '400', '500']) };
+  const ts = { size: Math.round(range(40, 52)), w: pick(['300', '400', '500']) };
   const T = vlogTitleFor(rnd);
+
   let lastStyle = null;
   try { lastStyle = localStorage.getItem('logsnap_last_tstyle'); } catch (e) {}
-  const style = pick(TITLE_STYLES.filter(s => s.id !== lastStyle));   // 直前と同じ書体は避ける
+  const style = pick(TITLE_TEMPLATES.filter(s => s.id !== lastStyle));
   try { localStorage.setItem('logsnap_last_tstyle', style.id); } catch (e) {}
 
-  const tl = []; let t = 0;
-  const blocks = [{ start: 0, mode: 'bgm', track: bgm }];
-  let blkLen = range(30, 60), lastTrack = bgm;
-  const push = (seg) => { seg.start = t; seg.blk = blocks.length - 1; tl.push(seg); t += seg.dur; };
+  // ダイジェスト直乗せとアイキャッチの両方に対応（ランダムでどちらの演出も活用）
+  const useEyecatch = rnd() < 0.55;
+
+  const tl = [];
+  let t = 0;
+  const blocks = [{
+    start: 0,
+    mode: 'bgm',
+    track: bgm,
+    playSfx: false,
+    sfxDelay: 0,
+    sfxIndex: 0
+  }];
+  let blkLen = range(28, 52);
+  let lastTrack = bgm;
+
+  const push = (seg) => {
+    seg.start = t;
+    seg.blk = blocks.length - 1;
+    tl.push(seg);
+    t += seg.dur;
+  };
+
   const clipSeg = (a, dur, extra) => {
     const vlen = a.m.type === 'video' ? a.vdur : 0;
     if (vlen && !(extra && extra.full)) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
     const voff = vlen > dur + 1 ? Math.min(range(0.3, vlen * 0.35), vlen - dur - 0.1) : 0;
-    const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.09);
-    const fade = (tl.length && rnd() < 0.4) ? range(0.25, 0.4) : 0;
+    const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.08);
+    const fade = (tl.length && rnd() < 0.35) ? range(0.22, 0.36) : 0;
     return Object.assign({ kind: 'clip', a, dur, voff, zoom, fade }, extra);
   };
-  // オープニング：ダイジェストを背景に、英語のタイトルを重ねる
-  const n = assets.length, c = Math.min(Math.round(range(6, 9)), Math.max(n, 4));
-  for (let i = 0; i < c; i++) push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.8, 1.3)), { digest: true }));
-  const t0 = range(0.4, 1.4);
-  tl.title = { main: T.main, sub: T.sub, style, size: Math.round(range(style.size[0], style.size[1])), pos: pick(['center', 'lowerleft', 'lowercenter']),
-    t0, t1: Math.max(t0 + 2, Math.min(t - 0.2, t0 + range(4, 5.5))) };
 
-  // ダイジェストの終わり：BGMをすぐ止めて、本編に入ってからしばらくして、次のBGMを少しずつ上げる
-  tl.mainStart = t;
-  {
-    const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
-    const track = cands.length ? pick(cands) : lastTrack; lastTrack = track;
-    blocks[0].fadeOut = 0.08;
-    blocks.push({ start: t, mode: 'bgm', track, delay: range(4, 7), fadeIn: range(4, 6) });
-    beat = 60 / (track.bpm || 90);
-    blkLen = range(30, 60);
+  // 1. 冒頭ダイジェスト（使用素材の一部を短くテンポよくつなぐ）
+  const n = assets.length;
+  const c = Math.min(Math.round(range(6, 9)), Math.max(n, 4));
+  for (let i = 0; i < c; i++) {
+    push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.75, 1.2)), { digest: true }));
   }
 
-  // 本編
+  // ダイジェスト中の直接タイトル表示（アイキャッチ併用時も短く表示し、直接のみ時はしっかり表示）
+  const t0 = range(0.35, 1.0);
+  const directEnd = useEyecatch ? Math.min(t - 0.2, t0 + range(2.8, 3.8)) : Math.max(t0 + 2.2, Math.min(t - 0.15, t0 + range(4.0, 5.4)));
+  tl.title = {
+    main: T.main,
+    sub: T.sub,
+    prefix: style.prefix,
+    style,
+    size: Math.round(range(style.size[0], style.size[1])),
+    pos: pick(['center', 'lowerleft', 'lowercenter']),
+    t0,
+    t1: directEnd
+  };
+
+  // アイキャッチカード（ダイジェストと本編の間に挟むタイトル画面）
+  if (useEyecatch) {
+    push({
+      kind: 'eyecatch',
+      dur: range(1.8, 2.4),
+      main: T.main,
+      sub: T.sub,
+      note: T.eyecatchNote,
+      style,
+      size: Math.round(range(style.size[0], style.size[1])),
+      palette: pick(EYECATCH_PALETTES)
+    });
+  }
+
+  // 2. 本編へ移行（BGMが切り替わる場合のみ効果音を鳴らす）
+  tl.mainStart = t;
+  {
+    // 約75%の確率で本編用に別のBGMへ切り替え、残り25%は同じBGMを継続（変化なしなら効果音なし）
+    const switchBgmAtMain = vlogPlaylist.length > 1 && rnd() < 0.75;
+    let track = lastTrack;
+    if (switchBgmAtMain) {
+      const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
+      track = cands.length ? pick(cands) : lastTrack;
+    }
+    const bgmChanged = track.url !== lastTrack.url;
+    lastTrack = track;
+    blocks[0].fadeOut = bgmChanged ? 0.25 : 0.0;
+    blocks.push({
+      start: t,
+      mode: 'bgm',
+      track,
+      delay: 0,
+      fadeIn: bgmChanged ? range(0.8, 1.5) : 0.0,
+      playSfx: bgmChanged,
+      sfxDelay: bgmChanged ? range(0.0, 0.35) : 0,
+      sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
+    });
+    beat = 60 / (track.bpm || 90);
+    blkLen = range(28, 52);
+  }
+
+  // 3. 本編クリップ構築
   let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
   assets.forEach((a, i) => {
     const cur = blocks[blocks.length - 1];
-    if (t - cur.start >= blkLen) {   // 30〜60秒ごとに、音の区間を切り替える
+    if (t - cur.start >= blkLen) {
       const nxt = assets.slice(i, i + 6);
       const vr = nxt.filter(x => x.m.type === 'video').length / nxt.length;
-      const original = VIDEO_AUDIO && vr >= 0.3 && cur.mode !== 'original' && rnd() < 0.5;   // 動画が多いところは、BGMなしの区間にすることがある
+      const original = vr >= 0.35 && cur.mode !== 'original' && rnd() < 0.45;
       let track = null;
       if (!original) {
-        const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
-        track = cands.length ? pick(cands) : lastTrack; lastTrack = track;
+        const changeTrack = vlogPlaylist.length > 1 && rnd() < 0.75;
+        if (changeTrack) {
+          const cands = vlogPlaylist.filter(p => p.url !== (lastTrack ? lastTrack.url : ''));
+          track = cands.length ? pick(cands) : lastTrack;
+        } else {
+          track = lastTrack;
+        }
       }
-      blocks.push({ start: t, mode: original ? 'original' : 'bgm', track });
+      // BGMが別の曲に切り替わるときだけ効果音フラグをtrueにする
+      const bgmChanged = !original && track && (!lastTrack || track.url !== lastTrack.url);
+      if (track) lastTrack = track;
+
+      blocks.push({
+        start: t,
+        mode: original ? 'original' : 'bgm',
+        track,
+        playSfx: bgmChanged,
+        sfxDelay: bgmChanged ? range(0.0, 0.4) : 0,
+        sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
+      });
       beat = original ? 0.5 : 60 / (track.bpm || 90);
-      blkLen = range(30, 60);
+      blkLen = range(28, 52);
     }
+
     const ev = a.m.title, newEv = ev !== prevEvent, isVid = a.m.type === 'video';
     prevEvent = ev;
     let r = rnd();
-    let cls = r < 0.2 ? 'short' : (r < 0.75 ? 'mid' : 'long');
+    let cls = r < 0.22 ? 'short' : (r < 0.76 ? 'mid' : 'long');
     if (newEv && cls === 'short') cls = 'mid';
     if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(x => x !== cls));
     run = cls === prevCls ? run + 1 : 1; prevCls = cls;
-    const vlen = isVid ? a.vdur : 0, full = isVid && vlen <= 30;   // 30秒以内の動画は、カットせず最後まで使う
+
+    const vlen = isVid ? a.vdur : 0, full = isVid && vlen <= 30;
     const target = isVid
       ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
       : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
@@ -2202,7 +2353,8 @@ function buildTimeline(assets, title, bgm, seed) {
     if (full) extra.full = true;
     push(clipSeg(a, full ? vlen : q(target), extra));
   });
-  tl.tint = range(0.05, 0.12);
+
+  tl.tint = range(0.05, 0.11);
   tl.blocks = blocks;
   return { tl, total: t };
 }
@@ -2211,41 +2363,87 @@ function renderFrame(t) {
   const { ctx, tl, total } = vlog;
   let i = tl.findIndex(s => t < s.start + s.dur);
   if (i < 0) i = tl.length - 1;
-  const blocks = tl.blocks, bi = Math.min(tl[i].blk || 0, blocks.length - 1), blk = blocks[bi];
-  if (vlog.blkIdx !== bi) {   // 音の区間が変わった
+  const blocks = tl.blocks;
+  const bi = Math.min(tl[i].blk || 0, blocks.length - 1);
+  const blk = blocks[bi];
+
+  // ブロック切り替え時のBGM＆効果音制御
+  if (vlog.blkIdx !== bi) {
     vlog.pendingPlay = null;
+    vlog.pendingSfxTime = null;
+    vlog.sfxPlayedForBlk = false;
+
     if (vlog.trackUrl === undefined) vlog.trackUrl = blocks[0].track.url;
-    if (blk.mode === 'bgm') {
+    if (blk.mode === 'bgm' && blk.track) {
       vlogBaseVol = blk.track.vol || 0.35;
-      if (vlog.trackUrl !== blk.track.url) { vlog.player.src = blk.track.url; vlog.trackUrl = blk.track.url; }
-      vlog.player.currentTime = 0;
-      if (blk.delay) { vlog.player.pause(); vlog.pendingPlay = blk.start + blk.delay; }   // しばらく無音にしてから流す
-      else vlog.player.play().catch(() => {});
+      if (vlog.trackUrl !== blk.track.url) {
+        vlog.player.src = blk.track.url;
+        vlog.trackUrl = blk.track.url;
+        vlog.player.currentTime = 0;
+      }
+      if (blk.delay) {
+        vlog.player.pause();
+        vlog.pendingPlay = blk.start + blk.delay;
+      } else if (vlog.player.paused) {
+        vlog.player.play().catch(() => {});
+      }
     } else {
       vlog.player.pause();
     }
+
+    // BGM切り替わりフラグがtrueのときのみランダムタイミングで効果音を予約
+    if (blk.playSfx) {
+      vlog.pendingSfxTime = blk.start + (blk.sfxDelay || 0);
+    }
     vlog.blkIdx = bi;
   }
-  if (vlog.pendingPlay != null && t >= vlog.pendingPlay) { vlog.pendingPlay = null; vlog.player.currentTime = 0; vlog.player.play().catch(() => {}); }
-  if (!vlog.clicked && tl.mainStart && t >= tl.mainStart) { vlog.clicked = true; playClickSfx(); }   // 本編に切り替わる合図のクリック音
+
+  if (vlog.pendingPlay != null && t >= vlog.pendingPlay) {
+    vlog.pendingPlay = null;
+    vlog.player.currentTime = 0;
+    vlog.player.play().catch(() => {});
+  }
+
+  if (vlog.pendingSfxTime != null && !vlog.sfxPlayedForBlk && t >= vlog.pendingSfxTime) {
+    vlog.sfxPlayedForBlk = true;
+    triggerRandomTransitionSfx(blk.sfxIndex);
+  }
+
   const orig = blk.mode === 'original';
+
+  // クリップ切り替え時の映像＋元動画音声（_ael）同期
   if (i !== vlog.idx) {
     const prev = tl[vlog.idx], cur = tl[i];
-    if (prev && prev.a && prev.a.m.type === 'video') prev.a.el.pause();
+    if (prev && prev.a && prev.a.m.type === 'video') {
+      prev.a.el.pause();
+      if (prev.a.el._ael) prev.a.el._ael.pause();
+    }
     if (cur.a && cur.a.m.type === 'video') {
-      setVideoAudio(cur.a.el, !cur.digest);
-      if (!cur.warm) cur.a.el.currentTime = cur.voff || 0;
+      const startPos = cur.voff || 0;
+      const useAudio = !cur.digest;
+      setVideoAudio(cur.a.el, useAudio);
+      if (!cur.warm) cur.a.el.currentTime = startPos;
       cur.a.el.play().catch(() => {});
+      if (cur.a.el._ael) {
+        try { cur.a.el._ael.currentTime = startPos; } catch (e) {}
+        if (useAudio) cur.a.el._ael.play().catch(() => {});
+        else cur.a.el._ael.pause();
+      }
     }
     vlog.idx = i;
   }
+
   for (const nx of [tl[i + 1], tl[i + 2]]) {
     if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
       nx.warm = true;
       setVideoAudio(nx.a.el, !nx.digest);
-      try { nx.a.el.currentTime = nx.voff || 0; } catch (e) {}
+      try {
+        nx.a.el.currentTime = nx.voff || 0;
+        if (nx.a.el._ael) nx.a.el._ael.currentTime = nx.voff || 0;
+      } catch (e) {}
     }
   }
+
   const seg = tl[i], local = t - seg.start;
   if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
   if (i > 0 && seg.fade > 0 && local < seg.fade) {
@@ -2254,12 +2452,16 @@ function renderFrame(t) {
   } else {
     drawSegment(ctx, seg, local, 1);
   }
-  ctx.globalCompositeOperation = 'soft-light';
-  ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
-  ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-  ctx.globalCompositeOperation = 'source-over';
+
+  if (seg.kind !== 'eyecatch') {
+    ctx.globalCompositeOperation = 'soft-light';
+    ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
+    ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+    ctx.globalCompositeOperation = 'source-over';
+  }
   drawOpeningTitle(ctx, tl.title, t);
-  // BGM：動画の音声が出ている間は下げる。区間の頭と終わりは、ゆっくりフェード
+
+  // BGM音量制御
   let target = 1;
   if (!orig && seg.a && seg.a.m.type === 'video' && !seg.digest) {
     const el = seg.a.el;
@@ -2268,10 +2470,18 @@ function renderFrame(t) {
   }
   vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
   const bEnd = blocks[bi + 1] ? blocks[bi + 1].start : total, isLast = bi >= blocks.length - 1;
-  const dly = blk.delay || 0, fi = blk.fadeIn || BGM_FADE, fo = (blk.fadeOut != null) ? blk.fadeOut : (isLast ? 2 : BGM_FADE);
-  const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, (t - blk.start - dly) / fi, (bEnd - t) / fo));
-  if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.005) { vlog.lastLvl = lvl; setBgmLevel(lvl); }
+  const dly = blk.delay || 0;
+  const fi = blk.fadeIn || 0.01;
+  const fo = (blk.fadeOut != null) ? blk.fadeOut : (isLast ? 2 : 0.01);
+  const fadeInFactor = blk.fadeIn ? Math.min(1, (t - blk.start - dly) / fi) : 1;
+  const fadeOutFactor = (blk.fadeOut || isLast) ? Math.min(1, (bEnd - t) / fo) : 1;
+  const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, fadeInFactor, fadeOutFactor));
+  if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.005) {
+    vlog.lastLvl = lvl;
+    setBgmLevel(lvl);
+  }
 }
+
 // ---------- 描画 ----------
 function drawCaption(ctx, seg, local) {
   if (!seg.text) return;
@@ -2289,10 +2499,13 @@ function drawCaption(ctx, seg, local) {
   else { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H - 150); }
   ctx.restore();
 }
+
 function drawSegment(ctx, seg, local, alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
-  if (seg.kind === 'card') {
+  if (seg.kind === 'eyecatch') {
+    drawEyecatchCard(ctx, seg, local);
+  } else if (seg.kind === 'card') {
     ctx.fillStyle = seg.bg; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
     ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
     fitText(ctx, seg.title, VLOG_W - 100, 60, '300');
@@ -2305,26 +2518,17 @@ function drawSegment(ctx, seg, local, alpha) {
   }
   ctx.restore();
 }
-// ---------- 描画と音（v3）：BGMと元動画の音声は同時に流さない ----------
-// 「最初から再生」＝同じ編集をもう一度（「別の編集」は restartMovie ＝ 新しいシード）
-// ---------- 元動画の音声を使う／BGMを自動で下げる ----------
-let bgmGain = null;
-// BGMの大きさ（1.0＝曲本来の音量）。動画の音声が出ている間だけ下げる。聞こえ方に合わせて数字を変えてよい
-const DUCK = { photo: 1.0, video: 0.45, digest: 1.0 };
-// 動画の音声を使うか。切り替えのラグの原因を調べたいときは false にする
-const VIDEO_AUDIO = true;   // いったん使わない。また使うときは true
+
 function setBgmLevel(x) {
   if (bgmGain) bgmGain.gain.value = x;
   else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
 }
-// 元動画の音声は、映像とは別の「音声専用の再生」で流す（映像の切り替えを軽く保つため）
 function setVideoAudio(el, on) {
   const ae = el._ael;
   if (!ae) return;
-  on = on && VIDEO_AUDIO;
   if (ae._g) ae._g.gain.value = on ? 1 : 0; else ae.muted = !on;
 }
-function routeVideo(el) {   // 書き出し用：音声専用の再生を録音に混ぜる
+function routeVideo(el) {
   const ae = el._ael;
   if (!ae || ae._g) return;
   try {
@@ -2334,8 +2538,8 @@ function routeVideo(el) {   // 書き出し用：音声専用の再生を録音�
     ae._g = g;
   } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
 }
-// ---------- 追加した素材を必ず使う／使用件数の表示 ----------
-let vlogPrevMade = 0;   // 同じ期間で、前回まとめ動画を作った時刻
+
+let vlogPrevMade = 0;
 function vlogPeriodKey() {
   const m = document.getElementById('recap-mode'), s = document.getElementById('recap-target-select');
   return 'logsnap_made_' + (m ? m.value : '') + '_' + (s ? s.value : '');
@@ -2350,13 +2554,12 @@ function showVlogInfo(picked, assets) {
 function pickHighlights(items, max) {
   if (items.length <= max) return items;
   const picked = new Set();
-  // 前回のまとめ動画のあとに追加した素材を、先に枠へ入れる（枠の半分まで）
   items.filter(m => m.addedAt && m.addedAt > vlogPrevMade)
     .sort((a, b) => b.addedAt - a.addedAt).slice(0, Math.max(2, Math.floor(max / 2)))
     .forEach(m => picked.add(m));
   const byDate = new Map();
   items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
-  while (picked.size < max) {   // 残りは日ごとにまんべんなく
+  while (picked.size < max) {
     let added = false;
     for (const list of byDate.values()) {
       const m = list.find(x => !picked.has(x));
@@ -2371,7 +2574,6 @@ function replayMovie() {
   if (activeMovieMediaItems.length) { vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(false); }
 }
 
-// ---------- 描画 ----------
 function drawCover(ctx, el, w, h, scale) {
   const sw = el.videoWidth || el.naturalWidth, sh = el.videoHeight || el.naturalHeight;
   if (!sw || !sh) return;
@@ -2382,6 +2584,7 @@ function fitText(ctx, text, maxW, size, weight) {
   let s = size;
   do { ctx.font = `${weight} ${s}px sans-serif`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 18);
 }
+
 // ---------- 再生ループ ----------
 function vlogTick(now) {
   if (!vlog) return;
@@ -2394,7 +2597,12 @@ function vlogTick(now) {
 function vlogEnd(now) {
   const v = vlog;
   if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
-  v.t0 = now; v.idx = -1; v.clicked = false; v.pendingPlay = null; v.tl.forEach(s => { s.warm = false; s.aOn = false; });
+  v.t0 = now;
+  v.idx = -1;
+  v.pendingPlay = null;
+  v.pendingSfxTime = null;
+  v.sfxPlayedForBlk = false;
+  v.tl.forEach(s => { s.warm = false; s.aOn = false; });
   v.blkIdx = -1;
   v.raf = requestAnimationFrame(vlogTick);
 }
@@ -2405,8 +2613,10 @@ function stopVlog() {
   vlog.saveOnStop = false;
   if (vlog.rec && vlog.rec.state !== 'inactive') vlog.rec.stop();
   vlog.tl.forEach(s => {
-    if (s.a && s.a.m.type === 'video') { s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load();
-      if (s.a.el._ael) { s.a.el._ael.pause(); s.a.el._ael.removeAttribute('src'); s.a.el._ael.load(); } }
+    if (s.a && s.a.m.type === 'video') {
+      s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load();
+      if (s.a.el._ael) { s.a.el._ael.pause(); s.a.el._ael.removeAttribute('src'); s.a.el._ael.load(); }
+    }
   });
   vlog.player.pause();
   vlog = null;
@@ -2422,8 +2632,13 @@ function setDlBtn(rec) {
 
 async function startVlog(record) {
   stopVlog();
+  ensureSfxPool();
   const run = vlogRunId;
-  const bgm = currentBgm(); lastBgmUrl = bgm.url;
+  lastSeed = takeSeed();
+  const bgmRnd = mulberry32(lastSeed ^ 0x9e3779b9);
+  const bgm = pickAutoBgm(bgmRnd);
+  lastBgmUrl = bgm.url;
+
   const canvas = document.getElementById('movie-canvas'), ctx = canvas.getContext('2d');
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
   const picked = pickHighlights(activeMovieMediaItems, vlogMaxItems()).slice()
@@ -2432,10 +2647,15 @@ async function startVlog(record) {
   if (run !== vlogRunId) return;
   if (!assets.length) { alert(t('noMediaMessage')); return; }
   await vlogLoadFonts(); if (run !== vlogRunId) return;
-  lastSeed = takeSeed(); showVlogInfo(picked, assets); const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
+
+  showVlogInfo(picked, assets);
+  const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
   const player = document.getElementById('bgm-player');
-  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35; if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol; player.currentTime = 0;
-  const v = { canvas, ctx, tl, total, player, idx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
+  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.35;
+  if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol;
+  player.currentTime = 0;
+
+  const v = { canvas, ctx, tl, total, player, idx: -1, blkIdx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
   vlog = v;
   if (record) startRecorder(v);
   await player.play().catch(() => {});
@@ -2444,7 +2664,7 @@ async function startVlog(record) {
   v.raf = requestAnimationFrame(vlogTick);
 }
 
-// ---------- 録画（映像＋BGMを1本にして保存。mp4が使えればmp4） ----------
+// ---------- 録画（映像＋BGM＋効果音＋元動画音声を1本にして保存） ----------
 function startRecorder(v) {
   if (!window.MediaRecorder) { alert('このブラウザは動画の書き出しに対応していません'); return; }
   if (!bgmCtx) {
@@ -2454,7 +2674,9 @@ function startRecorder(v) {
     bgmGain = bgmCtx.createGain(); src.connect(bgmGain); bgmGain.connect(bgmDest); bgmGain.connect(bgmCtx.destination); v.player.volume = 1;
   }
   bgmCtx.resume();
-  if (VIDEO_AUDIO) v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
+  ensureSfxPool();
+  sfxAudioPool.forEach(routeSfxToRecorder);
+  v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
   const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
   const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
     .find(m => MediaRecorder.isTypeSupported(m)) || '';
@@ -2482,10 +2704,9 @@ function saveRecording(blob) {
   setTimeout(() => replayMovie(), 300);
 }
 
-// ---------- 既存ボタンから呼ばれる入口（関数名は元のまま） ----------
+// ---------- モーダル操作 ----------
 function openVlogModal() {
   document.getElementById('movie-modal').classList.remove('hidden');
-  fillBgmSelect();
   startVlog(false);
 }
 function playHighlightMovie() {
@@ -2508,24 +2729,21 @@ function closeMovieModal() {
   stopVlog();
   document.getElementById('movie-modal').classList.add('hidden');
 }
-function restartMovie() {
-  if (activeMovieMediaItems.length) startVlog(false);
-}
 function recordAndDownloadMovie() {
   if (!activeMovieMediaItems.length) return;
   const sec = vlog ? Math.ceil(vlog.total) : 60;
   if (!confirm(`書き出しには約${sec}秒かかります。完了するまで画面を開いたままにしてください。始めますか？`)) return;
   vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(true);
 }
-                        function formatVlogTime(timeStr) {
-      if (!timeStr) return "9:45 am";
-      const parts = timeStr.split(":");
-      let h = parseInt(parts[0], 10);
-      const m = parts[1] || "00";
-      return `${h % 12 || 12}:${m} ${h >= 12 ? "pm" : "am"}`;
-    }
+function formatVlogTime(timeStr) {
+  if (!timeStr) return "9:45 am";
+  const parts = timeStr.split(":");
+  let h = parseInt(parts[0], 10);
+  const m = parts[1] || "00";
+  return `${h % 12 || 12}:${m} ${h >= 12 ? "pm" : "am"}`;
+}
 
-            // 🌍 i18n 辞書データ
+    // 🌍 i18n 辞書データ
     const i18n = {
       ja: {
         photoAestheticMode: "写真映えモード",
@@ -2589,8 +2807,6 @@ function recordAndDownloadMovie() {
         fileLoadingHint: "※iOS対応・超高速リサイズ＆サムネイル自動生成に対応。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
-        anotherEditBtn: "別の編集",
-        customBgmBtn: "自分の曲",
         restartMovieBtn: "最初から再生",
         downloadMovieBtn: "動画をファイル保存",
         noEvents: "この日の予定はありません",
@@ -2675,8 +2891,6 @@ function recordAndDownloadMovie() {
         fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
         confirmSaveBtn: "Confirm & Save",
         vlogModalTitle: "Cinematic Vlog Recap",
-        anotherEditBtn: "Re-cut",
-        customBgmBtn: "My Audio",
         restartMovieBtn: "Replay",
         downloadMovieBtn: "Save Video File",
         noEvents: "No events scheduled for this day",
@@ -2872,7 +3086,6 @@ function recordAndDownloadMovie() {
       });
     }
 
-    // ログイン状態の監視
     auth.onAuthStateChanged((user) => {
       const authContainer = document.getElementById("auth-container");
       const userInfoContainer = document.getElementById("user-info-container");
