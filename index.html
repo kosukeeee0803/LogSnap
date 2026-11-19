@@ -33,6 +33,46 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
  
  <style>
+    :root {
+      --theme-primary: #4f46e5;
+      --theme-primary-hover: #6366f1;
+      --theme-primary-soft: rgba(79, 70, 229, 0.08);
+      --theme-primary-border: rgba(79, 70, 229, 0.22);
+      --theme-accent: #ec4899;
+      --theme-accent-hover: #db2777;
+      --theme-ring: rgba(99, 102, 241, 0.35);
+      --theme-grad-from: #6366f1;
+      --theme-grad-to: #ec4899;
+    }
+    .theme-primary-text {
+      color: var(--theme-primary) !important;
+    }
+    .theme-accent-text {
+      color: var(--theme-accent) !important;
+    }
+    .theme-primary-bg {
+      background-color: var(--theme-primary) !important;
+    }
+    .theme-primary-bg:hover {
+      background-color: var(--theme-primary-hover) !important;
+    }
+    .theme-accent-bg {
+      background-color: var(--theme-accent) !important;
+    }
+    .theme-accent-bg:hover {
+      background-color: var(--theme-accent-hover) !important;
+    }
+    .theme-soft-badge {
+      background-color: var(--theme-primary-soft) !important;
+      color: var(--theme-primary) !important;
+      border-color: var(--theme-primary-border) !important;
+    }
+    .theme-brand-gradient {
+      background-image: linear-gradient(to right, var(--theme-grad-from), var(--theme-grad-to)) !important;
+    }
+    .theme-avatar-gradient {
+      background-image: linear-gradient(to top right, var(--theme-grad-from), var(--theme-grad-to)) !important;
+    }
     .photo-stamp {
       text-shadow: 0px 1px 3px rgba(0,0,0,0.9);
     }
@@ -74,24 +114,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Great+Vibes&family=Montserrat:wght@400;500&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pt-16 pb-32 selection:bg-indigo-500 selection:text-white">
+<body class="bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 text-slate-800 font-sans antialiased min-h-screen pt-16 pb-32">
 
   <!-- ヘッダー（完全固定） -->
-  <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm max-w-md mx-auto">
+  <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-4 py-3 flex items-center justify-between shadow-sm max-w-md mx-auto">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-500/30">
+      <div class="w-8 h-8 rounded-lg theme-avatar-gradient flex items-center justify-center font-bold text-white shadow-md">
         L
       </div>
-      <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+      <h1 class="text-xl font-bold tracking-tight theme-brand-gradient bg-clip-text text-transparent">
         LogSnap
       </h1>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="toggleViewMode()" id="mode-toggle-btn" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-all border border-slate-200">
-        <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-600"></i>
+      <button onclick="toggleViewMode()" id="mode-toggle-btn" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-all border border-slate-200 active:scale-95">
+        <i data-lucide="image" class="w-3.5 h-3.5 theme-primary-text"></i>
         <span id="mode-toggle-text" data-i18n="photoAestheticMode">写真映えモード</span>
       </button>
-      <button onclick="openAddModalForSelectedDate()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95">
+      <button onclick="openAddModalForSelectedDate()" class="flex items-center gap-1.5 theme-primary-bg text-white text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-md active:scale-95">
         <i data-lucide="plus" class="w-4 h-4"></i>
         <span data-i18n="addEventBtn">予定を追加</span>
       </button>
@@ -106,12 +146,12 @@
       <div class="select-none overflow-hidden relative -mx-4 px-4">
         <div class="flex items-center justify-between mb-3 px-1">
           <div class="flex items-center gap-2">
-            <select id="select-year" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="select-year" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none shadow-xs">
               <option value="2025">2025</option>
-              <option value="2026" selected>2026</option>
+              <option value="2026">2026</option>
               <option value="2027">2027</option>
             </select>
-            <select id="select-month" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="select-month" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none shadow-xs">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -123,10 +163,10 @@
               <option value="9">9</option>
               <option value="10">10</option>
               <option value="11">11</option>
-              <option value="12" selected>12</option>
+              <option value="12">12</option>
             </select>
           </div>
-          <span class="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full font-medium" data-i18n="swipeHint">左右スワイプで月移動</span>
+          <span class="text-[10px] theme-soft-badge border px-2.5 py-1 rounded-full font-medium" data-i18n="swipeHint">左右スワイプで月移動</span>
         </div>
 
         <div id="weekday-header" class="grid grid-cols-7 text-center text-xs font-semibold text-slate-500 mb-2 px-1">
@@ -140,7 +180,7 @@
         </div>
 
         <!-- 🚀 常に6行（515pxに固定）にするため auto-rows-[85px] を適用 -->
-        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-xs min-h-[515px]">
+        <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-sm rounded-2xl min-h-[515px]">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
             <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
             <div id="panel-curr" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
@@ -152,10 +192,10 @@
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span id="selected-date-title">2026-12-01 の予定 ＆ 思い出</span>
+            <i data-lucide="clock" class="w-3.5 h-3.5 theme-primary-text"></i>
+            <span id="selected-date-title">2026-11-19 の予定 ＆ 思い出</span>
           </h3>
-          <button onclick="openAddModalForSelectedDate()" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
+          <button onclick="openAddModalForSelectedDate()" class="text-xs theme-primary-text hover:underline font-semibold flex items-center gap-1">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
             <span data-i18n="addThisDayBtn">この日に追加</span>
           </button>
@@ -169,10 +209,10 @@
     <section id="tab-notifications" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold flex items-center gap-1.5">
+          <h2 class="text-xs uppercase tracking-wider theme-primary-text font-bold flex items-center gap-1.5">
             <i data-lucide="bell" class="w-4 h-4"></i> <span data-i18n="notificationsTitle">お知らせ ＆ リマインダー</span>
           </h2>
-          <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full" data-i18n="newBadge">新着</span>
+          <span class="text-[10px] theme-soft-badge border font-semibold px-2 py-0.5 rounded-full" data-i18n="newBadge">新着</span>
         </div>
         <div id="notifications-list" class="space-y-2.5"></div>
       </div>
@@ -180,27 +220,27 @@
 
     <!-- LOOKBOOK -->
     <section id="tab-lookbook" class="tab-content hidden space-y-6">
-      <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+      <div class="bg-gradient-to-r from-white via-slate-50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
-          <h2 class="text-xs uppercase tracking-wider text-indigo-600 font-bold">Cinematic Vlog Studio</h2>
+          <h2 class="text-xs uppercase tracking-wider theme-primary-text font-bold">Cinematic Vlog Studio</h2>
           <p class="text-lg font-bold text-slate-900" data-i18n="vlogStudioTitle">まとめ動画の作成</p>
         </div>
 
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
           <div>
             <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" data-i18n="recapModeLabel">対象期間モード</label>
-            <select id="recap-mode" onchange="updateRecapOptions()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500">
+            <select id="recap-mode" onchange="updateRecapOptions()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none">
               <option value="week" data-i18n="modeWeek">特定の一週間 (日曜〜土曜)</option>
               <option value="month" selected data-i18n="modeMonth">1ヶ月間 (Monthly)</option>
             </select>
           </div>
           <div>
             <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" id="recap-target-label" data-i18n="targetPeriodLabel">対象週 / 月</label>
-            <select id="recap-target-select" onchange="renderAlbumGallery()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
+            <select id="recap-target-select" onchange="renderAlbumGallery()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none"></select>
           </div>
         </div>
 
-        <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-pink-600/20 active:scale-95">
+        <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 theme-accent-bg text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md active:scale-95">
           <i data-lucide="play" class="w-4 h-4"></i>
           <span data-i18n="playMovieBtn">選択した期間のまとめ動画を再生・作成</span>
         </button>
@@ -209,7 +249,7 @@
       <div class="space-y-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-            <i data-lucide="film" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <i data-lucide="film" class="w-3.5 h-3.5 theme-primary-text"></i>
             <span data-i18n="movieHistoryTitle">作成済みまとめ動画の履歴</span>
           </h3>
         </div>
@@ -228,16 +268,16 @@
         
         <!-- 👇 【追加】メール認証フォーム -->
         <div id="auth-container" class="space-y-3 pb-4 border-b border-slate-100">
-          <h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">アカウント認証 (ログイン / 新規登録)</h3>
+          <h3 id="auth-heading" class="text-[10px] font-bold uppercase tracking-wider theme-primary-text" data-i18n="authTitle">アカウント認証 (ログイン / 新規登録)</h3>
           <div class="space-y-2">
-            <input type="email" id="auth-email" placeholder="メールアドレス" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-indigo-500">
-            <input type="password" id="auth-password" placeholder="パスワード（6文字以上）" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-indigo-500">
+            <input type="email" id="auth-email" placeholder="メールアドレス" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none">
+            <input type="password" id="auth-password" placeholder="パスワード（6文字以上）" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none">
           </div>
           <div class="flex gap-2 pt-1">
-            <button onclick="handleSignUp()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-xl transition-all shadow-xs">
+            <button onclick="handleSignUp()" class="flex-1 theme-primary-bg text-white text-xs font-bold py-2 rounded-xl transition-all shadow-xs active:scale-95" data-i18n="signUpBtn">
               新規登録
             </button>
-            <button onclick="handleLogin()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded-xl transition-all shadow-xs">
+            <button onclick="handleLogin()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded-xl transition-all shadow-xs active:scale-95" data-i18n="loginBtn">
               ログイン
             </button>
           </div>
@@ -245,14 +285,14 @@
 
         <!-- 👇 【追加】ログイン中のユーザー情報表示（認証時はこちらを表示） -->
         <div id="user-info-container" class="space-y-2 pb-4 border-b border-slate-100 hidden">
-          <p class="text-xs text-slate-600">ログイン中: <span id="current-user-email" class="font-bold text-slate-900"></span></p>
-          <button onclick="handleLogout()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold py-2 rounded-xl transition-all">
+          <p class="text-xs text-slate-600"><span data-i18n="loggedInAsLabel">ログイン中</span>: <span id="current-user-email" class="font-bold text-slate-900"></span></p>
+          <button onclick="handleLogout()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold py-2 rounded-xl transition-all active:scale-95" data-i18n="logoutBtn">
             ログアウト
           </button>
         </div>
 
         <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-white text-lg shadow-md">
+          <div class="w-12 h-12 rounded-full theme-avatar-gradient flex items-center justify-center font-bold text-white text-lg shadow-md">
             L
           </div>
           <div>
@@ -262,14 +302,40 @@
         </div>
 
         <div class="space-y-3 pt-1">
-          <h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600" data-i18n="settingsHeader">アプリ設定 (Settings)</h3>
+          <h3 class="text-[10px] font-bold uppercase tracking-wider theme-primary-text" data-i18n="settingsHeader">アプリ設定 (Settings)</h3>
+
+          <!-- テーマカラー設定 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+            <div>
+              <p class="text-xs font-bold text-slate-800" data-i18n="themeSettingTitle">テーマカラー (Theme Color)</p>
+              <p class="text-[10px] text-slate-400" data-i18n="themeSettingDesc">アプリ全体のベースカラーを選択します</p>
+            </div>
+            <div id="theme-color-options" class="grid grid-cols-4 gap-2">
+              <button type="button" data-theme="indigo" onclick="changeThemeColor('indigo')" class="theme-swatch flex flex-col items-center gap-1 p-2 rounded-xl border bg-white transition-all active:scale-95">
+                <span class="w-6 h-6 rounded-full shadow-xs" style="background: linear-gradient(135deg, #4f46e5, #ec4899);"></span>
+                <span class="text-[10px] font-bold text-slate-700" data-i18n="themeIndigo">Indigo</span>
+              </button>
+              <button type="button" data-theme="emerald" onclick="changeThemeColor('emerald')" class="theme-swatch flex flex-col items-center gap-1 p-2 rounded-xl border bg-white transition-all active:scale-95">
+                <span class="w-6 h-6 rounded-full shadow-xs" style="background: linear-gradient(135deg, #059669, #06b6d4);"></span>
+                <span class="text-[10px] font-bold text-slate-700" data-i18n="themeEmerald">Emerald</span>
+              </button>
+              <button type="button" data-theme="sunset" onclick="changeThemeColor('sunset')" class="theme-swatch flex flex-col items-center gap-1 p-2 rounded-xl border bg-white transition-all active:scale-95">
+                <span class="w-6 h-6 rounded-full shadow-xs" style="background: linear-gradient(135deg, #ea580c, #e11d48);"></span>
+                <span class="text-[10px] font-bold text-slate-700" data-i18n="themeSunset">Sunset</span>
+              </button>
+              <button type="button" data-theme="midnight" onclick="changeThemeColor('midnight')" class="theme-swatch flex flex-col items-center gap-1 p-2 rounded-xl border bg-white transition-all active:scale-95">
+                <span class="w-6 h-6 rounded-full shadow-xs" style="background: linear-gradient(135deg, #1e293b, #6366f1);"></span>
+                <span class="text-[10px] font-bold text-slate-700" data-i18n="themeMidnight">Midnight</span>
+              </button>
+            </div>
+          </div>
           
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
             <div>
               <p class="text-xs font-bold text-slate-800" data-i18n="languageSettingTitle">言語設定 (Language)</p>
               <p class="text-[10px] text-slate-400" data-i18n="languageSettingDesc">表示言語と対応する祝日を切り替えます</p>
             </div>
-            <select id="language-select" onchange="changeLanguage(this.value)" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="language-select" onchange="changeLanguage(this.value)" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none shadow-xs">
               <option value="ja">日本語 (Japanese)</option>
               <option value="en">English (Native)</option>
             </select>
@@ -280,7 +346,7 @@
               <p class="text-xs font-bold text-slate-800" data-i18n="timezoneSettingTitle">タイムゾーン (Timezone)</p>
               <p class="text-[10px] text-slate-400 font-mono" id="current-timezone-display">Asia/Tokyo (Auto)</p>
             </div>
-            <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded-lg" data-i18n="autoDetected">自動検出</span>
+            <span class="text-[10px] theme-soft-badge border font-semibold px-2 py-1 rounded-lg" data-i18n="autoDetected">自動検出</span>
           </div>
         </div>
 
@@ -301,7 +367,7 @@
   <!-- ボトムナビゲーション -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 pb-6 shadow-2xl max-w-md mx-auto">
     <div class="flex items-center justify-around">
-      <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold">
+      <button id="nav-calendar-btn" onclick="switchTab('calendar')" class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all theme-primary-text font-bold">
         <i data-lucide="calendar" class="w-5 h-5"></i>
         <span class="text-[10px]" data-i18n="navCalendar">カレンダー</span>
       </button>
@@ -320,15 +386,15 @@
     </div>
   </nav>
 
-  <!-- 予定作成モーダル -->
+  <!-- 予定作成・編集モーダル -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end justify-center hidden">
     <div class="bg-white w-full max-w-md rounded-t-3xl border-t border-slate-200 flex flex-col max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
       <div class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-3.5 flex items-center justify-between z-10">
         <button onclick="closeAddModal()" class="p-1 -ml-1 text-slate-400 hover:text-slate-600 rounded-full">
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
-        <h2 class="text-base font-bold text-slate-900" data-i18n="modalNewEventTitle">新しい予定を追加</h2>
-        <button onclick="document.getElementById('add-schedule-form').requestSubmit()" class="p-1 -mr-1 text-indigo-600 hover:text-indigo-700 font-bold rounded-full">
+        <h2 id="schedule-modal-title" class="text-base font-bold text-slate-900" data-i18n="modalNewEventTitle">新しい予定を追加</h2>
+        <button onclick="document.getElementById('add-schedule-form').requestSubmit()" class="p-1 -mr-1 theme-primary-text font-bold rounded-full">
           <i data-lucide="check" class="w-6 h-6"></i>
         </button>
       </div>
@@ -343,33 +409,33 @@
           <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-4">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="dateLabel">日付</span>
+                <i data-lucide="calendar" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="dateLabel">日付</span>
               </span>
-              <input type="date" id="input-date" required class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <input type="date" id="input-date" required class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="timeLabel">開始時間</span>
+                <i data-lucide="clock" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="timeLabel">開始時間</span>
               </span>
-              <input type="time" id="input-time" required value="10:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <input type="time" id="input-time" required value="10:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 text-pink-600"></i> <span data-i18n="endTimeLabel">終了時間</span>
+                <i data-lucide="clock" class="w-4 h-4 theme-accent-text"></i> <span data-i18n="endTimeLabel">終了時間</span>
               </span>
-              <input type="time" id="input-endtime" required value="12:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <input type="time" id="input-endtime" required value="12:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
             </div>
           </div>
 
           <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4">
-            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5" data-i18n="locationLabel">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-600"></i> 場所（スポット）
+            <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 theme-primary-text"></i> <span data-i18n="locationLabel">場所（スポット）</span>
             </label>
             <input type="text" id="input-location" placeholder="例: お気に入りのカフェ" class="w-full text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none bg-transparent">
           </div>
 
           <div class="pt-2 pb-4">
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md shadow-indigo-600/30 transition-all active:scale-95" data-i18n="saveBtn">
+            <button id="schedule-submit-btn" type="submit" class="w-full theme-primary-bg text-white font-bold py-3.5 rounded-2xl text-sm shadow-md transition-all active:scale-95" data-i18n="saveBtn">
               保存する
             </button>
           </div>
@@ -393,7 +459,7 @@
 
       <div class="space-y-1 pt-1 border-t border-slate-100">
         <label class="block text-xs text-slate-600 font-medium" data-i18n="selectFileLabel">📁 写真・動画を選ぶ</label>
-        <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        <input type="file" id="local-file-input" accept="image/*,video/*,.mov,.mp4,.webm,.m4v" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
         <p id="file-loading-status" class="text-[10px] text-slate-400" data-i18n="fileLoadingHint">※iOS完全対応の超高速サムネイル自動生成エンジン稼働中。</p>
       </div>
 
@@ -410,7 +476,7 @@
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <span class="text-[10px] uppercase font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Preview</span>
+          <span class="text-[10px] uppercase font-bold theme-soft-badge border px-2 py-0.5 rounded-full">Preview</span>
           <h3 id="viewer-title" class="text-base font-bold text-slate-900 mt-0.5">タイトル</h3>
         </div>
         <button onclick="closeMediaViewer()" class="text-slate-400 hover:text-slate-600">
@@ -430,7 +496,7 @@
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <span class="text-[10px] uppercase font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">Selected Vlog Recap</span>
+          <span class="text-[10px] uppercase font-bold theme-accent-text bg-pink-50 px-2 py-0.5 rounded-full">Selected Vlog Recap</span>
           <h3 class="text-base font-bold text-slate-900 mt-0.5" data-i18n="vlogModalTitle">シネマティックまとめ動画</h3>
         </div>
         <button onclick="closeMovieModal()" class="text-slate-400 hover:text-slate-600">
@@ -441,23 +507,23 @@
       <canvas id="movie-canvas" width="720" height="1280" class="mx-auto block rounded-2xl bg-black" style="height:52vh;max-width:100%"></canvas>
       <p id="vlog-info" class="text-[11px] text-slate-500 text-center"></p>
       <div id="rec-status" class="hidden space-y-1">
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="rec-bar" class="h-full bg-pink-500" style="width:0%"></div></div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="rec-bar" class="h-full theme-accent-bg" style="width:0%"></div></div>
         <p id="rec-text" class="text-[11px] text-slate-500 text-center"></p>
       </div>
       <div class="flex gap-2 items-center">
-        <select id="bgm-select" onchange="restartMovie()" class="flex-1 min-w-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-indigo-500"></select>
-        <button onclick="restartMovie()" class="text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-600 px-3 py-2 rounded-lg whitespace-nowrap">別の編集</button>
-        <label class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg cursor-pointer whitespace-nowrap">自分の曲<input type="file" id="bgm-file" accept="audio/*" class="hidden" onchange="pickCustomBgm(event)"></label>
+        <select id="bgm-select" onchange="restartMovie()" class="flex-1 min-w-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none"></select>
+        <button onclick="restartMovie()" class="text-xs font-semibold bg-pink-50 hover:bg-pink-100 theme-accent-text px-3 py-2 rounded-lg whitespace-nowrap" data-i18n="anotherEditBtn">別の編集</button>
+        <label class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg cursor-pointer whitespace-nowrap"><span data-i18n="customBgmBtn">自分の曲</span><input type="file" id="bgm-file" accept="audio/*" class="hidden" onchange="pickCustomBgm(event)"></label>
       </div>
 
       <audio id="bgm-player" loop></audio>
 
       <div class="flex gap-2 pt-1">
-        <button onclick="replayMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="restartMovieBtn">
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 最初から再生
+        <button onclick="replayMovie()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> <span data-i18n="restartMovieBtn">最初から再生</span>
         </button>
-        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 active:scale-95" data-i18n="downloadMovieBtn">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i> 動画をファイル保存
+        <button id="download-video-btn" onclick="recordAndDownloadMovie()" class="flex-1 theme-primary-bg text-white font-medium py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> <span data-i18n="downloadMovieBtn">動画をファイル保存</span>
         </button>
       </div>
     </div>
@@ -523,9 +589,96 @@
     }
 // ===== ここまで追加 =====
 
+    // 🎨 テーマカラー定義
+    const THEME_PRESETS = {
+      indigo: {
+        primary: '#4f46e5',
+        primaryHover: '#6366f1',
+        primarySoft: 'rgba(79, 70, 229, 0.08)',
+        primaryBorder: 'rgba(79, 70, 229, 0.22)',
+        accent: '#ec4899',
+        accentHover: '#db2777',
+        ring: 'rgba(99, 102, 241, 0.35)',
+        gradFrom: '#6366f1',
+        gradTo: '#ec4899'
+      },
+      emerald: {
+        primary: '#059669',
+        primaryHover: '#10b981',
+        primarySoft: 'rgba(5, 150, 105, 0.09)',
+        primaryBorder: 'rgba(5, 150, 105, 0.24)',
+        accent: '#0891b2',
+        accentHover: '#0e7490',
+        ring: 'rgba(16, 185, 129, 0.35)',
+        gradFrom: '#059669',
+        gradTo: '#06b6d4'
+      },
+      sunset: {
+        primary: '#ea580c',
+        primaryHover: '#f97316',
+        primarySoft: 'rgba(234, 88, 12, 0.09)',
+        primaryBorder: 'rgba(234, 88, 12, 0.24)',
+        accent: '#e11d48',
+        accentHover: '#be123c',
+        ring: 'rgba(249, 115, 22, 0.35)',
+        gradFrom: '#ea580c',
+        gradTo: '#e11d48'
+      },
+      midnight: {
+        primary: '#1e293b',
+        primaryHover: '#334155',
+        primarySoft: 'rgba(30, 41, 59, 0.08)',
+        primaryBorder: 'rgba(30, 41, 59, 0.24)',
+        accent: '#6366f1',
+        accentHover: '#4f46e5',
+        ring: 'rgba(51, 65, 85, 0.35)',
+        gradFrom: '#1e293b',
+        gradTo: '#6366f1'
+      }
+    };
+
+    let currentTheme = localStorage.getItem('logsnap_theme') || 'indigo';
+    if (!THEME_PRESETS[currentTheme]) currentTheme = 'indigo';
+
+    function applyThemeColor(themeKey) {
+      const preset = THEME_PRESETS[themeKey] || THEME_PRESETS.indigo;
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', preset.primary);
+      root.style.setProperty('--theme-primary-hover', preset.primaryHover);
+      root.style.setProperty('--theme-primary-soft', preset.primarySoft);
+      root.style.setProperty('--theme-primary-border', preset.primaryBorder);
+      root.style.setProperty('--theme-accent', preset.accent);
+      root.style.setProperty('--theme-accent-hover', preset.accentHover);
+      root.style.setProperty('--theme-ring', preset.ring);
+      root.style.setProperty('--theme-grad-from', preset.gradFrom);
+      root.style.setProperty('--theme-grad-to', preset.gradTo);
+
+      document.querySelectorAll('.theme-swatch').forEach(btn => {
+        const isSelected = btn.getAttribute('data-theme') === themeKey;
+        btn.classList.toggle('ring-2', isSelected);
+        btn.classList.toggle('border-slate-900', isSelected);
+        btn.classList.toggle('bg-slate-50', isSelected);
+        if (isSelected) {
+          btn.style.boxShadow = `0 0 0 2px ${preset.ring}`;
+        } else {
+          btn.style.boxShadow = '';
+        }
+      });
+    }
+
+    function changeThemeColor(themeKey) {
+      if (!THEME_PRESETS[themeKey]) return;
+      currentTheme = themeKey;
+      localStorage.setItem('logsnap_theme', themeKey);
+      applyThemeColor(themeKey);
+      monthCellCache.clear();
+      renderAllPanels();
+      renderSchedules();
+    }
+
     // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
     const monthCellCache = new Map();
-    const SELECTED_CLASSES = ['bg-indigo-50/50', 'ring-2', 'ring-indigo-500/40', 'z-10'];
+    const SELECTED_CLASSES = ['bg-slate-50', 'ring-2', 'ring-slate-400/50', 'z-10'];
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f172a"/><polygon points="40,32 40,68 70,50" fill="#f472b6"/></svg>'
     );
@@ -711,7 +864,7 @@ async function handleFileSelect(event) {
     }
   } catch (err) {
     console.error('Save error:', err);
-    alert('保存に失敗しました。端末の空き容量を確認してください。');
+    alert(t('saveFailedAlert'));
   } finally {
     confirmBtn.innerText = t('confirmSaveBtn');
     confirmBtn.disabled = false;
@@ -731,7 +884,7 @@ async function deleteMediaFromSchedule(scheduleId, mediaId) {
 }
 
 async function deleteSchedule(id) {
-  if (!confirm(t('confirmReset'))) return;
+  if (!confirm(t('confirmDeleteSchedule'))) return;
   const target = schedules.find(s => s.id === id);
   for (const m of (target?.mediaList || [])) {
     await removeMedia(m.id);
@@ -745,13 +898,6 @@ async function deleteSchedule(id) {
 }
 
 // ---------- 6) 他に必要な修正（コメント） ----------
-// (a) DOMContentLoaded の中、最初の renderAllPanels() の「前」に追加：
-//       navigator.storage?.persist?.();   // ブラウザによる自動削除を避ける要求
-//       await hydrateAllMedia();
-//
-// (b) 「データストレージ初期化」ボタンは、下の resetAllData() を呼ぶ形に変更：
-//       onclick="if(confirm(t('confirmReset'))){ resetAllData(); }"
-//     （localStorage.clear() だけだと、端末内の写真・動画が残る）
 async function resetAllData() {
   try { (await openMediaDb()).close(); } catch (e) {}
   await new Promise((res) => {
@@ -761,13 +907,6 @@ async function resetAllData() {
   localStorage.clear();
   location.reload();
 }
-
-// (c) 削除してよいもの：
-//       storageRef / metadataOptions / downloadUrlCache / getCachedDownloadURL
-//       と script の firebase-storage-compat.js
-//     ※ firebaseConfig と firebase.initializeApp、firebase-app-compat.js、
-//       firebase-auth-compat.js は、ログイン機能がまだ使っているので残す。
-//       （認証UIを外す段階で、まとめて削除する）
 
     // 🚀 一覧用URL（動画のURLは <img> に渡さない）
     function getThumbUrl(m) {
@@ -791,13 +930,13 @@ async function resetAllData() {
 
     function makeDayNumHtml(isToday, colorClass, day, extraClass = '') {
       return isToday
-        ? `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
+        ? `<span class="w-6 h-6 rounded-full theme-accent-bg text-white flex items-center justify-center text-xs font-bold shadow-xs"><span>${day}</span></span>`
         : `<span class="text-xs ${extraClass || colorClass}">${day}</span>`;
     }
 
     function makeBadgesHtml(daySchedules) {
       return daySchedules.map(s =>
-        `<div class="bg-indigo-50 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded truncate font-medium border border-indigo-100">${s.title}</div>`
+        `<div class="theme-soft-badge border text-[9px] px-1.5 py-0.5 rounded truncate font-semibold">${s.title}</div>`
       ).join('');
     }
 
@@ -831,7 +970,7 @@ async function resetAllData() {
       if (viewMode === 'schedule') {
         contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[42px]">${makeBadgesHtml(daySchedules)}</div>`;
       } else if (!thumbnail && daySchedules.length > 0) {
-        contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span></div>`;
+        contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full theme-primary-bg"></span></div>`;
       }
       const numClass = (viewMode === 'photo' && thumbnail) ? 'text-white photo-stamp font-bold' : colorClass;
       cell.innerHTML = `
@@ -983,32 +1122,36 @@ async function resetAllData() {
       window.addEventListener("mouseup", (e) => onEnd(e.clientX));
     }
 
+    function formatSelectedDateTitle(dateStr) {
+      return currentLang === 'en' ? `Events & Memories on ${dateStr}` : `${dateStr} の予定 ＆ 思い出`;
+    }
+
     function renderNotifications() {
       const container = document.getElementById("notifications-list");
       if (!container) return;
       const todayStr = formatDateString(new Date());
       const todaySchedules = schedules.filter(s => s.date === todayStr);
       let html = `
-        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
+        <div class="p-3 theme-soft-badge rounded-xl border space-y-1">
           <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">✨ LogSnapへようこそ！</span>
-            <span class="text-[10px] text-slate-400 font-mono" data-i18n="todayLabel">今日</span>
+            <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">${t('welcomeNoteTitle')}</span>
+            <span class="text-[10px] text-slate-500 font-mono" data-i18n="todayLabel">${t('todayLabel')}</span>
           </div>
           <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">${t('welcomeNoteDesc')}</p>
         </div>
       `;
       if (todaySchedules.length > 0) {
-        html += `<div class="pt-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
+        html += `<div class="pt-2"><h3 class="text-[10px] font-bold uppercase tracking-wider theme-primary-text mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
         todaySchedules.forEach(s => {
           const timeRange = s.endTime ? `${s.time} - ${s.endTime}` : s.time;
           html += `
             <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-1 mb-2">
               <div class="flex justify-between items-center">
                 <span class="text-xs font-bold text-slate-900">${s.title}</span>
-                <span class="text-[10px] bg-indigo-50 text-indigo-600 font-mono px-2 py-0.5 rounded-full font-semibold">${timeRange}</span>
+                <span class="text-[10px] theme-soft-badge border font-mono px-2 py-0.5 rounded-full font-semibold">${timeRange}</span>
               </div>
               <p class="text-[11px] text-slate-500 flex items-center gap-1">
-                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${s.location || 'Spot'}
+                <i data-lucide="map-pin" class="w-3 h-3 theme-primary-text"></i> ${s.location || 'Spot'}
               </p>
             </div>
           `;
@@ -1020,7 +1163,7 @@ async function resetAllData() {
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
-      const key = `${year}-${month}-${viewMode}-${currentLang}`;
+      const key = `${year}-${month}-${viewMode}-${currentLang}-${currentTheme}`;
       let cells = monthCellCache.get(key);
       if (!cells) {
         cells = buildCalendarCells(year, month);
@@ -1056,12 +1199,12 @@ async function resetAllData() {
 
     function selectDate(dateStr) {
       selectedDate = dateStr;
-      document.getElementById("selected-date-title").innerText = `${selectedDate} の予定 ＆ 思い出`;
+      document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
       applySelectionHighlight();
       renderSchedules();
     }
 
-            function openMediaViewer(mediaItem, title, meta) {
+    function openMediaViewer(mediaItem, title, meta) {
       const modal = document.getElementById("media-viewer-modal");
       const imgEl = document.getElementById("viewer-img");
       const videoEl = document.getElementById("viewer-video");
@@ -1100,13 +1243,13 @@ async function resetAllData() {
       const currentDaySchedules = schedules.filter(s => s.date === selectedDate);
 
       if (currentDaySchedules.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">${t('noEvents')}</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs text-indigo-600 hover:underline font-semibold">＋ ${t('addThisDayBtn')}</button></div>`;
+        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">${t('noEvents')}</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs theme-primary-text hover:underline font-semibold">＋ ${t('addThisDayBtn')}</button></div>`;
         return;
       }
 
       for (const item of currentDaySchedules) {
         const card = document.createElement("div");
-        card.className = "bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all p-4 space-y-3 relative group";
+        card.className = "bg-white rounded-2xl overflow-hidden border border-slate-200/90 hover:border-slate-300 shadow-sm transition-all p-4 space-y-3 relative group";
 
         const mediaCount = (item.mediaList || []).length;
         const albumText = t('albumLabel');
@@ -1138,26 +1281,29 @@ async function resetAllData() {
           thumbnailDisplay = `
             <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
               <span class="text-xs text-slate-500">${t('noPhotosYet')}</span>
-              <button onclick="openCheckinModal(${item.id})" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ ${t('addBtnText')}</button>
+              <button onclick="openCheckinModal(${item.id})" class="text-xs theme-primary-bg text-white font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ ${t('addBtnText')}</button>
             </div>
           `;
         }
 
         card.innerHTML = `
-          <div class="flex justify-between items-start">
-            <div>
+          <div class="flex justify-between items-start gap-2">
+            <div class="min-w-0">
               ${statusBadge}
-              <h4 class="text-base font-bold text-slate-900 mt-1">${item.title}</h4>
-              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
-                <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${item.location || 'Spot'} &bull; ${timeDisplay}
+              <h4 class="text-base font-bold text-slate-900 mt-1 truncate">${item.title}</h4>
+              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono truncate">
+                <i data-lucide="map-pin" class="w-3 h-3 theme-primary-text flex-shrink-0"></i> <span>${item.location || 'Spot'} &bull; ${timeDisplay}</span>
               </p>
             </div>
-            <div class="flex items-center gap-1">
-              <button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all active:scale-95">
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button onclick="openEditModal(${item.id})" title="${t('editBtnText')}" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all active:scale-95">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              ${mediaCount > 0 ? `<button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 theme-primary-bg text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all active:scale-95">
                 <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
                 <span>${t('addBtnText')}</span>
-              </button>
-              <button onclick="deleteSchedule(${item.id})" title="Delete" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
+              </button>` : ''}
+              <button onclick="deleteSchedule(${item.id})" title="Delete" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all active:scale-95">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -1176,7 +1322,7 @@ async function resetAllData() {
         const btn = document.getElementById(`nav-${t}-btn`);
         if (t === tab) {
           el.classList.remove("hidden");
-          btn.className = "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-indigo-600 font-bold";
+          btn.className = "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all theme-primary-text font-bold";
         } else {
           el.classList.add("hidden");
           btn.className = "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-600 font-medium";
@@ -1323,10 +1469,10 @@ async function resetAllData() {
 
       movieHistory.forEach((item) => {
         const row = document.createElement("div");
-        row.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-indigo-50/50 rounded-xl border border-slate-200 transition-all";
+        row.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-all";
         row.innerHTML = `
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+            <div class="w-8 h-8 rounded-lg bg-pink-100 theme-accent-text flex items-center justify-center font-bold">
               <i data-lucide="film" class="w-4 h-4"></i>
             </div>
             <div>
@@ -1335,7 +1481,7 @@ async function resetAllData() {
             </div>
           </div>
           <div class="flex items-center gap-1.5">
-            <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-95">
+            <button onclick="playArchivedMovie('${item.id}')" class="px-3 py-1.5 theme-primary-bg text-white rounded-lg text-xs font-semibold shadow-xs active:scale-95">
               Play
             </button>
             <button onclick="deleteMovieHistory('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg">
@@ -1349,10 +1495,22 @@ async function resetAllData() {
     }
 
     function deleteMovieHistory(id) {
-      if (confirm(t('confirmReset'))) {
+      if (confirm(t('confirmDeleteHistory'))) {
         movieHistory = movieHistory.filter(h => h.id !== id);
         saveMovieHistory();
         renderMovieHistory();
+      }
+    }
+
+    function setScheduleModalMode(mode) {
+      const titleEl = document.getElementById("schedule-modal-title");
+      const submitBtn = document.getElementById("schedule-submit-btn");
+      if (mode === 'edit') {
+        titleEl.innerText = t('modalEditEventTitle');
+        submitBtn.innerText = t('updateBtn');
+      } else {
+        titleEl.innerText = t('modalNewEventTitle');
+        submitBtn.innerText = t('saveBtn');
       }
     }
 
@@ -1361,11 +1519,34 @@ async function resetAllData() {
     }
 
     function openAddModalForDate(dateStr) {
+      editingScheduleId = null;
+      document.getElementById("add-schedule-form").reset();
       document.getElementById("input-date").value = dateStr;
+      document.getElementById("input-time").value = "10:00";
+      document.getElementById("input-endtime").value = "12:00";
+      document.getElementById("input-title").placeholder = t('eventTitlePlaceholder');
+      document.getElementById("input-location").placeholder = t('locationPlaceholder');
+      setScheduleModalMode('add');
+      document.getElementById("add-modal").classList.remove("hidden");
+    }
+
+    function openEditModal(id) {
+      const item = schedules.find(s => s.id === id);
+      if (!item) return;
+      editingScheduleId = id;
+      document.getElementById("input-title").value = item.title || "";
+      document.getElementById("input-date").value = item.date || selectedDate;
+      document.getElementById("input-time").value = item.time || "10:00";
+      document.getElementById("input-endtime").value = item.endTime || "12:00";
+      document.getElementById("input-location").value = item.location || "";
+      document.getElementById("input-title").placeholder = t('eventTitlePlaceholder');
+      document.getElementById("input-location").placeholder = t('locationPlaceholder');
+      setScheduleModalMode('edit');
       document.getElementById("add-modal").classList.remove("hidden");
     }
 
     function closeAddModal() { 
+      editingScheduleId = null;
       document.getElementById("add-modal").classList.add("hidden"); 
     }
 
@@ -1376,16 +1557,28 @@ async function resetAllData() {
       const time = document.getElementById("input-time").value;
       const endTime = document.getElementById("input-endtime").value;
       const location = document.getElementById("input-location").value;
-      
-      schedules.push({ 
-        id: Date.now(), 
-        date, 
-        time, 
-        endTime,
-        title, 
-        location: location || "Spot", 
-        mediaList: [] 
-      });
+
+      if (editingScheduleId !== null) {
+        const target = schedules.find(s => s.id === editingScheduleId);
+        if (target) {
+          target.date = date;
+          target.title = title;
+          target.time = time;
+          target.endTime = endTime;
+          target.location = location || "Spot";
+        }
+        editingScheduleId = null;
+      } else {
+        schedules.push({ 
+          id: Date.now(), 
+          date, 
+          time, 
+          endTime,
+          title, 
+          location: location || "Spot", 
+          mediaList: [] 
+        });
+      }
 
       saveSchedules();
       closeAddModal();
@@ -1402,6 +1595,7 @@ async function resetAllData() {
       document.getElementById("checkin-target-title").innerText = item.title;
       document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || 'Spot'}`;
       tempMediaList = [];
+      document.getElementById("local-file-input").value = "";
       document.getElementById("checkin-modal").classList.remove("hidden");
     }
 
@@ -1409,7 +1603,7 @@ async function resetAllData() {
       document.getElementById("checkin-modal").classList.add("hidden"); 
     }
 
-        async function confirmCheckin() {
+    async function confirmCheckin() {
       if (!currentCheckinId) return;
       const item = schedules.find(s => s.id === currentCheckinId);
       if (item && tempMediaList.length > 0) {
@@ -2108,7 +2302,7 @@ function setDlBtn(rec) {
   const b = document.getElementById('download-video-btn');
   if (!b) return;
   b.disabled = rec; showRecUi(rec); if (rec) holdScreenOn(); else releaseScreen();
-  b.innerHTML = rec ? '⏳ 書き出し中…' : `<i data-lucide="download" class="w-3.5 h-3.5"></i> ${t('downloadMovieBtn')}`;
+  b.innerHTML = rec ? '⏳ 書き出し中…' : `<i data-lucide="download" class="w-3.5 h-3.5"></i> <span>${t('downloadMovieBtn')}</span>`;
   if (!rec && window.lucide) lucide.createIcons();
 }
 
@@ -2238,9 +2432,22 @@ function recordAndDownloadMovie() {
         playMovieBtn: "選択した期間のまとめ動画を再生・作成",
         movieHistoryTitle: "作成済みまとめ動画の履歴",
         galleryTitle: "Gallery（複数メディア一覧）",
+        authTitle: "アカウント認証 (ログイン / 新規登録)",
+        emailPlaceholder: "メールアドレス",
+        passwordPlaceholder: "パスワード（6文字以上）",
+        signUpBtn: "新規登録",
+        loginBtn: "ログイン",
+        loggedInAsLabel: "ログイン中",
+        logoutBtn: "ログアウト",
         guestUser: "ゲストユーザー",
         offlineMode: "端末内保存モード",
         settingsHeader: "アプリ設定 (Settings)",
+        themeSettingTitle: "テーマカラー (Theme Color)",
+        themeSettingDesc: "アプリ全体のベースカラーを選択します",
+        themeIndigo: "Indigo",
+        themeEmerald: "Emerald",
+        themeSunset: "Sunset",
+        themeMidnight: "Midnight",
         languageSettingTitle: "言語設定 (Language)",
         languageSettingDesc: "表示言語と対応する祝日を切り替えます",
         timezoneSettingTitle: "タイムゾーン (Timezone)",
@@ -2253,17 +2460,23 @@ function recordAndDownloadMovie() {
         navLookbook: "LOOKBOOK",
         navAccount: "アカウント",
         modalNewEventTitle: "新しい予定を追加",
+        modalEditEventTitle: "予定を編集",
         eventTitleLabel: "予定タイトル",
+        eventTitlePlaceholder: "例: カフェで作業、ジムで筋トレ",
         dateLabel: "日付",
         timeLabel: "開始時間",
         endTimeLabel: "終了時間",
         locationLabel: "場所（スポット）",
+        locationPlaceholder: "例: お気に入りのカフェ",
         saveBtn: "保存する",
+        updateBtn: "変更を保存",
         addMediaModalTitle: "写真・動画を追加",
         selectFileLabel: "📁 写真・動画を選ぶ",
         fileLoadingHint: "※iOS対応・超高速リサイズ＆サムネイル自動生成に対応。",
         confirmSaveBtn: "決定して保存する",
         vlogModalTitle: "シネマティックまとめ動画",
+        anotherEditBtn: "別の編集",
+        customBgmBtn: "自分の曲",
         restartMovieBtn: "最初から再生",
         downloadMovieBtn: "動画をファイル保存",
         noEvents: "この日の予定はありません",
@@ -2271,10 +2484,19 @@ function recordAndDownloadMovie() {
         noMediaMessage: "選択した期間の写真・動画ログがありません。",
         noMovieHistory: "まだ保存されたまとめ動画の履歴はありません。",
         confirmReset: "すべての予定と保存データをリセットしますか？",
+        confirmDeleteSchedule: "この予定を削除しますか？",
+        confirmDeleteHistory: "この履歴を削除しますか？",
+        saveFailedAlert: "保存に失敗しました。端末の空き容量を確認してください。",
+        signUpSuccessAlert: "アカウントを作成し、ログインしました！",
+        signUpErrorPrefix: "登録エラー: ",
+        loginSuccessAlert: "ログインしました！",
+        loginErrorPrefix: "ログイン失敗: ",
+        logoutSuccessAlert: "ログアウトしました",
         albumLabel: "アルバム",
         noMediaBadge: "メディアなし",
         noPhotosYet: "写真・動画はまだありません",
         addBtnText: "追加",
+        editBtnText: "編集",
         todayEventsNotification: "本日の予定リマインダー"
       },
       en: {
@@ -2296,9 +2518,22 @@ function recordAndDownloadMovie() {
         playMovieBtn: "Play & Create Cinematic Vlog",
         movieHistoryTitle: "Saved Vlog History",
         galleryTitle: "Gallery (All Media)",
+        authTitle: "Account Authentication (Sign In / Sign Up)",
+        emailPlaceholder: "Email address",
+        passwordPlaceholder: "Password (6+ characters)",
+        signUpBtn: "Sign Up",
+        loginBtn: "Log In",
+        loggedInAsLabel: "Signed in as",
+        logoutBtn: "Log Out",
         guestUser: "Guest User",
         offlineMode: "On-device storage mode",
         settingsHeader: "App Settings",
+        themeSettingTitle: "Theme Color",
+        themeSettingDesc: "Choose the base accent color for the app",
+        themeIndigo: "Indigo",
+        themeEmerald: "Emerald",
+        themeSunset: "Sunset",
+        themeMidnight: "Midnight",
         languageSettingTitle: "Language",
         languageSettingDesc: "Switch display language & regional holidays",
         timezoneSettingTitle: "Timezone",
@@ -2311,17 +2546,23 @@ function recordAndDownloadMovie() {
         navLookbook: "LOOKBOOK",
         navAccount: "Account",
         modalNewEventTitle: "Add New Event",
+        modalEditEventTitle: "Edit Event",
         eventTitleLabel: "Event Title",
+        eventTitlePlaceholder: "e.g., Study at cafe, Gym workout",
         dateLabel: "Date",
         timeLabel: "Start Time",
         endTimeLabel: "End Time",
         locationLabel: "Location / Spot",
+        locationPlaceholder: "e.g., Favorite coffee shop",
         saveBtn: "Save Event",
+        updateBtn: "Save Changes",
         addMediaModalTitle: "Add Photos & Videos",
         selectFileLabel: "📁 Select Media Files",
         fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
         confirmSaveBtn: "Confirm & Save",
         vlogModalTitle: "Cinematic Vlog Recap",
+        anotherEditBtn: "Re-cut",
+        customBgmBtn: "My Audio",
         restartMovieBtn: "Replay",
         downloadMovieBtn: "Save Video File",
         noEvents: "No events scheduled for this day",
@@ -2329,10 +2570,19 @@ function recordAndDownloadMovie() {
         noMediaMessage: "No media logs found for the selected period.",
         noMovieHistory: "No saved vlog history yet.",
         confirmReset: "Are you sure you want to reset all data?",
+        confirmDeleteSchedule: "Delete this event?",
+        confirmDeleteHistory: "Delete this history entry?",
+        saveFailedAlert: "Failed to save. Please check available device storage.",
+        signUpSuccessAlert: "Account created and signed in!",
+        signUpErrorPrefix: "Sign-up error: ",
+        loginSuccessAlert: "Signed in successfully!",
+        loginErrorPrefix: "Sign-in failed: ",
+        logoutSuccessAlert: "Signed out",
         albumLabel: "Album",
         noMediaBadge: "No Media",
         noPhotosYet: "No photos/videos yet",
         addBtnText: "Add",
+        editBtnText: "Edit",
         todayEventsNotification: "Today's Schedule Reminder"
       }
     };
@@ -2350,6 +2600,17 @@ function recordAndDownloadMovie() {
           el.innerText = i18n[currentLang][key];
         }
       });
+      const emailInput = document.getElementById("auth-email");
+      const passwordInput = document.getElementById("auth-password");
+      const titleInput = document.getElementById("input-title");
+      const locationInput = document.getElementById("input-location");
+      if (emailInput) emailInput.placeholder = t('emailPlaceholder');
+      if (passwordInput) passwordInput.placeholder = t('passwordPlaceholder');
+      if (titleInput) titleInput.placeholder = t('eventTitlePlaceholder');
+      if (locationInput) locationInput.placeholder = t('locationPlaceholder');
+
+      setScheduleModalMode(editingScheduleId !== null ? 'edit' : 'add');
+      document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
       document.getElementById("language-select").value = currentLang;
       updateWeekdayHeader();
       renderNotifications();
@@ -2424,10 +2685,12 @@ function recordAndDownloadMovie() {
       }
     }
 
-    let currentYear = 2026;
-    let currentMonth = 12;
-    let selectedDate = "2026-12-01";
+    const nowInit = new Date();
+    let currentYear = nowInit.getFullYear();
+    let currentMonth = nowInit.getMonth() + 1;
+    let selectedDate = formatDateString(nowInit);
     let viewMode = 'photo';
+    let editingScheduleId = null;
 
     let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
       { 
@@ -2452,7 +2715,7 @@ function recordAndDownloadMovie() {
 
     let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
 
-            let currentCheckinId = null;
+    let currentCheckinId = null;
     let tempMediaList = []; 
 
     // ===== 🔥 メール/パスワード認証関連の処理 =====
@@ -2464,10 +2727,10 @@ function recordAndDownloadMovie() {
 
       auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          alert("アカウントを作成し、ログインしました！");
+          alert(t('signUpSuccessAlert'));
         })
         .catch((error) => {
-          alert("登録エラー: " + error.message);
+          alert(t('signUpErrorPrefix') + error.message);
         });
     }
 
@@ -2477,10 +2740,10 @@ function recordAndDownloadMovie() {
 
       auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          alert("ログインしました！");
+          alert(t('loginSuccessAlert'));
         })
         .catch((error) => {
-          alert("ログイン失敗: " + error.message);
+          alert(t('loginErrorPrefix') + error.message);
         });
     }
 
@@ -2488,7 +2751,7 @@ function recordAndDownloadMovie() {
       auth.signOut().then(() => {
         localStorage.removeItem('logsnap_user_schedules_v26');
         localStorage.removeItem('logsnap_movie_history_v1');
-        alert("ログアウトしました");
+        alert(t('logoutSuccessAlert'));
         location.reload();
       }).catch((error) => {
         console.error("ログアウトエラー", error);
@@ -2514,6 +2777,7 @@ function recordAndDownloadMovie() {
     // ===========================================
 
     document.addEventListener("DOMContentLoaded", async () => {
+      applyThemeColor(currentTheme);
       lucide.createIcons();
       document.getElementById("select-year").value = currentYear;
       document.getElementById("select-month").value = currentMonth;
