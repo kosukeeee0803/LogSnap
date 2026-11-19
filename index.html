@@ -29,8 +29,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <!-- 🚀 Firebase Auth SDK の追加 -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
-  <style>
+  <!-- 👇 【追加】Firestore SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+ 
+ <style>
     .photo-stamp {
       text-shadow: 0px 1px 3px rgba(0,0,0,0.9);
     }
@@ -475,6 +477,51 @@
 
     // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
+// ===== ここから追加 =====
+    const db = firebase.firestore();
+
+    // 🔥 Firestore 同期（テキスト・履歴メタデータのみ。blob: URLは除外）
+    async function syncUserDataToFirestore() {
+      const user = firebase.auth().currentUser;
+      if (!user) return;
+      try {
+        const cleanSchedules = JSON.parse(JSON.stringify(schedules, stripBlobUrls));
+        const cleanHistory = JSON.parse(JSON.stringify(movieHistory, stripBlobUrls));
+        await db.collection('users').doc(user.uid).set({
+          schedules: cleanSchedules,
+          movieHistory: cleanHistory,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch (e) {
+        console.error('Firestore sync error:', e);
+      }
+    }
+
+    async function loadUserDataFromFirestore(uid) {
+      try {
+        const doc = await db.collection('users').doc(uid).get();
+        if (!doc.exists) return;
+        const data = doc.data();
+        if (Array.isArray(data.schedules)) {
+          schedules = data.schedules;
+          localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
+        }
+        if (Array.isArray(data.movieHistory)) {
+          movieHistory = data.movieHistory;
+          localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
+        }
+        monthCellCache.clear();
+        await hydrateAllMedia();
+        await renderAllPanels();
+        await renderSchedules();
+        renderNotifications();
+        updateRecapOptions();
+        renderMovieHistory();
+      } catch (e) {
+        console.error('Firestore load error:', e);
+      }
+    }
+// ===== ここまで追加 =====
 
     // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
     const monthCellCache = new Map();
@@ -620,6 +667,7 @@ function saveSchedules() {
   monthCellCache.clear();
   try {
     localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
+    syncUserDataToFirestore();
   } catch (e) {
     console.error('Storage quota exceeded', e);
   }
@@ -627,6 +675,7 @@ function saveSchedules() {
 
 function saveMovieHistory() {
   localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
+  syncUserDataToFirestore();
 }
 
 // ---------- 4) 追加時：リサイズ＋サムネイルを作って端末内に保存 ----------
@@ -2437,7 +2486,10 @@ function recordAndDownloadMovie() {
 
     function handleLogout() {
       auth.signOut().then(() => {
+        localStorage.removeItem('logsnap_user_schedules_v26');
+        localStorage.removeItem('logsnap_movie_history_v1');
         alert("ログアウトしました");
+        location.reload();
       }).catch((error) => {
         console.error("ログアウトエラー", error);
       });
@@ -2453,6 +2505,7 @@ function recordAndDownloadMovie() {
         if (authContainer) authContainer.classList.add("hidden");
         if (userInfoContainer) userInfoContainer.classList.remove("hidden");
         if (userEmailSpan) userEmailSpan.innerText = user.email;
+        loadUserDataFromFirestore(user.uid);
       } else {
         if (authContainer) authContainer.classList.remove("hidden");
         if (userInfoContainer) userInfoContainer.classList.add("hidden");
