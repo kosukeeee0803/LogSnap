@@ -791,6 +791,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    function formatDateString(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // ✅ nowInit を他の日付変数より先に必ず初期化
+    const nowInit = new Date();
+    let currentYear = nowInit.getFullYear();
+    let currentMonth = nowInit.getMonth() + 1;
+    let selectedDate = formatDateString(nowInit);
+    let viewMode = 'photo';
+    let editingScheduleId = null;
+    let selectedEventColor = 'indigo';
+
+    let vlogPickerYear = nowInit.getFullYear();
+    let vlogPickerMonth = nowInit.getMonth() + 1;
+    let vlogSelectedDates = new Set();
+    let vlogDragActive = false;
+    let vlogDragMode = 'add';
+
+    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
+      { 
+        id: 1, 
+        date: "2026-12-01",
+        endDate: "2026-12-01",
+        allDay: false,
+        time: "10:00", 
+        endTime: "12:00",
+        repeat: "none",
+        reminder: "10m",
+        color: "indigo",
+        title: "カフェで作業", 
+        location: "お気に入りのカフェ", 
+        mediaList: [] 
+      },
+      { 
+        id: 2, 
+        date: "2026-12-03",
+        endDate: "2026-12-03",
+        allDay: false,
+        time: "14:00", 
+        endTime: "16:00",
+        repeat: "none",
+        reminder: "none",
+        color: "emerald",
+        title: "海沿いをドライブ", 
+        location: "海岸通り", 
+        mediaList: [] 
+      }
+    ];
+
+    let dailyMedia = JSON.parse(localStorage.getItem('logsnap_daily_media_v1')) || {};
+    let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
+
+    let currentCheckinDate = null;
+    let tempMediaList = [];
+
     // ---------- 1日ごとのメディア保存（dailyMedia） ----------
     const stripBlobUrls = (key, value) =>
       (key === 'url' || key === 'thumbnailUrl') &&
@@ -876,7 +935,6 @@
       if (Array.isArray(dailyMedia[dateStr])) {
         list.push(...dailyMedia[dateStr]);
       }
-      // 既存の予定内メディアも後方互換として合算
       schedules.forEach(s => {
         if (s.date === dateStr && Array.isArray(s.mediaList) && s.mediaList.length > 0) {
           list.push(...s.mediaList);
@@ -885,7 +943,6 @@
       return list;
     }
 
-    // ---------- 繰り返し・複数日予定の展開 ----------
     function parseYmd(dateStr) {
       const [y, m, d] = dateStr.split('-').map(Number);
       return new Date(y, m - 1, d);
@@ -1167,7 +1224,6 @@
       if (Array.isArray(dailyMedia[dateStr])) {
         dailyMedia[dateStr] = dailyMedia[dateStr].filter(m => m.id !== mediaId);
       }
-      // レガシー予定内メディアにも存在すれば削除
       schedules.forEach(s => {
         if (s.date === dateStr && Array.isArray(s.mediaList)) {
           s.mediaList = s.mediaList.filter(m => m.id !== mediaId);
@@ -1351,6 +1407,7 @@
 
     function updateTrackPosition(animated = true) {
       const track = document.getElementById("calendar-track");
+      if (!track) return;
       track.style.transition = animated ? 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)' : 'none';
       track.style.transform = 'translateX(-100%)';
     }
@@ -1408,6 +1465,7 @@
     function setupCarouselSwipe() {
       const viewport = document.getElementById("calendar-viewport");
       const track = document.getElementById("calendar-track");
+      if (!viewport || !track) return;
       let startX = 0;
       let currentX = 0;
       let isDragging = false;
@@ -1528,10 +1586,11 @@
       }
 
       container.innerHTML = html;
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function fillCalendarGrid(grid, year, month, isCurrentPanel) {
+      if (!grid) return;
       const key = `${year}-${month}-${viewMode}-${currentLang}-${currentTheme}`;
       let cells = monthCellCache.get(key);
       if (!cells) {
@@ -1550,7 +1609,9 @@
 
     function setupCalendarClicks() {
       [["panel-prev", -1], ["panel-curr", 0], ["panel-next", 1]].forEach(([id, panelOffset]) => {
-        document.getElementById(id).addEventListener("click", async (e) => {
+        const panelEl = document.getElementById(id);
+        if (!panelEl) return;
+        panelEl.addEventListener("click", async (e) => {
           const cell = e.target.closest("[data-date]");
           if (!cell) return;
           const dateStr = cell.dataset.date;
@@ -1561,7 +1622,7 @@
           }
           if (shift !== 0) await shiftMonth(shift);
           if (!isGray && selectedDate === dateStr) openAddModalForDate(dateStr);
-          else selectDate(dateStr);
+          else await selectDate(dateStr);
         });
       });
     }
@@ -1574,7 +1635,6 @@
       await renderSchedules();
     }
 
-    // ---------- 1日ごとの写真・動画アルバム描画 ----------
     async function renderDailyAlbum() {
       const container = document.getElementById("daily-album-container");
       if (!container) return;
@@ -1615,7 +1675,7 @@
         </div>
         ${mediaGridHtml}
       `;
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function openDailyCheckinModal(dateStr) {
@@ -1650,7 +1710,6 @@
       await renderAlbumGallery();
     }
 
-    // ---------- 予定キーワード検索 ----------
     function renderSearchResults(query) {
       const q = (query || '').trim().toLowerCase();
       const resultsEl = document.getElementById("schedule-search-results");
@@ -1743,6 +1802,7 @@
 
     async function renderSchedules() {
       const container = document.getElementById("schedule-list");
+      if (!container) return;
       container.innerHTML = "";
       const currentDaySchedules = getSchedulesForDate(selectedDate);
 
@@ -1794,7 +1854,7 @@
         `;
         container.appendChild(card);
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function switchTab(tab) {
@@ -1823,20 +1883,6 @@
       }
     }
 
-    function formatDateString(d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    }
-
-    // ---------- まとめ動画：日付選択カレンダー（タップ＆ドラッグ連続選択・月移動） ----------
-    let vlogPickerYear = nowInit.getFullYear();
-    let vlogPickerMonth = nowInit.getMonth() + 1;
-    let vlogSelectedDates = new Set();
-    let vlogDragActive = false;
-    let vlogDragMode = 'add';
-
     function openVlogDatePickerModal() {
       vlogPickerYear = currentYear;
       vlogPickerMonth = currentMonth;
@@ -1846,7 +1892,7 @@
       renderVlogPickerCalendar();
       updateVlogSelectedCount();
       document.getElementById('vlog-date-picker-modal').classList.remove('hidden');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeVlogDatePickerModal() {
@@ -2040,11 +2086,12 @@
         `;
         grid.appendChild(itemEl);
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function renderMovieHistory() {
       const listContainer = document.getElementById("movie-history-list");
+      if (!listContainer) return;
       listContainer.innerHTML = "";
 
       if (movieHistory.length === 0) {
@@ -2076,7 +2123,7 @@
         `;
         listContainer.appendChild(row);
       });
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function deleteMovieHistory(id) {
@@ -2090,6 +2137,7 @@
     function setScheduleModalMode(mode) {
       const titleEl = document.getElementById("schedule-modal-title");
       const submitBtn = document.getElementById("schedule-submit-btn");
+      if (!titleEl || !submitBtn) return;
       if (mode === 'edit') {
         titleEl.innerText = t('modalEditEventTitle');
         submitBtn.innerText = t('updateBtn');
@@ -3448,9 +3496,16 @@
       if (searchInput) searchInput.placeholder = currentLang === 'en' ? "Search title or location..." : "予定タイトルや場所で検索...";
 
       setScheduleModalMode(editingScheduleId !== null ? 'edit' : 'add');
-      document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
-      document.getElementById("language-select").value = currentLang;
-      updateProfileUI(firebase.auth().currentUser);
+      const titleEl = document.getElementById("selected-date-title");
+      if (titleEl) titleEl.innerText = formatSelectedDateTitle(selectedDate);
+      const langSelect = document.getElementById("language-select");
+      if (langSelect) langSelect.value = currentLang;
+
+      let currentUser = null;
+      try {
+        currentUser = firebase.auth().currentUser;
+      } catch (e) {}
+      updateProfileUI(currentUser);
       updateWeekdayHeader();
       renderNotifications();
     }
@@ -3458,6 +3513,7 @@
     function updateWeekdayHeader() {
       const weekdays = i18n[currentLang].weekdays;
       const headerEl = document.getElementById("weekday-header");
+      if (!headerEl) return;
       headerEl.innerHTML = `
         <span class="text-rose-500">${weekdays[0]}</span>
         <span>${weekdays[1]}</span>
@@ -3524,51 +3580,6 @@
       }
     }
 
-    const nowInit = new Date();
-    let currentYear = nowInit.getFullYear();
-    let currentMonth = nowInit.getMonth() + 1;
-    let selectedDate = formatDateString(nowInit);
-    let viewMode = 'photo';
-    let editingScheduleId = null;
-    let selectedEventColor = 'indigo';
-
-    let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
-      { 
-        id: 1, 
-        date: "2026-12-01",
-        endDate: "2026-12-01",
-        allDay: false,
-        time: "10:00", 
-        endTime: "12:00",
-        repeat: "none",
-        reminder: "10m",
-        color: "indigo",
-        title: "カフェで作業", 
-        location: "お気に入りのカフェ", 
-        mediaList: [] 
-      },
-      { 
-        id: 2, 
-        date: "2026-12-03",
-        endDate: "2026-12-03",
-        allDay: false,
-        time: "14:00", 
-        endTime: "16:00",
-        repeat: "none",
-        reminder: "none",
-        color: "emerald",
-        title: "海沿いをドライブ", 
-        location: "海岸通り", 
-        mediaList: [] 
-      }
-    ];
-
-    let dailyMedia = JSON.parse(localStorage.getItem('logsnap_daily_media_v1')) || {};
-    let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
-
-    let currentCheckinDate = null;
-    let tempMediaList = []; 
-
     // ===== 🔥 メール/パスワード認証関連の処理 =====
     const auth = firebase.auth();
 
@@ -3627,29 +3638,40 @@
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
-      applyThemeColor(currentTheme);
-      lucide.createIcons();
-      populateYearOptions(currentYear);
-      document.getElementById("select-month").value = currentMonth;
-      
-      try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.getElementById("current-timezone-display").innerText = `${tz} (Auto)`;
-      } catch (e) {
-        document.getElementById("current-timezone-display").innerText = "Asia/Tokyo (Auto)";
-      }
+      const splashFallbackTimer = setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.classList.add('splash-hide');
+      }, 1500);
 
-      navigator.storage?.persist?.();
-      await hydrateAllMedia();
-      updateUIStrings();
-      await renderAllPanels();
-      updateTrackPosition(false);
-      await renderDailyAlbum();
-      await renderSchedules();
-      renderNotifications();
-      setupCarouselSwipe();
-      setupCalendarClicks();
-      runSplashAnimation();
+      try {
+        applyThemeColor(currentTheme);
+        if (window.lucide) lucide.createIcons();
+        populateYearOptions(currentYear);
+        const monthEl = document.getElementById("select-month");
+        if (monthEl) monthEl.value = currentMonth;
+
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const tzEl = document.getElementById("current-timezone-display");
+          if (tzEl) tzEl.innerText = `${tz} (Auto)`;
+        } catch (e) {}
+
+        navigator.storage?.persist?.();
+        try { await hydrateAllMedia(); } catch (e) { console.error("hydrateAllMedia:", e); }
+        try { updateUIStrings(); } catch (e) { console.error("updateUIStrings:", e); }
+        try {
+          await renderAllPanels();
+          updateTrackPosition(false);
+        } catch (e) { console.error("renderAllPanels:", e); }
+        try { await renderDailyAlbum(); } catch (e) { console.error("renderDailyAlbum:", e); }
+        try { await renderSchedules(); } catch (e) { console.error("renderSchedules:", e); }
+        try { renderNotifications(); } catch (e) { console.error("renderNotifications:", e); }
+        try { setupCarouselSwipe(); } catch (e) { console.error("setupCarouselSwipe:", e); }
+        try { setupCalendarClicks(); } catch (e) { console.error("setupCalendarClicks:", e); }
+      } finally {
+        clearTimeout(splashFallbackTimer);
+        runSplashAnimation();
+      }
     });
   </script>
 </body>
