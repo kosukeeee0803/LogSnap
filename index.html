@@ -6,7 +6,6 @@
   <title>LogSnap - 予定×シネマティックVlog・アルバム</title>
   <link id="app-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%234f46e5'/%3E%3Cstop offset='100%25' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='10' y='14' width='44' height='42' rx='8' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2'/%3E%3Cpath d='M10 22a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v4H10z' fill='url(%23g)'/%3E%3Ccircle cx='22' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Ccircle cx='42' cy='12' r='3.5' fill='%23cbd5e1'/%3E%3Crect x='18' y='32' width='28' height='18' rx='4' fill='%231e1b4b'/%3E%3Cpath d='M26 32l2-3h8l2 3z' fill='%231e1b4b'/%3E%3Ccircle cx='32' cy='41' r='5' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='41' r='2.5' fill='%231e1b4b'/%3E%3C/svg%3E">
   <script>
-    // 🚀 描画前にテーマカラーを即座に適用し、起動アイコンの色チラつきを防止
     const THEME_PRESETS = {
       indigo: {
         primary: '#4f46e5',
@@ -53,6 +52,16 @@
         gradTo: '#6366f1'
       }
     };
+
+    const EVENT_COLORS = {
+      indigo: { hex: '#4f46e5', bg: 'rgba(79, 70, 229, 0.12)', text: '#3730a3', border: 'rgba(79, 70, 229, 0.28)' },
+      emerald: { hex: '#059669', bg: 'rgba(5, 150, 105, 0.12)', text: '#065f46', border: 'rgba(5, 150, 105, 0.28)' },
+      sunset: { hex: '#ea580c', bg: 'rgba(234, 88, 12, 0.12)', text: '#9a3412', border: 'rgba(234, 88, 12, 0.28)' },
+      rose: { hex: '#e11d48', bg: 'rgba(225, 29, 72, 0.12)', text: '#9f1239', border: 'rgba(225, 29, 72, 0.28)' },
+      amber: { hex: '#d97706', bg: 'rgba(217, 119, 6, 0.13)', text: '#92400e', border: 'rgba(217, 119, 6, 0.28)' },
+      slate: { hex: '#475569', bg: 'rgba(71, 85, 105, 0.12)', text: '#1e293b', border: 'rgba(71, 85, 105, 0.28)' }
+    };
+
     let currentTheme = localStorage.getItem('logsnap_theme') || 'indigo';
     if (!THEME_PRESETS[currentTheme]) currentTheme = 'indigo';
     (function applyInitialThemeVars() {
@@ -98,12 +107,10 @@
   
   <!-- 🔥 Firebase SDK の読み込み (compat版) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <!-- 🚀 Firebase Auth SDK の追加 -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <!-- 👇 【追加】Firestore SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
  
- <style>
+  <style>
     :root {
       --theme-primary: #4f46e5;
       --theme-primary-hover: #6366f1;
@@ -152,13 +159,6 @@
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 8px;
     }
-    .vcr-timestamp {
-      font-family: 'Courier New', Courier, monospace;
-      font-style: italic;
-      color: #bef264;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.95), 0 0 12px rgba(190, 242, 100, 0.5);
-      letter-spacing: 1.5px;
-    }
     @keyframes cinematicZoom {
       0% { transform: scale(1); }
       100% { transform: scale(1.08); }
@@ -191,20 +191,12 @@
       pointer-events: none;
     }
     @keyframes splashIconFade {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
     @keyframes splashRingFade {
-      0% {
-        opacity: 0.35;
-      }
-      100% {
-        opacity: 0;
-      }
+      0% { opacity: 0.35; }
+      100% { opacity: 0; }
     }
     .splash-icon-anim {
       animation: splashIconFade 0.7s ease-out forwards;
@@ -213,7 +205,7 @@
       animation: splashRingFade 1.0s ease-out forwards;
     }
   </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Great+Vibes&family=Montserrat:wght@400;500&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 </head>
@@ -231,14 +223,10 @@
               <stop offset="100%" stop-color="var(--theme-grad-to)" />
             </linearGradient>
           </defs>
-          <!-- カレンダー台紙 -->
           <rect x="16" y="22" width="64" height="60" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5" />
-          <!-- 上部グラデーション帯 -->
           <path d="M16 34a12 12 0 0 1 12-12h40a12 12 0 0 1 12 12v7H16z" fill="url(#splashHeaderGrad)" />
-          <!-- カレンダーリング -->
           <rect x="31" y="13" width="6" height="16" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" />
           <rect x="59" y="13" width="6" height="16" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" />
-          <!-- 薄い日付グリッド -->
           <g fill="#f1f5f9">
             <rect x="25" y="48" width="8" height="8" rx="2" />
             <rect x="37" y="48" width="8" height="8" rx="2" />
@@ -247,7 +235,6 @@
             <rect x="25" y="61" width="8" height="8" rx="2" />
             <rect x="61" y="61" width="8" height="8" rx="2" />
           </g>
-          <!-- 中央カメラアイコン -->
           <rect x="27" y="51" width="42" height="25" rx="6" fill="#1e1b4b" />
           <path d="M39 51l3-5h12l3 5z" fill="#1e1b4b" />
           <circle cx="48" cy="63.5" r="7.5" fill="#ffffff" />
@@ -301,13 +288,13 @@
   <main class="max-w-md mx-auto px-4 pt-3 space-y-6">
 
     <!-- カレンダービュー -->
-    <section id="tab-calendar" class="tab-content space-y-6">
+    <section id="tab-calendar" class="tab-content space-y-5">
       <div class="select-none overflow-hidden relative -mx-4 px-4">
         <div class="flex items-center justify-between mb-3 px-1">
-          <div class="flex items-center gap-2">
-            <select id="select-year" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none shadow-xs">
+          <div class="flex items-center gap-1.5">
+            <select id="select-year" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2 py-1.5 focus:outline-none shadow-xs">
             </select>
-            <select id="select-month" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2.5 py-1.5 focus:outline-none shadow-xs">
+            <select id="select-month" onchange="changeYearMonthFromSelect()" class="bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-2 py-1.5 focus:outline-none shadow-xs">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -338,7 +325,6 @@
           <span class="text-sky-500">土</span>
         </div>
 
-        <!-- 🚀 常に6行（515pxに固定）にするため auto-rows-[85px] を適用 -->
         <div id="calendar-viewport" class="overflow-hidden relative touch-pan-y border-y border-slate-200 bg-white shadow-sm rounded-2xl min-h-[515px]">
           <div id="calendar-track" class="flex transition-transform duration-300 ease-out">
             <div id="panel-prev" class="w-full flex-shrink-0 grid grid-cols-7 auto-rows-[85px] border-slate-200 bg-slate-200 gap-px"></div>
@@ -348,11 +334,27 @@
         </div>
       </div>
 
+      <!-- 予定キーワード検索 -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs space-y-2">
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none"></i>
+          <input type="text" id="schedule-search-input" oninput="renderSearchResults(this.value)" placeholder="予定タイトルや場所で検索..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none">
+          <button type="button" id="schedule-search-clear" onclick="clearScheduleSearch()" class="hidden text-slate-400 hover:text-slate-600 absolute right-2.5 p-1">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div id="schedule-search-results" class="hidden space-y-1.5 pt-1"></div>
+      </div>
+
+      <!-- 1日ごとの写真・動画アルバム（日付単位） -->
+      <div id="daily-album-container" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3"></div>
+
+      <!-- 選択した日の予定一覧 -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <i data-lucide="clock" class="w-3.5 h-3.5 theme-primary-text"></i>
-            <span id="selected-date-title">2026-11-19 の予定 ＆ 思い出</span>
+            <span id="selected-date-title">2026-11-22 の予定</span>
           </h3>
           <button onclick="openAddModalForSelectedDate()" class="text-xs theme-primary-text hover:underline font-semibold flex items-center gap-1">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
@@ -371,37 +373,26 @@
           <h2 class="text-xs uppercase tracking-wider theme-primary-text font-bold flex items-center gap-1.5">
             <i data-lucide="bell" class="w-4 h-4"></i> <span data-i18n="notificationsTitle">お知らせ ＆ リマインダー</span>
           </h2>
-          <span class="text-[10px] theme-soft-badge border font-semibold px-2 py-0.5 rounded-full" data-i18n="newBadge">新着</span>
+          <button type="button" onclick="requestBrowserNotificationPermission()" id="notify-perm-btn" class="text-[10px] theme-soft-badge border font-semibold px-2.5 py-1 rounded-full active:scale-95">
+            通知を許可
+          </button>
         </div>
         <div id="notifications-list" class="space-y-2.5"></div>
       </div>
     </section>
 
-    <!-- LOOKBOOK -->
+    <!-- LOOKBOOK（任意の日付選択でまとめ動画を作成） -->
     <section id="tab-lookbook" class="tab-content hidden space-y-6">
       <div class="bg-gradient-to-r from-white via-slate-50 to-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
           <h2 class="text-xs uppercase tracking-wider theme-primary-text font-bold">Cinematic Vlog Studio</h2>
           <p class="text-lg font-bold text-slate-900" data-i18n="vlogStudioTitle">まとめ動画の作成</p>
+          <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="vlogFlowHint">使いたい日付をカレンダーで選んでそのまま動画を作成できます</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-          <div>
-            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" data-i18n="recapModeLabel">対象期間モード</label>
-            <select id="recap-mode" onchange="updateRecapOptions()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none">
-              <option value="week" data-i18n="modeWeek">特定の一週間 (日曜〜土曜)</option>
-              <option value="month" selected data-i18n="modeMonth">1ヶ月間 (Monthly)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1" id="recap-target-label" data-i18n="targetPeriodLabel">対象週 / 月</label>
-            <select id="recap-target-select" onchange="renderAlbumGallery()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none"></select>
-          </div>
-        </div>
-
-        <button onclick="playHighlightMovie()" class="w-full mt-2 flex items-center justify-center gap-2 theme-accent-bg text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md active:scale-95">
-          <i data-lucide="play" class="w-4 h-4"></i>
-          <span data-i18n="playMovieBtn">選択した期間のまとめ動画を再生・作成</span>
+        <button onclick="openVlogDatePickerModal()" class="w-full mt-1 flex items-center justify-center gap-2 theme-accent-bg text-white text-xs font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
+          <i data-lucide="calendar-check" class="w-4 h-4"></i>
+          <span data-i18n="openDatePickerBtn">まとめ動画を作成（日付を選ぶ）</span>
         </button>
       </div>
 
@@ -416,7 +407,7 @@
       </div>
 
       <div>
-        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider" data-i18n="galleryTitle">Gallery（複数メディア一覧）</h3>
+        <h3 class="text-xs font-semibold uppercase text-slate-500 mb-3 tracking-wider" data-i18n="galleryTitle">Gallery（写真・動画一覧）</h3>
         <div id="mosaic-grid" class="mosaic-grid"></div>
       </div>
     </section>
@@ -425,7 +416,7 @@
     <section id="tab-account" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
         
-        <!-- 👇 【追加】メール認証フォーム -->
+        <!-- メール認証フォーム -->
         <div id="auth-container" class="space-y-3 pb-4 border-b border-slate-100">
           <h3 id="auth-heading" class="text-[10px] font-bold uppercase tracking-wider theme-primary-text" data-i18n="authTitle">アカウント認証 (ログイン / 新規登録)</h3>
           <div class="space-y-2">
@@ -442,21 +433,21 @@
           </div>
         </div>
 
-        <!-- 👇 【追加】ログイン中のユーザー情報表示（認証時はこちらを表示） -->
+        <!-- ログイン中のユーザー情報表示 -->
         <div id="user-info-container" class="space-y-2 pb-4 border-b border-slate-100 hidden">
-          <p class="text-xs text-slate-600"><span data-i18n="loggedInAsLabel">ログイン中</span>: <span id="current-user-email" class="font-bold text-slate-900"></span></p>
           <button onclick="handleLogout()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold py-2 rounded-xl transition-all active:scale-95" data-i18n="logoutBtn">
             ログアウト
           </button>
         </div>
 
+        <!-- プロフィール表示（ログイン状態と連動） -->
         <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-full theme-avatar-gradient flex items-center justify-center font-bold text-white text-lg shadow-md">
+          <div id="profile-avatar" class="w-12 h-12 rounded-full theme-avatar-gradient flex items-center justify-center font-bold text-white text-lg shadow-md">
             L
           </div>
-          <div>
-            <h2 class="text-base font-bold text-slate-900" data-i18n="guestUser">ゲストユーザー</h2>
-            <p class="text-xs text-slate-500 font-mono" data-i18n="offlineMode">端末内保存モード</p>
+          <div class="min-w-0">
+            <h2 id="profile-display-name" class="text-base font-bold text-slate-900 truncate" data-i18n="guestUser">ゲストユーザー</h2>
+            <p id="profile-status-text" class="text-xs text-slate-500 font-mono truncate" data-i18n="offlineMode">端末内保存モード</p>
           </div>
         </div>
 
@@ -545,9 +536,9 @@
     </div>
   </nav>
 
-  <!-- 予定作成・編集モーダル -->
+  <!-- 予定作成・編集モーダル（終日・複数日・繰り返し・色分け・通知対応） -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end justify-center hidden">
-    <div class="bg-white w-full max-w-md rounded-t-3xl border-t border-slate-200 flex flex-col max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
+    <div class="bg-white w-full max-w-md rounded-t-3xl border-t border-slate-200 flex flex-col max-h-[92vh] overflow-y-auto animate-slide-up shadow-2xl">
       <div class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-3.5 flex items-center justify-between z-10">
         <button onclick="closeAddModal()" class="p-1 -ml-1 text-slate-400 hover:text-slate-600 rounded-full">
           <i data-lucide="x" class="w-6 h-6"></i>
@@ -565,24 +556,81 @@
             <input type="text" id="input-title" required placeholder="例: カフェで作業、ジムで筋トレ" class="w-full text-base font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent">
           </div>
 
-          <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-4">
+          <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3.5">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="dateLabel">日付</span>
+                <i data-lucide="sun" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="allDayLabel">終日</span>
               </span>
-              <input type="date" id="input-date" required class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+              <input type="checkbox" id="input-all-day" onchange="toggleAllDayInputs()" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
             </div>
+
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="timeLabel">開始時間</span>
+                <i data-lucide="calendar" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="dateLabel">開始日</span>
               </span>
-              <input type="time" id="input-time" required value="10:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+              <input type="date" id="input-date" required onchange="syncEndDateIfEarlier()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
             </div>
+
             <div class="flex items-center justify-between pt-3 border-t border-slate-100">
               <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 theme-accent-text"></i> <span data-i18n="endTimeLabel">終了時間</span>
+                <i data-lucide="calendar-range" class="w-4 h-4 theme-accent-text"></i> <span data-i18n="endDateLabel">終了日</span>
               </span>
-              <input type="time" id="input-endtime" required value="12:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+              <input type="date" id="input-end-date" required class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+            </div>
+
+            <div id="time-inputs-group" class="space-y-3.5 pt-3 border-t border-slate-100">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <i data-lucide="clock" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="timeLabel">開始時間</span>
+                </span>
+                <input type="time" id="input-time" required value="10:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <i data-lucide="clock" class="w-4 h-4 theme-accent-text"></i> <span data-i18n="endTimeLabel">終了時間</span>
+                </span>
+                <input type="time" id="input-endtime" required value="12:00" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- 繰り返し・リマインダー・カラー -->
+          <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                <i data-lucide="repeat" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="repeatLabel">繰り返し</span>
+              </span>
+              <select id="input-repeat" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+                <option value="none" data-i18n="repeatNone">なし</option>
+                <option value="weekly" data-i18n="repeatWeekly">毎週</option>
+                <option value="monthly" data-i18n="repeatMonthly">毎月</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+              <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                <i data-lucide="bell-ring" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="reminderLabel">通知</span>
+              </span>
+              <select id="input-reminder" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none">
+                <option value="none" data-i18n="reminderNone">なし</option>
+                <option value="10m" data-i18n="reminder10m">10分前</option>
+                <option value="1h" data-i18n="reminder1h">1時間前</option>
+                <option value="1d" data-i18n="reminder1d">前日</option>
+              </select>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+              <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                <i data-lucide="palette" class="w-4 h-4 theme-primary-text"></i> <span data-i18n="colorLabel">カラー</span>
+              </span>
+              <div id="event-color-picker" class="flex items-center gap-2.5">
+                <button type="button" data-color="indigo" onclick="selectEventColor('indigo')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#4f46e5;"></button>
+                <button type="button" data-color="emerald" onclick="selectEventColor('emerald')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#059669;"></button>
+                <button type="button" data-color="sunset" onclick="selectEventColor('sunset')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#ea580c;"></button>
+                <button type="button" data-color="rose" onclick="selectEventColor('rose')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#e11d48;"></button>
+                <button type="button" data-color="amber" onclick="selectEventColor('amber')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#d97706;"></button>
+                <button type="button" data-color="slate" onclick="selectEventColor('slate')" class="event-color-btn w-7 h-7 rounded-full border-2 border-white shadow-sm transition-transform active:scale-90" style="background:#475569;"></button>
+              </div>
             </div>
           </div>
 
@@ -603,13 +651,13 @@
     </div>
   </div>
 
-  <!-- 写真・動画追加モーダル -->
+  <!-- 1日単位の写真・動画追加モーダル -->
   <div id="checkin-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title" data-i18n="addMediaModalTitle">写真・動画を追加</h3>
-          <p class="text-xs text-slate-500" id="checkin-target-meta">場所・時間</p>
+          <h3 class="text-base font-bold text-slate-900" id="checkin-target-title" data-i18n="addMediaModalTitle">この日の写真・動画を追加</h3>
+          <p class="text-xs text-slate-500 font-mono" id="checkin-target-meta">2026-11-22</p>
         </div>
         <button onclick="closeCheckinModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -630,6 +678,51 @@
     </div>
   </div>
 
+  <!-- まとめ動画用・日付選択カレンダーモーダル（タップ＆ドラッグ連続選択・月移動） -->
+  <div id="vlog-date-picker-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-md rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto tab-content">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <div>
+          <span class="text-[10px] uppercase font-bold theme-primary-text">Select Days</span>
+          <h3 class="text-base font-bold text-slate-900" data-i18n="datePickerModalTitle">まとめ動画にする日付を選択</h3>
+        </div>
+        <button onclick="closeVlogDatePickerModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- 月移動バー -->
+      <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+        <button type="button" onclick="shiftVlogPickerMonth(-1)" class="p-1.5 rounded-lg hover:bg-white text-slate-700 border border-transparent hover:border-slate-200 active:scale-95">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+        <span id="vlog-picker-month-label" class="text-sm font-bold text-slate-900">2026年 11月</span>
+        <button type="button" onclick="shiftVlogPickerMonth(1)" class="p-1.5 rounded-lg hover:bg-white text-slate-700 border border-transparent hover:border-slate-200 active:scale-95">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-slate-500" data-i18n="dragSelectHint">タップで選択・解除、なぞる（ドラッグ）と連続する日付をまとめて選択できます</p>
+
+      <div class="grid grid-cols-7 text-center text-[11px] font-semibold text-slate-400">
+        <span class="text-rose-500">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="text-sky-500">土</span>
+      </div>
+
+      <!-- ドラッグ選択対応グリッド -->
+      <div id="vlog-picker-grid" class="grid grid-cols-7 gap-1.5 select-none touch-none"></div>
+
+      <div class="flex items-center justify-between text-xs pt-1">
+        <span id="vlog-selected-count" class="font-bold theme-primary-text">0日 選択中</span>
+        <button type="button" onclick="clearVlogSelectedDates()" class="text-slate-400 hover:text-slate-600 underline text-[11px]" data-i18n="clearSelectionBtn">選択をクリア</button>
+      </div>
+
+      <button type="button" onclick="generateVlogFromSelectedDates()" class="w-full theme-accent-bg text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5">
+        <i data-lucide="play" class="w-4 h-4"></i>
+        <span data-i18n="startSelectedVlogBtn">選択した日付でまとめ動画を生成</span>
+      </button>
+    </div>
+  </div>
+
   <!-- メディアビューアモーダル -->
   <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xl relative overflow-hidden tab-content">
@@ -646,11 +739,11 @@
         <img id="viewer-img" src="" class="absolute inset-0 w-full h-full object-contain hidden">
         <video id="viewer-video" src="" class="absolute inset-0 w-full h-full object-contain hidden" controls playsinline></video>
       </div>
-      <p id="viewer-meta" class="text-xs text-slate-500 font-mono text-center">場所・日付</p>
+      <p id="viewer-meta" class="text-xs text-slate-500 font-mono text-center">日付</p>
     </div>
   </div>
 
-  <!-- シネマティックまとめ動画再生モーダル（BGM・編集はアプリ側固定） -->
+  <!-- シネマティックまとめ動画再生モーダル -->
   <div id="movie-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 space-y-4 shadow-2xl relative overflow-hidden tab-content">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -695,20 +788,26 @@
       measurementId: "G-3HH3T4P844"
     };
 
-    // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
-// ===== ここから追加 =====
     const db = firebase.firestore();
 
-    // 🔥 Firestore 同期（テキスト・履歴メタデータのみ。blob: URLは除外）
+    // ---------- 1日ごとのメディア保存（dailyMedia） ----------
+    const stripBlobUrls = (key, value) =>
+      (key === 'url' || key === 'thumbnailUrl') &&
+      typeof value === 'string' && value.startsWith('blob:')
+        ? undefined
+        : value;
+
     async function syncUserDataToFirestore() {
       const user = firebase.auth().currentUser;
       if (!user) return;
       try {
         const cleanSchedules = JSON.parse(JSON.stringify(schedules, stripBlobUrls));
+        const cleanDailyMedia = JSON.parse(JSON.stringify(dailyMedia, stripBlobUrls));
         const cleanHistory = JSON.parse(JSON.stringify(movieHistory, stripBlobUrls));
         await db.collection('users').doc(user.uid).set({
           schedules: cleanSchedules,
+          dailyMedia: cleanDailyMedia,
           movieHistory: cleanHistory,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
@@ -726,6 +825,10 @@
           schedules = data.schedules;
           localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
         }
+        if (data.dailyMedia && typeof data.dailyMedia === 'object') {
+          dailyMedia = data.dailyMedia;
+          localStorage.setItem('logsnap_daily_media_v1', JSON.stringify(dailyMedia, stripBlobUrls));
+        }
         if (Array.isArray(data.movieHistory)) {
           movieHistory = data.movieHistory;
           localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
@@ -733,15 +836,113 @@
         monthCellCache.clear();
         await hydrateAllMedia();
         await renderAllPanels();
+        await renderDailyAlbum();
         await renderSchedules();
         renderNotifications();
-        updateRecapOptions();
         renderMovieHistory();
+        await renderAlbumGallery();
       } catch (e) {
         console.error('Firestore load error:', e);
       }
     }
-// ===== ここまで追加 =====
+
+    function saveSchedules() {
+      monthCellCache.clear();
+      try {
+        localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
+        syncUserDataToFirestore();
+      } catch (e) {
+        console.error('Storage quota exceeded', e);
+      }
+    }
+
+    function saveDailyMedia() {
+      monthCellCache.clear();
+      try {
+        localStorage.setItem('logsnap_daily_media_v1', JSON.stringify(dailyMedia, stripBlobUrls));
+        syncUserDataToFirestore();
+      } catch (e) {
+        console.error('Storage quota exceeded', e);
+      }
+    }
+
+    function saveMovieHistory() {
+      localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
+      syncUserDataToFirestore();
+    }
+
+    function getDayMediaList(dateStr) {
+      const list = [];
+      if (Array.isArray(dailyMedia[dateStr])) {
+        list.push(...dailyMedia[dateStr]);
+      }
+      // 既存の予定内メディアも後方互換として合算
+      schedules.forEach(s => {
+        if (s.date === dateStr && Array.isArray(s.mediaList) && s.mediaList.length > 0) {
+          list.push(...s.mediaList);
+        }
+      });
+      return list;
+    }
+
+    // ---------- 繰り返し・複数日予定の展開 ----------
+    function parseYmd(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function diffDays(aDateStr, bDateStr) {
+      const a = parseYmd(aDateStr);
+      const b = parseYmd(bDateStr);
+      return Math.round((b - a) / 86400000);
+    }
+
+    function getSchedulesForDate(dateStr) {
+      const target = parseYmd(dateStr);
+      const results = [];
+
+      for (const s of schedules) {
+        const startStr = s.date;
+        const endStr = (s.endDate && s.endDate >= startStr) ? s.endDate : startStr;
+        const spanDays = Math.max(0, diffDays(startStr, endStr));
+        const repeat = s.repeat || 'none';
+
+        if (repeat === 'none') {
+          if (dateStr >= startStr && dateStr <= endStr) {
+            results.push(s);
+          }
+        } else if (repeat === 'weekly') {
+          const startDt = parseYmd(startStr);
+          const daysSinceStart = Math.floor((target - startDt) / 86400000);
+          if (daysSinceStart >= 0) {
+            const mod = daysSinceStart % 7;
+            if (mod <= spanDays) {
+              results.push(s);
+            }
+          }
+        } else if (repeat === 'monthly') {
+          const startDt = parseYmd(startStr);
+          const monthsDiff = (target.getFullYear() - startDt.getFullYear()) * 12 + (target.getMonth() - startDt.getMonth());
+          if (monthsDiff >= 0) {
+            const occStart = new Date(startDt.getFullYear(), startDt.getMonth() + monthsDiff, startDt.getDate());
+            const occEnd = new Date(occStart.getFullYear(), occStart.getMonth(), occStart.getDate() + spanDays);
+            if (target >= occStart && target <= occEnd) {
+              results.push(s);
+            }
+          }
+        }
+      }
+
+      return results.sort((a, b) => {
+        if (a.allDay && !b.allDay) return -1;
+        if (!a.allDay && b.allDay) return 1;
+        return (a.time || '00:00').localeCompare(b.time || '00:00');
+      });
+    }
+
+    function getEventColorStyle(colorKey) {
+      return EVENT_COLORS[colorKey] || EVENT_COLORS.indigo;
+    }
 
     function updateFaviconForTheme(preset) {
       const faviconEl = document.getElementById('app-favicon');
@@ -796,14 +997,12 @@
       }, 950);
     }
 
-    // 🚀 インメモリキャッシュ ＆ DOMキャッシュ
     const monthCellCache = new Map();
     const SELECTED_CLASSES = ['bg-slate-50', 'ring-2', 'ring-slate-400/50', 'z-10'];
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f172a"/><polygon points="40,32 40,68 70,50" fill="#f472b6"/></svg>'
     );
 
-    // 🎬 Vlog 関連の変数宣言（BGM音量は少し抑えめ・効果音はアプリ側固定）
     const vlogPlaylist = [
       { name: "異国のグルメ", url: "082_BPM97.mp3", bpm: 97, vol: 0.28 },
       { name: "Lofi Polaroids", url: "fassounds-lofi-polaroids-632981.mp3", bpm: 86, vol: 0.24 },
@@ -815,7 +1014,6 @@
       { name: "Copper Nights", url: "pink_sound-copper-nights-jazz-background-music-for-video-stories-full-version-633222.mp3", bpm: 90, vol: 0.28 }
     ];
 
-    // 🔊 BGM切り替わり時にランダム再生する効果音アセット
     const VLOG_SFX_FILES = [
       "決定ボタンを押す7.mp3",
       "決定ボタンを押す34.mp3",
@@ -827,216 +1025,194 @@
     let currentMovieTitle = "";
 
     // ============================================================
-// LogSnap 端末内メディア保存（IndexedDB版）
-// ============================================================
+    // LogSnap 端末内メディア保存（IndexedDB版）
+    // ============================================================
+    const MEDIA_DB_NAME = 'logsnap-media';
+    let mediaDbPromise = null;
 
-// ---------- 1) IndexedDB の土台 ----------
-const MEDIA_DB_NAME = 'logsnap-media';
-let mediaDbPromise = null;
-
-function openMediaDb() {
-  if (!mediaDbPromise) {
-    mediaDbPromise = new Promise((resolve, reject) => {
-      const req = indexedDB.open(MEDIA_DB_NAME, 1);
-      req.onupgradeneeded = () => {
-        req.result.createObjectStore('media', { keyPath: 'id' });
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-  return mediaDbPromise;
-}
-
-async function mediaPut(record) {
-  const db = await openMediaDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('media', 'readwrite');
-    tx.objectStore('media').put(record);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
-}
-
-async function mediaGet(id) {
-  const db = await openMediaDb();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction('media', 'readonly').objectStore('media').get(id);
-    req.onsuccess = () => resolve(req.result || null);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function mediaDelete(id) {
-  const db = await openMediaDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('media', 'readwrite');
-    tx.objectStore('media').delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-// ---------- 2) Blob → 表示用URL ----------
-const objectUrls = new Map();
-
-async function attachMediaUrls(m) {
-  let cached = objectUrls.get(m.id);
-  if (!cached) {
-    const rec = await mediaGet(m.id);
-    if (!rec) return false;
-    cached = {
-      url: URL.createObjectURL(rec.blob),
-      thumbnailUrl: rec.thumbBlob ? URL.createObjectURL(rec.thumbBlob) : null
-    };
-    objectUrls.set(m.id, cached);
-  }
-  m.url = cached.url;
-  m.thumbnailUrl = cached.thumbnailUrl;
-  return true;
-}
-
-async function removeMedia(id) {
-  const cached = objectUrls.get(id);
-  if (cached) {
-    URL.revokeObjectURL(cached.url);
-    if (cached.thumbnailUrl) URL.revokeObjectURL(cached.thumbnailUrl);
-    objectUrls.delete(id);
-  }
-  await mediaDelete(id);
-}
-
-async function hydrateMediaList(list) {
-  const kept = [];
-  for (const m of (list || [])) {
-    const ok = await attachMediaUrls(m);
-    const legacy = typeof m.url === 'string' && m.url.startsWith('http');
-    if (ok || legacy) kept.push(m);
-  }
-  return kept;
-}
-
-async function hydrateAllMedia() {
-  for (const s of schedules) {
-    s.mediaList = await hydrateMediaList(s.mediaList);
-  }
-  for (const h of movieHistory) {
-    h.mediaItems = await hydrateMediaList(h.mediaItems);
-  }
-}
-
-// ---------- 3) 保存時：blob: のURLは localStorage に入れない ----------
-const stripBlobUrls = (key, value) =>
-  (key === 'url' || key === 'thumbnailUrl') &&
-  typeof value === 'string' && value.startsWith('blob:')
-    ? undefined
-    : value;
-
-function saveSchedules() {
-  monthCellCache.clear();
-  try {
-    localStorage.setItem('logsnap_user_schedules_v26', JSON.stringify(schedules, stripBlobUrls));
-    syncUserDataToFirestore();
-  } catch (e) {
-    console.error('Storage quota exceeded', e);
-  }
-}
-
-function saveMovieHistory() {
-  localStorage.setItem('logsnap_movie_history_v1', JSON.stringify(movieHistory, stripBlobUrls));
-  syncUserDataToFirestore();
-}
-
-// ---------- 4) 追加時：リサイズ＋サムネイルを作って端末内に保存 ----------
-async function handleFileSelect(event) {
-  const files = event.target.files;
-  if (!files || files.length === 0) return;
-  const confirmBtn = document.getElementById('confirm-checkin-btn');
-  confirmBtn.innerText = '⏳ Saving...';
-  confirmBtn.disabled = true;
-  tempMediaList = [];
-
-  try {
-    for (const file of files) {
-      const isVideo = file.type.startsWith('video') || /\.(mp4|mov|webm|m4v)$/i.test(file.name);
-      const mediaId = 'local_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-
-      const optimized = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
-      const thumb = isVideo
-        ? await createVideoThumbnail(file, 300, 300, 0.7)
-        : await createImageThumbnail(file, 300, 300, 0.7);
-
-      await mediaPut({
-        id: mediaId,
-        type: isVideo ? 'video' : 'image',
-        mime: optimized.type,
-        blob: optimized,
-        thumbBlob: thumb || null
-      });
-
-      const m = { id: mediaId, type: isVideo ? 'video' : 'image', addedAt: Date.now() };
-      await attachMediaUrls(m);
-      tempMediaList.push(m);
+    function openMediaDb() {
+      if (!mediaDbPromise) {
+        mediaDbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(MEDIA_DB_NAME, 1);
+          req.onupgradeneeded = () => {
+            req.result.createObjectStore('media', { keyPath: 'id' });
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+      return mediaDbPromise;
     }
-  } catch (err) {
-    console.error('Save error:', err);
-    alert(t('saveFailedAlert'));
-  } finally {
-    confirmBtn.innerText = t('confirmSaveBtn');
-    confirmBtn.disabled = false;
-  }
-}
 
-// ---------- 5) 削除時：端末内の実体も消す ----------
-async function deleteMediaFromSchedule(scheduleId, mediaId) {
-  const item = schedules.find(s => s.id === scheduleId);
-  if (item && item.mediaList) {
-    item.mediaList = item.mediaList.filter(m => m.id !== mediaId);
-    await removeMedia(mediaId);
-    saveSchedules();
-    await renderAllPanels();
-    await renderSchedules();
-  }
-}
+    async function mediaPut(record) {
+      const dbConn = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = dbConn.transaction('media', 'readwrite');
+        tx.objectStore('media').put(record);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
 
-async function deleteSchedule(id) {
-  if (!confirm(t('confirmDeleteSchedule'))) return;
-  const target = schedules.find(s => s.id === id);
-  for (const m of (target?.mediaList || [])) {
-    await removeMedia(m.id);
-  }
-  schedules = schedules.filter(s => s.id !== id);
-  saveSchedules();
-  await renderAllPanels();
-  await renderSchedules();
-  renderNotifications();
-  updateRecapOptions();
-}
+    async function mediaGet(id) {
+      const dbConn = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const req = dbConn.transaction('media', 'readonly').objectStore('media').get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-// ---------- 6) データ初期化 ----------
-async function resetAllData() {
-  try { (await openMediaDb()).close(); } catch (e) {}
-  await new Promise((res) => {
-    const r = indexedDB.deleteDatabase(MEDIA_DB_NAME);
-    r.onsuccess = r.onerror = r.onblocked = () => res();
-  });
-  localStorage.clear();
-  location.reload();
-}
+    async function mediaDelete(id) {
+      const dbConn = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = dbConn.transaction('media', 'readwrite');
+        tx.objectStore('media').delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
 
-    // 🚀 一覧用URL
+    const objectUrls = new Map();
+
+    async function attachMediaUrls(m) {
+      let cached = objectUrls.get(m.id);
+      if (!cached) {
+        const rec = await mediaGet(m.id);
+        if (!rec) return false;
+        cached = {
+          url: URL.createObjectURL(rec.blob),
+          thumbnailUrl: rec.thumbBlob ? URL.createObjectURL(rec.thumbBlob) : null
+        };
+        objectUrls.set(m.id, cached);
+      }
+      m.url = cached.url;
+      m.thumbnailUrl = cached.thumbnailUrl;
+      return true;
+    }
+
+    async function removeMedia(id) {
+      const cached = objectUrls.get(id);
+      if (cached) {
+        URL.revokeObjectURL(cached.url);
+        if (cached.thumbnailUrl) URL.revokeObjectURL(cached.thumbnailUrl);
+        objectUrls.delete(id);
+      }
+      await mediaDelete(id);
+    }
+
+    async function hydrateMediaList(list) {
+      const kept = [];
+      for (const m of (list || [])) {
+        const ok = await attachMediaUrls(m);
+        const legacy = typeof m.url === 'string' && m.url.startsWith('http');
+        if (ok || legacy) kept.push(m);
+      }
+      return kept;
+    }
+
+    async function hydrateAllMedia() {
+      for (const dateKey of Object.keys(dailyMedia)) {
+        dailyMedia[dateKey] = await hydrateMediaList(dailyMedia[dateKey]);
+      }
+      for (const s of schedules) {
+        s.mediaList = await hydrateMediaList(s.mediaList);
+      }
+      for (const h of movieHistory) {
+        h.mediaItems = await hydrateMediaList(h.mediaItems);
+      }
+    }
+
+    async function handleFileSelect(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      const confirmBtn = document.getElementById('confirm-checkin-btn');
+      confirmBtn.innerText = '⏳ Saving...';
+      confirmBtn.disabled = true;
+      tempMediaList = [];
+
+      try {
+        for (const file of files) {
+          const isVideo = file.type.startsWith('video') || /\.(mp4|mov|webm|m4v)$/i.test(file.name);
+          const mediaId = 'local_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+          const optimized = isVideo ? file : await resizeImage(file, 1600, 1600, 0.8);
+          const thumb = isVideo
+            ? await createVideoThumbnail(file, 300, 300, 0.7)
+            : await createImageThumbnail(file, 300, 300, 0.7);
+
+          await mediaPut({
+            id: mediaId,
+            type: isVideo ? 'video' : 'image',
+            mime: optimized.type,
+            blob: optimized,
+            thumbBlob: thumb || null
+          });
+
+          const m = { id: mediaId, type: isVideo ? 'video' : 'image', addedAt: Date.now() };
+          await attachMediaUrls(m);
+          tempMediaList.push(m);
+        }
+      } catch (err) {
+        console.error('Save error:', err);
+        alert(t('saveFailedAlert'));
+      } finally {
+        confirmBtn.innerText = t('confirmSaveBtn');
+        confirmBtn.disabled = false;
+      }
+    }
+
+    async function deleteDailyMediaItem(dateStr, mediaId) {
+      if (Array.isArray(dailyMedia[dateStr])) {
+        dailyMedia[dateStr] = dailyMedia[dateStr].filter(m => m.id !== mediaId);
+      }
+      // レガシー予定内メディアにも存在すれば削除
+      schedules.forEach(s => {
+        if (s.date === dateStr && Array.isArray(s.mediaList)) {
+          s.mediaList = s.mediaList.filter(m => m.id !== mediaId);
+        }
+      });
+      await removeMedia(mediaId);
+      saveDailyMedia();
+      saveSchedules();
+      await renderAllPanels();
+      await renderDailyAlbum();
+    }
+
+    async function deleteSchedule(id) {
+      if (!confirm(t('confirmDeleteSchedule'))) return;
+      const target = schedules.find(s => s.id === id);
+      for (const m of (target?.mediaList || [])) {
+        await removeMedia(m.id);
+      }
+      schedules = schedules.filter(s => s.id !== id);
+      saveSchedules();
+      await renderAllPanels();
+      await renderSchedules();
+      renderNotifications();
+    }
+
+    async function resetAllData() {
+      try { (await openMediaDb()).close(); } catch (e) {}
+      await new Promise((res) => {
+        const r = indexedDB.deleteDatabase(MEDIA_DB_NAME);
+        r.onsuccess = r.onerror = r.onblocked = () => res();
+      });
+      localStorage.clear();
+      location.reload();
+    }
+
     function getThumbUrl(m) {
       if (m.thumbnailUrl) return m.thumbnailUrl;
       return m.type === 'image' ? m.url : null;
     }
 
-    function getCalendarThumb(daySchedules) {
-      for (const s of daySchedules) {
-        for (const m of (s.mediaList || [])) {
-          const u = getThumbUrl(m);
-          if (u) return u;
-        }
+    function getCalendarThumb(dateStr) {
+      const list = getDayMediaList(dateStr);
+      for (const m of list) {
+        const u = getThumbUrl(m);
+        if (u) return u;
       }
       return null;
     }
@@ -1052,14 +1228,15 @@ async function resetAllData() {
     }
 
     function makeBadgesHtml(daySchedules) {
-      return daySchedules.map(s =>
-        `<div class="theme-soft-badge border text-[9px] px-1.5 py-0.5 rounded truncate font-semibold">${s.title}</div>`
-      ).join('');
+      return daySchedules.map(s => {
+        const c = getEventColorStyle(s.color);
+        return `<div style="background:${c.bg};color:${c.text};border-color:${c.border};" class="border text-[9px] px-1.5 py-0.5 rounded truncate font-semibold">${s.title}</div>`;
+      }).join('');
     }
 
     function makeGrayCell(y, m, d, todayStr) {
       const dateStr = makeDateStr(y, m, d);
-      const daySchedules = schedules.filter(s => s.date === dateStr);
+      const daySchedules = getSchedulesForDate(dateStr);
       const cell = document.createElement("div");
       cell.dataset.date = dateStr;
       cell.dataset.gray = "1";
@@ -1081,9 +1258,9 @@ async function resetAllData() {
 
     function makeDayCell(year, month, day, todayStr) {
       const dateStr = makeDateStr(year, month, day);
-      const daySchedules = schedules.filter(s => s.date === dateStr);
+      const daySchedules = getSchedulesForDate(dateStr);
       const colorClass = getDateColorClass(year, month, day);
-      const thumbnail = getCalendarThumb(daySchedules);
+      const thumbnail = getCalendarThumb(dateStr);
       const hasPhotoOverlay = (viewMode === 'photo' && thumbnail);
       const cell = document.createElement("div");
       cell.dataset.date = dateStr;
@@ -1096,7 +1273,8 @@ async function resetAllData() {
       if (viewMode === 'schedule') {
         contentHtml = `<div class="space-y-0.5 mt-1 z-10 overflow-hidden max-h-[42px]">${makeBadgesHtml(daySchedules)}</div>`;
       } else if (!thumbnail && daySchedules.length > 0) {
-        contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full theme-primary-bg"></span></div>`;
+        const dotColor = getEventColorStyle(daySchedules[0].color).hex;
+        contentHtml = `<div class="mt-1 z-10 flex justify-center"><span class="w-1.5 h-1.5 rounded-full" style="background:${dotColor};"></span></div>`;
       }
       const numClass = hasPhotoOverlay ? getPhotoDayNumClass(year, month, day, dateStr) : colorClass;
       cell.innerHTML = `
@@ -1131,7 +1309,6 @@ async function resetAllData() {
       return cells;
     }
 
-    // ===== 基本関数群 =====
     function populateYearOptions(targetYear) {
       const selectEl = document.getElementById("select-year");
       if (!selectEl) return;
@@ -1191,7 +1368,6 @@ async function resetAllData() {
       document.getElementById("select-month").value = currentMonth;
       await renderAllPanels();
       updateTrackPosition(false);
-      updateRecapOptions();
     }
 
     async function changeYearMonthFromSelect() {
@@ -1200,7 +1376,6 @@ async function resetAllData() {
       populateYearOptions(currentYear);
       await renderAllPanels();
       updateTrackPosition(false);
-      updateRecapOptions();
     }
 
     async function jumpToToday() {
@@ -1213,8 +1388,8 @@ async function resetAllData() {
       document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
       await renderAllPanels();
       updateTrackPosition(false);
+      await renderDailyAlbum();
       await renderSchedules();
-      updateRecapOptions();
     }
 
     function toggleViewMode() {
@@ -1280,27 +1455,47 @@ async function resetAllData() {
     }
 
     function formatSelectedDateTitle(dateStr) {
-      return currentLang === 'en' ? `Events & Memories on ${dateStr}` : `${dateStr} の予定 ＆ 思い出`;
+      return currentLang === 'en' ? `Events on ${dateStr}` : `${dateStr} の予定`;
+    }
+
+    function getReminderLabel(rem) {
+      if (rem === '10m') return t('reminder10m');
+      if (rem === '1h') return t('reminder1h');
+      if (rem === '1d') return t('reminder1d');
+      return null;
+    }
+
+    function requestBrowserNotificationPermission() {
+      if (!('Notification' in window)) {
+        alert(t('notifyUnsupported'));
+        return;
+      }
+      Notification.requestPermission().then(perm => {
+        alert(perm === 'granted' ? t('notifyGranted') : t('notifyDenied'));
+      });
     }
 
     function renderNotifications() {
       const container = document.getElementById("notifications-list");
       if (!container) return;
       const todayStr = formatDateString(new Date());
-      const todaySchedules = schedules.filter(s => s.date === todayStr);
+      const todaySchedules = getSchedulesForDate(todayStr);
+      const reminderSchedules = schedules.filter(s => s.reminder && s.reminder !== 'none');
+
       let html = `
         <div class="p-3 theme-soft-badge rounded-xl border space-y-1">
           <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-900" data-i18n="welcomeNoteTitle">${t('welcomeNoteTitle')}</span>
-            <span class="text-[10px] text-slate-500 font-mono" data-i18n="todayLabel">${t('todayLabel')}</span>
+            <span class="text-xs font-bold text-slate-900">${t('welcomeNoteTitle')}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${t('todayLabel')}</span>
           </div>
-          <p class="text-xs text-slate-600" data-i18n="welcomeNoteDesc">${t('welcomeNoteDesc')}</p>
+          <p class="text-xs text-slate-600">${t('welcomeNoteDesc')}</p>
         </div>
       `;
+
       if (todaySchedules.length > 0) {
-        html += `<div class="pt-2"><h3 class="text-[10px] font-bold uppercase tracking-wider theme-primary-text mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
+        html += `<div class="pt-1"><h3 class="text-[10px] font-bold uppercase tracking-wider theme-primary-text mb-2">${t('todayEventsNotification')} (${todayStr})</h3>`;
         todaySchedules.forEach(s => {
-          const timeRange = s.endTime ? `${s.time} - ${s.endTime}` : s.time;
+          const timeRange = s.allDay ? t('allDayLabel') : (s.endTime ? `${s.time} - ${s.endTime}` : s.time);
           html += `
             <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-1 mb-2">
               <div class="flex justify-between items-center">
@@ -1315,6 +1510,23 @@ async function resetAllData() {
         });
         html += `</div>`;
       }
+
+      if (reminderSchedules.length > 0) {
+        html += `<div class="pt-1"><h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">${t('activeRemindersTitle')}</h3>`;
+        reminderSchedules.forEach(s => {
+          html += `
+            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between mb-1.5">
+              <div>
+                <p class="text-xs font-bold text-slate-800">${s.title}</p>
+                <p class="text-[10px] text-slate-500 font-mono">${s.date} ${s.allDay ? t('allDayLabel') : s.time}</p>
+              </div>
+              <span class="text-[10px] font-bold theme-primary-text bg-white border border-slate-200 px-2 py-0.5 rounded-full">${getReminderLabel(s.reminder)}</span>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+
       container.innerHTML = html;
       lucide.createIcons();
     }
@@ -1354,11 +1566,146 @@ async function resetAllData() {
       });
     }
 
-    function selectDate(dateStr) {
+    async function selectDate(dateStr) {
       selectedDate = dateStr;
       document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
       applySelectionHighlight();
-      renderSchedules();
+      await renderDailyAlbum();
+      await renderSchedules();
+    }
+
+    // ---------- 1日ごとの写真・動画アルバム描画 ----------
+    async function renderDailyAlbum() {
+      const container = document.getElementById("daily-album-container");
+      if (!container) return;
+      const list = getDayMediaList(selectedDate);
+
+      let mediaGridHtml = '';
+      if (list.length > 0) {
+        mediaGridHtml = `<div class="grid grid-cols-4 gap-2 pt-1">`;
+        for (const m of list) {
+          const isVideo = m.type === 'video';
+          const displayUrl = getThumbUrl(m) || VIDEO_PLACEHOLDER;
+          mediaGridHtml += `
+            <div onclick='openMediaViewer(${JSON.stringify(m)}, "${selectedDate} ${t('dailyMemoryTitle')}", "${selectedDate}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
+              <img src="${displayUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
+              ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i></div>` : ''}
+              <button onclick="event.stopPropagation(); deleteDailyMediaItem('${selectedDate}', '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover/media:opacity-100 transition-opacity">
+                <i data-lucide="x" class="w-2.5 h-2.5"></i>
+              </button>
+            </div>
+          `;
+        }
+        mediaGridHtml += `</div>`;
+      } else {
+        mediaGridHtml = `<p class="text-[11px] text-slate-400">${t('noPhotosYet')}</p>`;
+      }
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="camera" class="w-4 h-4 theme-primary-text"></i>
+            <span class="text-xs font-bold text-slate-800">${selectedDate} ${t('dailyMemoryTitle')}</span>
+            <span class="text-[10px] font-mono text-slate-400">(${list.length})</span>
+          </div>
+          <button type="button" onclick="openDailyCheckinModal('${selectedDate}')" class="flex items-center gap-1 theme-primary-bg text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>${t('addBtnText')}</span>
+          </button>
+        </div>
+        ${mediaGridHtml}
+      `;
+      lucide.createIcons();
+    }
+
+    function openDailyCheckinModal(dateStr) {
+      currentCheckinDate = dateStr;
+      document.getElementById("checkin-target-title").innerText = `${dateStr} ${t('dailyMemoryTitle')}`;
+      document.getElementById("checkin-target-meta").innerText = dateStr;
+      tempMediaList = [];
+      document.getElementById("local-file-input").value = "";
+      document.getElementById("checkin-modal").classList.remove("hidden");
+    }
+
+    function closeCheckinModal() {
+      currentCheckinDate = null;
+      document.getElementById("checkin-modal").classList.add("hidden");
+    }
+
+    async function confirmCheckin() {
+      if (!currentCheckinDate) return;
+      if (tempMediaList.length > 0) {
+        if (!Array.isArray(dailyMedia[currentCheckinDate])) {
+          dailyMedia[currentCheckinDate] = [];
+        }
+        dailyMedia[currentCheckinDate].push(...tempMediaList);
+        saveDailyMedia();
+      }
+      const targetDate = currentCheckinDate;
+      closeCheckinModal();
+      await renderAllPanels();
+      if (selectedDate === targetDate) {
+        await renderDailyAlbum();
+      }
+      await renderAlbumGallery();
+    }
+
+    // ---------- 予定キーワード検索 ----------
+    function renderSearchResults(query) {
+      const q = (query || '').trim().toLowerCase();
+      const resultsEl = document.getElementById("schedule-search-results");
+      const clearBtn = document.getElementById("schedule-search-clear");
+      if (!resultsEl) return;
+
+      if (!q) {
+        resultsEl.classList.add("hidden");
+        resultsEl.innerHTML = "";
+        if (clearBtn) clearBtn.classList.add("hidden");
+        return;
+      }
+
+      if (clearBtn) clearBtn.classList.remove("hidden");
+      const matches = schedules.filter(s =>
+        (s.title || '').toLowerCase().includes(q) ||
+        (s.location || '').toLowerCase().includes(q)
+      );
+
+      resultsEl.classList.remove("hidden");
+      if (matches.length === 0) {
+        resultsEl.innerHTML = `<p class="text-[11px] text-slate-400 py-1">${t('noSearchResults')}</p>`;
+        return;
+      }
+
+      resultsEl.innerHTML = matches.slice(0, 8).map(s => {
+        const c = getEventColorStyle(s.color);
+        const dateRange = (s.endDate && s.endDate !== s.date) ? `${s.date} 〜 ${s.endDate}` : s.date;
+        return `
+          <button type="button" onclick="jumpToSearchedSchedule('${s.date}')" class="w-full text-left flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all">
+            <div class="min-w-0 pr-2">
+              <p class="text-xs font-bold text-slate-800 truncate">${s.title}</p>
+              <p class="text-[10px] text-slate-500 font-mono truncate">${dateRange} ${s.location ? '• ' + s.location : ''}</p>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${c.hex};"></span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function clearScheduleSearch() {
+      const input = document.getElementById("schedule-search-input");
+      if (input) input.value = "";
+      renderSearchResults("");
+    }
+
+    async function jumpToSearchedSchedule(dateStr) {
+      const dt = parseYmd(dateStr);
+      currentYear = dt.getFullYear();
+      currentMonth = dt.getMonth() + 1;
+      populateYearOptions(currentYear);
+      document.getElementById("select-month").value = currentMonth;
+      await renderAllPanels();
+      updateTrackPosition(false);
+      await selectDate(dateStr);
     }
 
     function openMediaViewer(mediaItem, title, meta) {
@@ -1397,7 +1744,7 @@ async function resetAllData() {
     async function renderSchedules() {
       const container = document.getElementById("schedule-list");
       container.innerHTML = "";
-      const currentDaySchedules = schedules.filter(s => s.date === selectedDate);
+      const currentDaySchedules = getSchedulesForDate(selectedDate);
 
       if (currentDaySchedules.length === 0) {
         container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm"><p class="text-xs text-slate-400">${t('noEvents')}</p><button onclick="openAddModalForSelectedDate()" class="mt-2 text-xs theme-primary-text hover:underline font-semibold">＋ ${t('addThisDayBtn')}</button></div>`;
@@ -1405,67 +1752,45 @@ async function resetAllData() {
       }
 
       for (const item of currentDaySchedules) {
+        const c = getEventColorStyle(item.color);
         const card = document.createElement("div");
-        card.className = "bg-white rounded-2xl overflow-hidden border border-slate-200/90 hover:border-slate-300 shadow-sm transition-all p-4 space-y-3 relative group";
+        card.className = "bg-white rounded-2xl overflow-hidden border border-slate-200/90 hover:border-slate-300 shadow-sm transition-all p-4 space-y-2 relative";
+        card.style.borderLeft = `4px solid ${c.hex}`;
 
-        const mediaCount = (item.mediaList || []).length;
-        const albumText = t('albumLabel');
-        const noMediaText = t('noMediaBadge');
-        const statusBadge = mediaCount > 0 
-          ? `<div class="flex items-center gap-1.5 text-xs text-emerald-600 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>${albumText} (${mediaCount})</span></div>`
-          : `<div class="flex items-center gap-1.5 text-xs text-slate-400 font-bold"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>${noMediaText}</span></div>`;
-
-        const timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
-
-        let thumbnailDisplay = '';
-        if (mediaCount > 0) {
-          thumbnailDisplay = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">`;
-          for (const m of item.mediaList) {
-            const isVideo = m.type === 'video';
-            const displayUrl = getThumbUrl(m) || VIDEO_PLACEHOLDER;
-            thumbnailDisplay += `
-              <div onclick='openMediaViewer(${JSON.stringify(m)}, "${item.title}", "${item.date} ${timeDisplay}")' class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group/media bg-slate-900 cursor-pointer shadow-xs">
-                <img src="${displayUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" loading="lazy">
-                ${isVideo ? `<div class="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-lucide="video" class="w-2.5 h-2.5"></i>Video</div>` : ''}
-                <button onclick="event.stopPropagation(); deleteMediaFromSchedule(${item.id}, '${m.id}')" title="削除" class="absolute top-1 right-1 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1.5 opacity-0 group-hover/media:opacity-100 transition-opacity">
-                  <i data-lucide="x" class="w-3 h-3"></i>
-                </button>
-              </div>
-            `;
-          }
-          thumbnailDisplay += `</div>`;
-        } else {
-          thumbnailDisplay = `
-            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
-              <span class="text-xs text-slate-500">${t('noPhotosYet')}</span>
-              <button onclick="openCheckinModal(${item.id})" class="text-xs theme-primary-bg text-white font-bold px-3 py-1.5 rounded-lg shadow-xs active:scale-95">＋ ${t('addBtnText')}</button>
-            </div>
-          `;
-        }
+        const timeDisplay = item.allDay
+          ? t('allDayLabel')
+          : (item.endTime ? `${item.time} - ${item.endTime}` : item.time);
+        const spanText = (item.endDate && item.endDate !== item.date) ? ` (${item.date} 〜 ${item.endDate})` : '';
+        const repeatBadge = (item.repeat && item.repeat !== 'none')
+          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${item.repeat === 'weekly' ? t('repeatWeekly') : t('repeatMonthly')}</span>`
+          : '';
+        const remLabel = getReminderLabel(item.reminder);
+        const remBadge = remLabel
+          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">🔔 ${remLabel}</span>`
+          : '';
 
         card.innerHTML = `
           <div class="flex justify-between items-start gap-2">
             <div class="min-w-0">
-              ${statusBadge}
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full" style="background:${c.bg};color:${c.text};">${timeDisplay}${spanText}</span>
+                ${repeatBadge}
+                ${remBadge}
+              </div>
               <h4 class="text-base font-bold text-slate-900 mt-1 truncate">${item.title}</h4>
               <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono truncate">
-                <i data-lucide="map-pin" class="w-3 h-3 theme-primary-text flex-shrink-0"></i> <span>${item.location || 'Spot'} &bull; ${timeDisplay}</span>
+                <i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0" style="color:${c.hex};"></i> <span>${item.location || 'Spot'}</span>
               </p>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <button onclick="openEditModal(${item.id})" title="${t('editBtnText')}" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all active:scale-95">
                 <i data-lucide="pencil" class="w-4 h-4"></i>
               </button>
-              ${mediaCount > 0 ? `<button onclick="openCheckinModal(${item.id})" class="flex items-center gap-1 theme-primary-bg text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-all active:scale-95">
-                <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
-                <span>${t('addBtnText')}</span>
-              </button>` : ''}
               <button onclick="deleteSchedule(${item.id})" title="Delete" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all active:scale-95">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
-          ${thumbnailDisplay}
         `;
         container.appendChild(card);
       }
@@ -1489,11 +1814,12 @@ async function resetAllData() {
       if (tab === 'calendar') {
         await renderAllPanels();
         updateTrackPosition(false);
+        await renderDailyAlbum();
       } else if (tab === 'notifications') {
         renderNotifications();
       } else if (tab === 'lookbook') {
-        updateRecapOptions();
         renderMovieHistory();
+        await renderAlbumGallery();
       }
     }
 
@@ -1504,110 +1830,212 @@ async function resetAllData() {
       return `${y}-${m}-${day}`;
     }
 
-    function updateRecapOptions() {
-      const mode = document.getElementById("recap-mode").value;
-      const labelEl = document.getElementById("recap-target-label");
-      const selectEl = document.getElementById("recap-target-select");
-      selectEl.innerHTML = "";
+    // ---------- まとめ動画：日付選択カレンダー（タップ＆ドラッグ連続選択・月移動） ----------
+    let vlogPickerYear = nowInit.getFullYear();
+    let vlogPickerMonth = nowInit.getMonth() + 1;
+    let vlogSelectedDates = new Set();
+    let vlogDragActive = false;
+    let vlogDragMode = 'add';
 
-      if (mode === 'month') {
-        labelEl.innerText = t('targetPeriodLabel');
-        for (let m = 1; m <= 12; m++) {
-          const opt = document.createElement("option");
-          opt.value = `${currentYear}-${String(m).padStart(2, '0')}`;
-          opt.innerText = currentLang === 'en' ? `${currentYear} / Month ${m}` : `${currentYear}年 ${m}月全体`;
-          if (m === currentMonth) opt.selected = true;
-          selectEl.appendChild(opt);
-        }
-      } else {
-        labelEl.innerText = t('targetPeriodLabel');
-        const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
-        const lastDayOfMonth = new Date(currentYear, currentMonth, 0);
-
-        let currSunday = new Date(firstDayOfMonth);
-        currSunday.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
-
-        while (currSunday <= lastDayOfMonth) {
-          let currSaturday = new Date(currSunday);
-          currSaturday.setDate(currSaturday.getDate() + 6);
-
-          const startStr = formatDateString(currSunday);
-          const endStr = formatDateString(currSaturday);
-
-          const opt = document.createElement("option");
-          opt.value = `${startStr}_${endStr}`;
-          opt.innerText = `${currSunday.getMonth() + 1}/${currSunday.getDate()} - ${currSaturday.getMonth() + 1}/${currSaturday.getDate()}`;
-          
-          const todayStr = formatDateString(new Date());
-          if (startStr <= todayStr && todayStr <= endStr) {
-            opt.selected = true;
-          }
-
-          selectEl.appendChild(opt);
-          currSunday.setDate(currSunday.getDate() + 7);
-        }
+    function openVlogDatePickerModal() {
+      vlogPickerYear = currentYear;
+      vlogPickerMonth = currentMonth;
+      if (vlogSelectedDates.size === 0) {
+        vlogSelectedDates.add(selectedDate);
       }
-      
-      const lookbookTab = document.getElementById("tab-lookbook");
-      if (lookbookTab && !lookbookTab.classList.contains("hidden")) {
-        renderAlbumGallery();
+      renderVlogPickerCalendar();
+      updateVlogSelectedCount();
+      document.getElementById('vlog-date-picker-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeVlogDatePickerModal() {
+      vlogDragActive = false;
+      document.getElementById('vlog-date-picker-modal').classList.add('hidden');
+    }
+
+    function shiftVlogPickerMonth(offset) {
+      vlogPickerMonth += offset;
+      if (vlogPickerMonth > 12) {
+        vlogPickerMonth = 1;
+        vlogPickerYear++;
+      } else if (vlogPickerMonth < 1) {
+        vlogPickerMonth = 12;
+        vlogPickerYear--;
+      }
+      renderVlogPickerCalendar();
+    }
+
+    function clearVlogSelectedDates() {
+      vlogSelectedDates.clear();
+      renderVlogPickerCalendar();
+      updateVlogSelectedCount();
+    }
+
+    function updateVlogSelectedCount() {
+      const el = document.getElementById('vlog-selected-count');
+      if (el) {
+        el.innerText = currentLang === 'en'
+          ? `${vlogSelectedDates.size} day(s) selected`
+          : `${vlogSelectedDates.size}日 選択中`;
       }
     }
 
-    function getAllFilteredMediaItems() {
-      const mode = document.getElementById("recap-mode").value;
-      const targetVal = document.getElementById("recap-target-select").value;
-      
-      let targetSchedules = schedules;
-      if (targetVal) {
-        if (mode === 'month') {
-          targetSchedules = schedules.filter(s => s.date.startsWith(targetVal));
-        } else {
-          const [startStr, endStr] = targetVal.split('_');
-          targetSchedules = schedules.filter(s => s.date >= startStr && s.date <= endStr);
-        }
+    function applyVlogDateSelection(dateStr, forceAdd = null) {
+      if (!dateStr) return;
+      if (forceAdd === true) {
+        vlogSelectedDates.add(dateStr);
+      } else if (forceAdd === false) {
+        vlogSelectedDates.delete(dateStr);
+      } else {
+        if (vlogSelectedDates.has(dateStr)) vlogSelectedDates.delete(dateStr);
+        else vlogSelectedDates.add(dateStr);
+      }
+      updateVlogPickerCellVisuals();
+      updateVlogSelectedCount();
+    }
+
+    function updateVlogPickerCellVisuals() {
+      const grid = document.getElementById('vlog-picker-grid');
+      if (!grid) return;
+      grid.querySelectorAll('[data-pick-date]').forEach(btn => {
+        const d = btn.dataset.pickDate;
+        const selected = vlogSelectedDates.has(d);
+        btn.classList.toggle('theme-primary-bg', selected);
+        btn.classList.toggle('text-white', selected);
+        btn.classList.toggle('font-bold', selected);
+        btn.classList.toggle('bg-slate-50', !selected);
+        btn.classList.toggle('text-slate-700', !selected);
+      });
+    }
+
+    function renderVlogPickerCalendar() {
+      const label = document.getElementById('vlog-picker-month-label');
+      const grid = document.getElementById('vlog-picker-grid');
+      if (!label || !grid) return;
+
+      label.innerText = currentLang === 'en'
+        ? `${MON[vlogPickerMonth - 1]} ${vlogPickerYear}`
+        : `${vlogPickerYear}年 ${vlogPickerMonth}月`;
+
+      const firstDay = new Date(vlogPickerYear, vlogPickerMonth - 1, 1).getDay();
+      const totalDays = getDaysInMonth(vlogPickerYear, vlogPickerMonth);
+      let html = '';
+
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="h-10"></div>`;
+      }
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = makeDateStr(vlogPickerYear, vlogPickerMonth, day);
+        const isSelected = vlogSelectedDates.has(dateStr);
+        const hasMedia = getDayMediaList(dateStr).length > 0;
+        const cls = isSelected
+          ? 'theme-primary-bg text-white font-bold'
+          : 'bg-slate-50 text-slate-700 hover:bg-slate-100';
+        html += `
+          <button type="button" data-pick-date="${dateStr}" class="relative h-10 rounded-xl text-xs flex flex-col items-center justify-center transition-colors ${cls}">
+            <span>${day}</span>
+            ${hasMedia ? `<span class="w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-pink-500'} mt-0.5"></span>` : ''}
+          </button>
+        `;
       }
 
+      grid.innerHTML = html;
+
+      grid.onpointerdown = (e) => {
+        const btn = e.target.closest('[data-pick-date]');
+        if (!btn) return;
+        e.preventDefault();
+        const d = btn.dataset.pickDate;
+        vlogDragActive = true;
+        vlogDragMode = vlogSelectedDates.has(d) ? 'remove' : 'add';
+        applyVlogDateSelection(d, vlogDragMode === 'add');
+      };
+
+      grid.onpointermove = (e) => {
+        if (!vlogDragActive) return;
+        const target = document.elementFromPoint(e.clientX, e.clientY);
+        const btn = target ? target.closest('[data-pick-date]') : null;
+        if (!btn) return;
+        applyVlogDateSelection(btn.dataset.pickDate, vlogDragMode === 'add');
+      };
+
+      window.onpointerup = () => {
+        vlogDragActive = false;
+      };
+    }
+
+    function getMediaItemsForDateSet(dateSet) {
+      const sortedDates = Array.from(dateSet).sort();
       const allMedia = [];
-      targetSchedules.forEach(item => {
-        if (item.mediaList && item.mediaList.length > 0) {
-          item.mediaList.forEach(m => {
-            allMedia.push({
-              ...m,
-              title: item.title,
-              location: item.location,
-              date: item.date,
-              time: item.time
-            });
+      for (const dateStr of sortedDates) {
+        const daySchedules = getSchedulesForDate(dateStr);
+        const dayTitle = daySchedules.length > 0 ? daySchedules[0].title : dateStr;
+        const dayLoc = daySchedules.length > 0 ? (daySchedules[0].location || '') : '';
+        const list = getDayMediaList(dateStr);
+        for (const m of list) {
+          allMedia.push({
+            ...m,
+            title: dayTitle,
+            location: dayLoc,
+            date: dateStr,
+            time: daySchedules.length > 0 ? (daySchedules[0].time || '12:00') : '12:00'
           });
         }
-      });
+      }
       return allMedia;
     }
 
+    function generateVlogFromSelectedDates() {
+      if (vlogSelectedDates.size === 0) {
+        alert(t('noDateSelectedAlert'));
+        return;
+      }
+      const items = getMediaItemsForDateSet(vlogSelectedDates);
+      if (items.length === 0) {
+        alert(t('noMediaMessage'));
+        return;
+      }
+      const sorted = Array.from(vlogSelectedDates).sort();
+      currentMovieTitle = sorted.length === 1
+        ? sorted[0]
+        : `${sorted[0]} 〜 ${sorted[sorted.length - 1]} (${sorted.length}日)`;
+      activeMovieMediaItems = items;
+      vlogPeriod = { mode: 'custom', dates: sorted };
+      closeVlogDatePickerModal();
+      openVlogModal();
+    }
+
     async function renderAlbumGallery() {
-      const filteredMedia = getAllFilteredMediaItems();
       const grid = document.getElementById("mosaic-grid");
+      if (!grid) return;
       grid.innerHTML = "";
 
-      if (filteredMedia.length === 0) {
+      const allDates = Object.keys(dailyMedia).sort().reverse();
+      const allMedia = [];
+      for (const d of allDates) {
+        for (const m of getDayMediaList(d)) {
+          allMedia.push({ ...m, date: d });
+        }
+      }
+
+      if (allMedia.length === 0) {
         grid.innerHTML = `<p class="col-span-full text-xs text-center text-slate-400 py-8">${t('noMediaMessage')}</p>`;
         return;
       }
 
-      for (const m of filteredMedia) {
+      for (const m of allMedia) {
         const itemEl = document.createElement("div");
         itemEl.className = "relative aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer bg-slate-900";
         const isVideo = m.type === 'video';
         const displayUrl = getThumbUrl(m) || VIDEO_PLACEHOLDER;
         
-        itemEl.onclick = () => openMediaViewer(m, m.title, `${m.date} / ${m.location}`);
+        itemEl.onclick = () => openMediaViewer(m, m.date, m.date);
         itemEl.innerHTML = `
           <img src="${displayUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy">
           ${isVideo ? `<div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono"><i data-lucide="video" class="w-3 h-3 text-pink-400"></i>VLOG</div>` : ''}
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2.5 flex flex-col justify-end">
-            <p class="text-[10px] font-bold text-white truncate">${m.title}</p>
-            <p class="text-[8px] text-slate-300 font-mono">${m.date} / ${m.location}</p>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
+            <p class="text-[10px] font-bold text-white font-mono truncate">${m.date}</p>
           </div>
         `;
         grid.appendChild(itemEl);
@@ -1671,6 +2099,33 @@ async function resetAllData() {
       }
     }
 
+    function selectEventColor(colorKey) {
+      selectedEventColor = EVENT_COLORS[colorKey] ? colorKey : 'indigo';
+      document.querySelectorAll('.event-color-btn').forEach(btn => {
+        const active = btn.getAttribute('data-color') === selectedEventColor;
+        btn.style.transform = active ? 'scale(1.18)' : 'scale(1)';
+        btn.style.boxShadow = active ? '0 0 0 2px #0f172a' : '';
+      });
+    }
+
+    function toggleAllDayInputs() {
+      const checked = document.getElementById("input-all-day").checked;
+      const group = document.getElementById("time-inputs-group");
+      const startTime = document.getElementById("input-time");
+      const endTime = document.getElementById("input-endtime");
+      if (group) group.classList.toggle("hidden", checked);
+      if (startTime) startTime.required = !checked;
+      if (endTime) endTime.required = !checked;
+    }
+
+    function syncEndDateIfEarlier() {
+      const startInput = document.getElementById("input-date");
+      const endInput = document.getElementById("input-end-date");
+      if (startInput && endInput && startInput.value && (!endInput.value || endInput.value < startInput.value)) {
+        endInput.value = startInput.value;
+      }
+    }
+
     function openAddModalForSelectedDate() {
       openAddModalForDate(selectedDate);
     }
@@ -1679,8 +2134,14 @@ async function resetAllData() {
       editingScheduleId = null;
       document.getElementById("add-schedule-form").reset();
       document.getElementById("input-date").value = dateStr;
+      document.getElementById("input-end-date").value = dateStr;
+      document.getElementById("input-all-day").checked = false;
       document.getElementById("input-time").value = "10:00";
       document.getElementById("input-endtime").value = "12:00";
+      document.getElementById("input-repeat").value = "none";
+      document.getElementById("input-reminder").value = "none";
+      selectEventColor("indigo");
+      toggleAllDayInputs();
       document.getElementById("input-title").placeholder = t('eventTitlePlaceholder');
       document.getElementById("input-location").placeholder = t('locationPlaceholder');
       setScheduleModalMode('add');
@@ -1693,9 +2154,15 @@ async function resetAllData() {
       editingScheduleId = id;
       document.getElementById("input-title").value = item.title || "";
       document.getElementById("input-date").value = item.date || selectedDate;
+      document.getElementById("input-end-date").value = item.endDate || item.date || selectedDate;
+      document.getElementById("input-all-day").checked = !!item.allDay;
       document.getElementById("input-time").value = item.time || "10:00";
       document.getElementById("input-endtime").value = item.endTime || "12:00";
+      document.getElementById("input-repeat").value = item.repeat || "none";
+      document.getElementById("input-reminder").value = item.reminder || "none";
       document.getElementById("input-location").value = item.location || "";
+      selectEventColor(item.color || "indigo");
+      toggleAllDayInputs();
       document.getElementById("input-title").placeholder = t('eventTitlePlaceholder');
       document.getElementById("input-location").placeholder = t('locationPlaceholder');
       setScheduleModalMode('edit');
@@ -1710,71 +2177,61 @@ async function resetAllData() {
     async function handleAddSchedule(e) {
       e.preventDefault();
       const date = document.getElementById("input-date").value;
+      const rawEndDate = document.getElementById("input-end-date").value;
+      const endDate = (rawEndDate && rawEndDate >= date) ? rawEndDate : date;
+      const allDay = document.getElementById("input-all-day").checked;
       const title = document.getElementById("input-title").value;
-      const time = document.getElementById("input-time").value;
-      const endTime = document.getElementById("input-endtime").value;
+      const time = allDay ? "00:00" : document.getElementById("input-time").value;
+      const endTime = allDay ? "23:59" : document.getElementById("input-endtime").value;
+      const repeat = document.getElementById("input-repeat").value;
+      const reminder = document.getElementById("input-reminder").value;
       const location = document.getElementById("input-location").value;
+      const color = selectedEventColor;
 
       if (editingScheduleId !== null) {
         const target = schedules.find(s => s.id === editingScheduleId);
         if (target) {
           target.date = date;
-          target.title = title;
+          target.endDate = endDate;
+          target.allDay = allDay;
           target.time = time;
           target.endTime = endTime;
+          target.repeat = repeat;
+          target.reminder = reminder;
+          target.color = color;
+          target.title = title;
           target.location = location || "Spot";
         }
         editingScheduleId = null;
       } else {
         schedules.push({ 
           id: Date.now(), 
-          date, 
+          date,
+          endDate,
+          allDay,
           time, 
           endTime,
+          repeat,
+          reminder,
+          color,
           title, 
           location: location || "Spot", 
           mediaList: [] 
         });
       }
 
+      if (reminder !== 'none' && 'Notification' in window && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch (err) {}
+      }
+
       saveSchedules();
       closeAddModal();
       document.getElementById("add-schedule-form").reset();
       await renderAllPanels();
-      selectDate(date);
+      await selectDate(date);
       renderNotifications();
-      updateRecapOptions();
     }
 
-    function openCheckinModal(id) {
-      currentCheckinId = id;
-      const item = schedules.find(s => s.id === id);
-      document.getElementById("checkin-target-title").innerText = item.title;
-      document.getElementById("checkin-target-meta").innerText = `${item.date} ${item.time} @ ${item.location || 'Spot'}`;
-      tempMediaList = [];
-      document.getElementById("local-file-input").value = "";
-      document.getElementById("checkin-modal").classList.remove("hidden");
-    }
-
-    function closeCheckinModal() { 
-      document.getElementById("checkin-modal").classList.add("hidden"); 
-    }
-
-    async function confirmCheckin() {
-      if (!currentCheckinId) return;
-      const item = schedules.find(s => s.id === currentCheckinId);
-      if (item && tempMediaList.length > 0) {
-        if (!item.mediaList) item.mediaList = [];
-        item.mediaList.push(...tempMediaList);
-      }
-      saveSchedules();
-      closeCheckinModal();
-      await renderAllPanels();
-      await renderSchedules();
-      updateRecapOptions();
-    }
-
-    // 🚀 画像リサイズ・圧縮関数
     async function resizeImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.8) {
       return new Promise((resolve) => {
         if (!file.type.startsWith("image/")) return resolve(file);
@@ -1812,7 +2269,6 @@ async function resetAllData() {
       });
     }
 
-    // 🚀 サムネイル生成
     async function createImageThumbnail(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -1966,835 +2422,780 @@ async function resetAllData() {
     }
 
     // ============================================================
-// LogSnap Vlog エンジン（ダイジェスト＋おしゃれタイトル／アイキャッチ → 本編）
-// ・BGM・編集スタイルはアプリ側で自動決定・固定
-// ・BGMが切り替わるタイミングのみ4種の効果音をランダム再生
-// ============================================================
-let vlogAborted = false, screenLock = null;
-function vlogMaxItems() { return (document.getElementById('recap-mode') || {}).value === 'week' ? 10 : 14; }
-function showRecUi(on) {
-  const el = document.getElementById('rec-status');
-  if (el) el.classList.toggle('hidden', !on);
-}
-function updateRecUi(t) {
-  const bar = document.getElementById('rec-bar'), txt = document.getElementById('rec-text');
-  if (!bar || !txt) return;
-  bar.style.width = Math.min(100, t / vlog.total * 100) + '%';
-  txt.textContent = `書き出し中… あと約${Math.max(0, Math.ceil(vlog.total - t))}秒（画面を閉じたり、他のアプリに切り替えないでください）`;
-}
-async function holdScreenOn() {
-  try { if (navigator.wakeLock) screenLock = await navigator.wakeLock.request('screen'); } catch (e) {}
-}
-function releaseScreen() {
-  try { if (screenLock) screenLock.release(); } catch (e) {}
-  screenLock = null;
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && vlog && vlog.rec) { stopVlog(); vlogAborted = true; }
-  else if (!document.hidden && vlogAborted) {
-    vlogAborted = false;
-    alert('画面を離れたため、書き出しを中断しました。画面を開いたまま、もう一度お試しください。');
-    if (!document.getElementById('movie-modal').classList.contains('hidden')) startVlog(false);
-  }
-});
-
-const VLOG_W = 720, VLOG_H = 1280;
-let vlog = null, vlogRunId = 0;
-let bgmCtx = null, bgmDest = null, bgmGain = null;
-let sfxAudioPool = [];
-
-// ---------- BGM選択（アプリ側固定・シードで決定） ----------
-function pickAutoBgm(rnd) {
-  if (vlogNext && vlogNext.bgm) {
-    const b = vlogPlaylist.find(x => x.url === vlogNext.bgm);
-    if (b) return b;
-  }
-  return vlogPlaylist[Math.floor(rnd() * vlogPlaylist.length)];
-}
-
-// ---------- 効果音（BGM切り替わり時のみランダム再生・音量少しアップ） ----------
-function ensureSfxPool() {
-  if (sfxAudioPool.length > 0) return;
-  sfxAudioPool = VLOG_SFX_FILES.map(url => {
-    const a = new Audio();
-    a.preload = 'auto';
-    a.src = url;
-    a.volume = 0.85;
-    return a;
-  });
-}
-
-function routeSfxToRecorder(audioEl) {
-  if (!bgmCtx || !bgmDest || audioEl._routed) return;
-  try {
-    const src = bgmCtx.createMediaElementSource(audioEl);
-    const g = bgmCtx.createGain();
-    g.gain.value = 0.92;
-    src.connect(g);
-    g.connect(bgmDest);
-    g.connect(bgmCtx.destination);
-    audioEl._routed = true;
-  } catch (e) {}
-}
-
-function triggerRandomTransitionSfx(sfxIndex) {
-  ensureSfxPool();
-  const idx = (typeof sfxIndex === 'number' && sfxAudioPool[sfxIndex])
-    ? sfxIndex
-    : Math.floor(Math.random() * sfxAudioPool.length);
-  const el = sfxAudioPool[idx];
-  if (!el) return;
-  if (bgmCtx && bgmDest) routeSfxToRecorder(el);
-  try {
-    el.currentTime = 0;
-    el.play().catch(() => {});
-  } catch (e) {}
-}
-
-// ---------- 素材の読み込み ----------
-async function loadAsset(m) {
-  if (m.type === 'video') {
-    const v = document.createElement('video');
-    v.muted = true; v.playsInline = true; v.preload = 'auto';
-    if (!m.url.startsWith('blob:')) v.crossOrigin = 'anonymous';
-    v.src = m.url;
-    const ae = new Audio(); ae.preload = 'auto'; ae.muted = true; if (!m.url.startsWith('blob:')) ae.crossOrigin = 'anonymous'; ae.src = m.url; v._ael = ae;
-    await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; setTimeout(r, 4000); });
-    return { m, el: v, ok: !!v.videoWidth, vdur: isFinite(v.duration) ? v.duration : 3 };
-  }
-  const img = new Image();
-  if (!m.url.startsWith('blob:')) img.crossOrigin = 'anonymous';
-  img.src = m.url;
-  try { await img.decode(); } catch (e) {}
-  return { m, el: img, ok: !!img.naturalWidth };
-}
-
-let vlogBaseVol = 0.28, vlogNext = null, lastSeed = 0, lastBgmUrl = '';
-
-function mulberry32(a) {
-  return function () {
-    a |= 0; a = a + 0x6D2B79F5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-function takeSeed() {
-  const s = (vlogNext && vlogNext.seed != null) ? vlogNext.seed : (Math.random() * 4294967296) >>> 0;
-  vlogNext = null;
-  return s;
-}
-
-const BGM_FADE = 1.0, DUCK_VIDEO = 0.30;
-let vlogPeriod = null;
-const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// ✨ ダイジェスト用おしゃれタイトルテンプレート群
-const TITLE_TEMPLATES = [
-  { id: 'serif_italic', font: s => `italic 600 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0, prefix: 'coming up:' },
-  { id: 'script_flow', font: s => `400 ${s}px "Great Vibes", cursive`, size: [92, 108], upper: false, ls: 0, prefix: '' },
-  { id: 'minimal_caps', font: s => `500 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8, prefix: 'DAY IN MY LIFE' },
-  { id: 'editorial', font: s => `italic 600 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2, prefix: 'moments' }
-];
-
-// 🎨 アイキャッチ背景パレット
-const EYECATCH_PALETTES = [
-  { bg1: '#f8e8ee', bg2: '#f3d8e2', text: '#5c414d', sub: '#8c6b79' },
-  { bg1: '#f4efe6', bg2: '#e9e0d2', text: '#4a4238', sub: '#7c7163' },
-  { bg1: '#eaeff5', bg2: '#dce4ee', text: '#364152', sub: '#64748b' },
-  { bg1: '#1e1b24', bg2: '#2c2735', text: '#f8fafc', sub: '#cbd5e1' }
-];
-
-function vlogTitleFor(rnd) {
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
-  const p = vlogPeriod;
-  if (p && p.mode === 'week' && p.value) {
-    const [s, e] = p.value.split('_').map(x => x.split('-').map(Number));
-    return {
-      main: pick(['a week in my life', 'my week vlog', 'one week, lately', 'this week']),
-      sub: `${MON3[s[1] - 1]} ${s[2]} – ${MON3[e[1] - 1]} ${e[2]}`,
-      eyecatchNote: pick(['enjoy !!', 'let’s begin', 'weekly diary'])
-    };
-  }
-  if (p && p.mode === 'month' && p.value) {
-    const [y, m] = p.value.split('-').map(Number), name = MON[m - 1];
-    const main = pick(['a month in my life', name.toLowerCase() + ' diaries', 'hello, ' + name.toLowerCase(), name.toLowerCase() + ', lately']);
-    return {
-      main,
-      sub: main.includes(name.toLowerCase()) ? String(y) : name + ' ' + y,
-      eyecatchNote: pick(['enjoy !!', 'monthly recap', 'memories'])
-    };
-  }
-  return { main: 'a day in my life vlog', sub: '', eyecatchNote: 'enjoy !!' };
-}
-
-const VLOG_BUDGET = 150;
-function vlogTrimBudget(assets) {
-  const prev = (typeof vlogPrevMade !== 'undefined') ? vlogPrevMade : Infinity;
-  const est = (a) => a.m.type === 'video' ? Math.min(a.vdur || 5, 30) : 3.7;
-  const list = assets.slice();
-  let total = list.reduce((s, a) => s + est(a), 0);
-  while (total > VLOG_BUDGET && list.length > 6) {
-    let k = -1, best = -1;
-    list.forEach((a, i) => { if (!(a.m.addedAt && a.m.addedAt > prev) && est(a) > best) { best = est(a); k = i; } });
-    if (k < 0) break;
-    total -= est(list[k]); list.splice(k, 1);
-  }
-  return list;
-}
-
-function fitFont(ctx, text, maxW, size, fontFn) {
-  let s = size;
-  do { ctx.font = fontFn(s); s -= 2; } while (ctx.measureText(text).width > maxW && s > 20);
-  return s + 2;
-}
-function vlogLoadFonts() {
-  if (!document.fonts || !document.fonts.load) return Promise.resolve();
-  const specs = ['italic 600 40px "Playfair Display"', '400 40px "Great Vibes"', '500 40px "Montserrat"', '400 28px "Montserrat"', 'italic 600 40px "Cormorant Garamond"'];
-  return Promise.race([Promise.all(specs.map(s => document.fonts.load(s, 'Aa'))), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
-}
-
-// ダイジェスト映像上に直接表示するおしゃれタイトル
-function drawOpeningTitle(ctx, ti, t) {
-  if (!ti || t < ti.t0 || t > ti.t1) return;
-  const a = Math.max(0, Math.min(1, (t - ti.t0) / 0.55, (ti.t1 - t) / 0.55));
-  const st = ti.style, main = st.upper ? ti.main.toUpperCase() : ti.main;
-  ctx.save();
-  ctx.globalAlpha = a;
-  ctx.fillStyle = '#fff';
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 16;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
-  const size = fitFont(ctx, main, VLOG_W - 140, ti.size, st.font);
-  const center = ti.pos !== 'lowerleft';
-  ctx.textAlign = center ? 'center' : 'left';
-  const x = center ? VLOG_W / 2 : 70, y = ti.pos === 'center' ? VLOG_H * 0.48 : VLOG_H - 360;
-
-  if (ti.prefix) {
-    ctx.save();
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
-    ctx.font = '400 26px "Montserrat", sans-serif';
-    ctx.fillText(ti.prefix, x, y - size * 0.72);
-    ctx.restore();
-  }
-
-  ctx.fillText(main, x, y);
-  if (st.id === 'script_flow') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.0; ctx.strokeText(main, x, y); }
-  if (ti.sub) {
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
-    ctx.font = '400 26px "Montserrat", sans-serif';
-    ctx.fillText(ti.sub.toUpperCase(), x, y + size * 0.55 + 26);
-  }
-  ctx.restore();
-}
-
-// アイキャッチ（背景＋おしゃれタイトル画面）描画
-function drawEyecatchCard(ctx, seg, local) {
-  const pal = seg.palette;
-  const grad = ctx.createLinearGradient(0, 0, 0, VLOG_H);
-  grad.addColorStop(0, pal.bg1);
-  grad.addColorStop(1, pal.bg2);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-
-  const fadeAlpha = Math.max(0, Math.min(1, local / 0.35, (seg.dur - local) / 0.35));
-  ctx.save();
-  ctx.globalAlpha *= fadeAlpha;
-  ctx.textAlign = 'center';
-
-  const st = seg.style;
-  const main = st.upper ? seg.main.toUpperCase() : seg.main;
-  ctx.fillStyle = pal.text;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
-  const size = fitFont(ctx, main, VLOG_W - 140, seg.size, st.font);
-  const cy = VLOG_H * 0.47;
-  ctx.fillText(main, VLOG_W / 2, cy);
-
-  if (seg.sub) {
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '5px';
-    ctx.fillStyle = pal.sub;
-    ctx.font = '400 24px "Montserrat", sans-serif';
-    ctx.fillText(seg.sub.toUpperCase(), VLOG_W / 2, cy + size * 0.6 + 24);
-  }
-  if (seg.note) {
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
-    ctx.fillStyle = pal.sub;
-    ctx.font = 'italic 600 32px "Playfair Display", serif';
-    ctx.fillText(seg.note, VLOG_W / 2, cy + size * 0.6 + 84);
-  }
-  ctx.restore();
-}
-
-// ---------- タイムライン組み立て（ルールベース確定） ----------
-function buildTimeline(assets, title, bgm, seed) {
-  assets = vlogTrimBudget(assets);
-  const rnd = mulberry32(seed);
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
-  const range = (a, b) => a + rnd() * (b - a);
-  let beat = 60 / (bgm.bpm || 90);
-  const q = (sec) => beat * Math.max(1, Math.round(sec / beat));
-  const ts = { size: Math.round(range(40, 52)), w: pick(['300', '400', '500']) };
-  const T = vlogTitleFor(rnd);
-
-  let lastStyle = null;
-  try { lastStyle = localStorage.getItem('logsnap_last_tstyle'); } catch (e) {}
-  const style = pick(TITLE_TEMPLATES.filter(s => s.id !== lastStyle));
-  try { localStorage.setItem('logsnap_last_tstyle', style.id); } catch (e) {}
-
-  // ダイジェスト直乗せとアイキャッチの両方に対応（ランダムでどちらの演出も活用）
-  const useEyecatch = rnd() < 0.55;
-
-  const tl = [];
-  let t = 0;
-  const blocks = [{
-    start: 0,
-    mode: 'bgm',
-    track: bgm,
-    playSfx: false,
-    sfxDelay: 0,
-    sfxIndex: 0
-  }];
-  let blkLen = range(28, 52);
-  let lastTrack = bgm;
-
-  const push = (seg) => {
-    seg.start = t;
-    seg.blk = blocks.length - 1;
-    tl.push(seg);
-    t += seg.dur;
-  };
-
-  const clipSeg = (a, dur, extra) => {
-    const vlen = a.m.type === 'video' ? a.vdur : 0;
-    if (vlen && !(extra && extra.full)) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
-    const voff = vlen > dur + 1 ? Math.min(range(0.3, vlen * 0.35), vlen - dur - 0.1) : 0;
-    const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.08);
-    const fade = (tl.length && rnd() < 0.35) ? range(0.22, 0.36) : 0;
-    return Object.assign({ kind: 'clip', a, dur, voff, zoom, fade }, extra);
-  };
-
-  // 1. 冒頭ダイジェスト（使用素材の一部を短くテンポよくつなぐ）
-  const n = assets.length;
-  const c = Math.min(Math.round(range(6, 9)), Math.max(n, 4));
-  for (let i = 0; i < c; i++) {
-    push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.75, 1.2)), { digest: true }));
-  }
-
-  // ダイジェスト中の直接タイトル表示（アイキャッチ併用時も短く表示し、直接のみ時はしっかり表示）
-  const t0 = range(0.35, 1.0);
-  const directEnd = useEyecatch ? Math.min(t - 0.2, t0 + range(2.8, 3.8)) : Math.max(t0 + 2.2, Math.min(t - 0.15, t0 + range(4.0, 5.4)));
-  tl.title = {
-    main: T.main,
-    sub: T.sub,
-    prefix: style.prefix,
-    style,
-    size: Math.round(range(style.size[0], style.size[1])),
-    pos: pick(['center', 'lowerleft', 'lowercenter']),
-    t0,
-    t1: directEnd
-  };
-
-  // アイキャッチカード（ダイジェストと本編の間に挟むタイトル画面）
-  if (useEyecatch) {
-    push({
-      kind: 'eyecatch',
-      dur: range(1.8, 2.4),
-      main: T.main,
-      sub: T.sub,
-      note: T.eyecatchNote,
-      style,
-      size: Math.round(range(style.size[0], style.size[1])),
-      palette: pick(EYECATCH_PALETTES)
-    });
-  }
-
-  // 2. 本編へ移行（BGMが切り替わる場合のみ、切り替わりジャストで効果音を鳴らす）
-  tl.mainStart = t;
-  {
-    // 約75%の確率で本編用に別のBGMへ切り替え、残り25%は同じBGMを継続（変化なしなら効果音なし）
-    const switchBgmAtMain = vlogPlaylist.length > 1 && rnd() < 0.75;
-    let track = lastTrack;
-    if (switchBgmAtMain) {
-      const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
-      track = cands.length ? pick(cands) : lastTrack;
+    // LogSnap Vlog エンジン
+    // ============================================================
+    let vlogAborted = false, screenLock = null;
+    function vlogMaxItems() { return 14; }
+    function showRecUi(on) {
+      const el = document.getElementById('rec-status');
+      if (el) el.classList.toggle('hidden', !on);
     }
-    const bgmChanged = track.url !== lastTrack.url;
-    lastTrack = track;
-    blocks[0].fadeOut = bgmChanged ? 0.15 : 0.0;
-    blocks.push({
-      start: t,
-      mode: 'bgm',
-      track,
-      delay: 0,
-      fadeIn: bgmChanged ? 0.35 : 0.0,
-      playSfx: bgmChanged,
-      sfxDelay: 0,
-      sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
+    function updateRecUi(t) {
+      const bar = document.getElementById('rec-bar'), txt = document.getElementById('rec-text');
+      if (!bar || !txt) return;
+      bar.style.width = Math.min(100, t / vlog.total * 100) + '%';
+      txt.textContent = `書き出し中… あと約${Math.max(0, Math.ceil(vlog.total - t))}秒（画面を閉じたり、他のアプリに切り替えないでください）`;
+    }
+    async function holdScreenOn() {
+      try { if (navigator.wakeLock) screenLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    }
+    function releaseScreen() {
+      try { if (screenLock) screenLock.release(); } catch (e) {}
+      screenLock = null;
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && vlog && vlog.rec) { stopVlog(); vlogAborted = true; }
+      else if (!document.hidden && vlogAborted) {
+        vlogAborted = false;
+        alert('画面を離れたため、書き出しを中断しました。画面を開いたまま、もう一度お試しください。');
+        if (!document.getElementById('movie-modal').classList.contains('hidden')) startVlog(false);
+      }
     });
-    beat = 60 / (track.bpm || 90);
-    blkLen = range(28, 52);
-  }
 
-  // 3. 本編クリップ構築
-  let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
-  assets.forEach((a, i) => {
-    const cur = blocks[blocks.length - 1];
-    if (t - cur.start >= blkLen) {
-      const nxt = assets.slice(i, i + 6);
-      const vr = nxt.filter(x => x.m.type === 'video').length / nxt.length;
-      const original = vr >= 0.35 && cur.mode !== 'original' && rnd() < 0.45;
-      let track = null;
-      if (!original) {
-        const changeTrack = vlogPlaylist.length > 1 && rnd() < 0.75;
-        if (changeTrack) {
-          const cands = vlogPlaylist.filter(p => p.url !== (lastTrack ? lastTrack.url : ''));
+    const VLOG_W = 720, VLOG_H = 1280;
+    let vlog = null, vlogRunId = 0;
+    let bgmCtx = null, bgmDest = null, bgmGain = null;
+    let sfxAudioPool = [];
+
+    function pickAutoBgm(rnd) {
+      if (vlogNext && vlogNext.bgm) {
+        const b = vlogPlaylist.find(x => x.url === vlogNext.bgm);
+        if (b) return b;
+      }
+      return vlogPlaylist[Math.floor(rnd() * vlogPlaylist.length)];
+    }
+
+    function ensureSfxPool() {
+      if (sfxAudioPool.length > 0) return;
+      sfxAudioPool = VLOG_SFX_FILES.map(url => {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.src = url;
+        a.volume = 0.85;
+        return a;
+      });
+    }
+
+    function routeSfxToRecorder(audioEl) {
+      if (!bgmCtx || !bgmDest || audioEl._routed) return;
+      try {
+        const src = bgmCtx.createMediaElementSource(audioEl);
+        const g = bgmCtx.createGain();
+        g.gain.value = 0.92;
+        src.connect(g);
+        g.connect(bgmDest);
+        g.connect(bgmCtx.destination);
+        audioEl._routed = true;
+      } catch (e) {}
+    }
+
+    function triggerRandomTransitionSfx(sfxIndex) {
+      ensureSfxPool();
+      const idx = (typeof sfxIndex === 'number' && sfxAudioPool[sfxIndex])
+        ? sfxIndex
+        : Math.floor(Math.random() * sfxAudioPool.length);
+      const el = sfxAudioPool[idx];
+      if (!el) return;
+      if (bgmCtx && bgmDest) routeSfxToRecorder(el);
+      try {
+        el.currentTime = 0;
+        el.play().catch(() => {});
+      } catch (e) {}
+    }
+
+    async function loadAsset(m) {
+      if (m.type === 'video') {
+        const v = document.createElement('video');
+        v.muted = true; v.playsInline = true; v.preload = 'auto';
+        if (!m.url.startsWith('blob:')) v.crossOrigin = 'anonymous';
+        v.src = m.url;
+        const ae = new Audio(); ae.preload = 'auto'; ae.muted = true; if (!m.url.startsWith('blob:')) ae.crossOrigin = 'anonymous'; ae.src = m.url; v._ael = ae;
+        await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; setTimeout(r, 4000); });
+        return { m, el: v, ok: !!v.videoWidth, vdur: isFinite(v.duration) ? v.duration : 3 };
+      }
+      const img = new Image();
+      if (!m.url.startsWith('blob:')) img.crossOrigin = 'anonymous';
+      img.src = m.url;
+      try { await img.decode(); } catch (e) {}
+      return { m, el: img, ok: !!img.naturalWidth };
+    }
+
+    let vlogBaseVol = 0.28, vlogNext = null, lastSeed = 0, lastBgmUrl = '';
+
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    function takeSeed() {
+      const s = (vlogNext && vlogNext.seed != null) ? vlogNext.seed : (Math.random() * 4294967296) >>> 0;
+      vlogNext = null;
+      return s;
+    }
+
+    const BGM_FADE = 1.0, DUCK_VIDEO = 0.30;
+    let vlogPeriod = null;
+    const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const TITLE_TEMPLATES = [
+      { id: 'serif_italic', font: s => `italic 600 ${s}px "Playfair Display", "Times New Roman", serif`, size: [64, 76], upper: false, ls: 0, prefix: 'coming up:' },
+      { id: 'script_flow', font: s => `400 ${s}px "Great Vibes", cursive`, size: [92, 108], upper: false, ls: 0, prefix: '' },
+      { id: 'minimal_caps', font: s => `500 ${s}px "Montserrat", sans-serif`, size: [44, 54], upper: true, ls: 8, prefix: 'DAY IN MY LIFE' },
+      { id: 'editorial', font: s => `italic 600 ${s}px "Cormorant Garamond", serif`, size: [80, 94], upper: false, ls: 2, prefix: 'moments' }
+    ];
+
+    const EYECATCH_PALETTES = [
+      { bg1: '#f8e8ee', bg2: '#f3d8e2', text: '#5c414d', sub: '#8c6b79' },
+      { bg1: '#f4efe6', bg2: '#e9e0d2', text: '#4a4238', sub: '#7c7163' },
+      { bg1: '#eaeff5', bg2: '#dce4ee', text: '#364152', sub: '#64748b' },
+      { bg1: '#1e1b24', bg2: '#2c2735', text: '#f8fafc', sub: '#cbd5e1' }
+    ];
+
+    function vlogTitleFor(rnd) {
+      const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+      const p = vlogPeriod;
+      if (p && Array.isArray(p.dates) && p.dates.length > 0) {
+        const s = p.dates[0].split('-').map(Number);
+        const e = p.dates[p.dates.length - 1].split('-').map(Number);
+        const sub = p.dates.length === 1
+          ? `${MON3[s[1] - 1]} ${s[2]}, ${s[0]}`
+          : `${MON3[s[1] - 1]} ${s[2]} – ${MON3[e[1] - 1]} ${e[2]}`;
+        return {
+          main: pick(['days in my life', 'selected moments', 'my diary cuts', 'lately']),
+          sub,
+          eyecatchNote: pick(['enjoy !!', 'selected days', 'memories'])
+        };
+      }
+      return { main: 'a day in my life vlog', sub: '', eyecatchNote: 'enjoy !!' };
+    }
+
+    const VLOG_BUDGET = 150;
+    function vlogTrimBudget(assets) {
+      const prev = (typeof vlogPrevMade !== 'undefined') ? vlogPrevMade : Infinity;
+      const est = (a) => a.m.type === 'video' ? Math.min(a.vdur || 5, 30) : 3.7;
+      const list = assets.slice();
+      let total = list.reduce((s, a) => s + est(a), 0);
+      while (total > VLOG_BUDGET && list.length > 6) {
+        let k = -1, best = -1;
+        list.forEach((a, i) => { if (!(a.m.addedAt && a.m.addedAt > prev) && est(a) > best) { best = est(a); k = i; } });
+        if (k < 0) break;
+        total -= est(list[k]); list.splice(k, 1);
+      }
+      return list;
+    }
+
+    function fitFont(ctx, text, maxW, size, fontFn) {
+      let s = size;
+      do { ctx.font = fontFn(s); s -= 2; } while (ctx.measureText(text).width > maxW && s > 20);
+      return s + 2;
+    }
+    function vlogLoadFonts() {
+      if (!document.fonts || !document.fonts.load) return Promise.resolve();
+      const specs = ['italic 600 40px "Playfair Display"', '400 40px "Great Vibes"', '500 40px "Montserrat"', '400 28px "Montserrat"', 'italic 600 40px "Cormorant Garamond"'];
+      return Promise.race([Promise.all(specs.map(s => document.fonts.load(s, 'Aa'))), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
+    }
+
+    function drawOpeningTitle(ctx, ti, t) {
+      if (!ti || t < ti.t0 || t > ti.t1) return;
+      const a = Math.max(0, Math.min(1, (t - ti.t0) / 0.55, (ti.t1 - t) / 0.55));
+      const st = ti.style, main = st.upper ? ti.main.toUpperCase() : ti.main;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 16;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
+      const size = fitFont(ctx, main, VLOG_W - 140, ti.size, st.font);
+      const center = ti.pos !== 'lowerleft';
+      ctx.textAlign = center ? 'center' : 'left';
+      const x = center ? VLOG_W / 2 : 70, y = ti.pos === 'center' ? VLOG_H * 0.48 : VLOG_H - 360;
+
+      if (ti.prefix) {
+        ctx.save();
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+        ctx.font = '400 26px "Montserrat", sans-serif';
+        ctx.fillText(ti.prefix, x, y - size * 0.72);
+        ctx.restore();
+      }
+
+      ctx.fillText(main, x, y);
+      if (st.id === 'script_flow') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.0; ctx.strokeText(main, x, y); }
+      if (ti.sub) {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
+        ctx.font = '400 26px "Montserrat", sans-serif';
+        ctx.fillText(ti.sub.toUpperCase(), x, y + size * 0.55 + 26);
+      }
+      ctx.restore();
+    }
+
+    function drawEyecatchCard(ctx, seg, local) {
+      const pal = seg.palette;
+      const grad = ctx.createLinearGradient(0, 0, 0, VLOG_H);
+      grad.addColorStop(0, pal.bg1);
+      grad.addColorStop(1, pal.bg2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+
+      const fadeAlpha = Math.max(0, Math.min(1, local / 0.35, (seg.dur - local) / 0.35));
+      ctx.save();
+      ctx.globalAlpha *= fadeAlpha;
+      ctx.textAlign = 'center';
+
+      const st = seg.style;
+      const main = st.upper ? seg.main.toUpperCase() : seg.main;
+      ctx.fillStyle = pal.text;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = st.ls + 'px';
+      const size = fitFont(ctx, main, VLOG_W - 140, seg.size, st.font);
+      const cy = VLOG_H * 0.47;
+      ctx.fillText(main, VLOG_W / 2, cy);
+
+      if (seg.sub) {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '5px';
+        ctx.fillStyle = pal.sub;
+        ctx.font = '400 24px "Montserrat", sans-serif';
+        ctx.fillText(seg.sub.toUpperCase(), VLOG_W / 2, cy + size * 0.6 + 24);
+      }
+      if (seg.note) {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+        ctx.fillStyle = pal.sub;
+        ctx.font = 'italic 600 32px "Playfair Display", serif';
+        ctx.fillText(seg.note, VLOG_W / 2, cy + size * 0.6 + 84);
+      }
+      ctx.restore();
+    }
+
+    function buildTimeline(assets, title, bgm, seed) {
+      assets = vlogTrimBudget(assets);
+      const rnd = mulberry32(seed);
+      const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+      const range = (a, b) => a + rnd() * (b - a);
+      let beat = 60 / (bgm.bpm || 90);
+      const q = (sec) => beat * Math.max(1, Math.round(sec / beat));
+      const ts = { size: Math.round(range(40, 52)), w: pick(['300', '400', '500']) };
+      const T = vlogTitleFor(rnd);
+
+      let lastStyle = null;
+      try { lastStyle = localStorage.getItem('logsnap_last_tstyle'); } catch (e) {}
+      const style = pick(TITLE_TEMPLATES.filter(s => s.id !== lastStyle));
+      try { localStorage.setItem('logsnap_last_tstyle', style.id); } catch (e) {}
+
+      const useEyecatch = rnd() < 0.55;
+
+      const tl = [];
+      let t = 0;
+      const blocks = [{
+        start: 0,
+        mode: 'bgm',
+        track: bgm,
+        playSfx: false,
+        sfxDelay: 0,
+        sfxIndex: 0
+      }];
+      let blkLen = range(28, 52);
+      let lastTrack = bgm;
+
+      const push = (seg) => {
+        seg.start = t;
+        seg.blk = blocks.length - 1;
+        tl.push(seg);
+        t += seg.dur;
+      };
+
+      const clipSeg = (a, dur, extra) => {
+        const vlen = a.m.type === 'video' ? a.vdur : 0;
+        if (vlen && !(extra && extra.full)) dur = Math.max(beat, Math.min(dur, Math.floor(vlen / beat) * beat || vlen));
+        const voff = vlen > dur + 1 ? Math.min(range(0.3, vlen * 0.35), vlen - dur - 0.1) : 0;
+        const zoom = vlen ? 0 : pick([1, -1, 0]) * range(0.04, 0.08);
+        const fade = (tl.length && rnd() < 0.35) ? range(0.22, 0.36) : 0;
+        return Object.assign({ kind: 'clip', a, dur, voff, zoom, fade }, extra);
+      };
+
+      const n = assets.length;
+      const c = Math.min(Math.round(range(6, 9)), Math.max(n, 4));
+      for (let i = 0; i < c; i++) {
+        push(clipSeg(assets[Math.floor(i * n / c)], q(range(0.75, 1.2)), { digest: true }));
+      }
+
+      const t0 = range(0.35, 1.0);
+      const directEnd = useEyecatch ? Math.min(t - 0.2, t0 + range(2.8, 3.8)) : Math.max(t0 + 2.2, Math.min(t - 0.15, t0 + range(4.0, 5.4)));
+      tl.title = {
+        main: T.main,
+        sub: T.sub,
+        prefix: style.prefix,
+        style,
+        size: Math.round(range(style.size[0], style.size[1])),
+        pos: pick(['center', 'lowerleft', 'lowercenter']),
+        t0,
+        t1: directEnd
+      };
+
+      if (useEyecatch) {
+        push({
+          kind: 'eyecatch',
+          dur: range(1.8, 2.4),
+          main: T.main,
+          sub: T.sub,
+          note: T.eyecatchNote,
+          style,
+          size: Math.round(range(style.size[0], style.size[1])),
+          palette: pick(EYECATCH_PALETTES)
+        });
+      }
+
+      tl.mainStart = t;
+      {
+        const switchBgmAtMain = vlogPlaylist.length > 1 && rnd() < 0.75;
+        let track = lastTrack;
+        if (switchBgmAtMain) {
+          const cands = vlogPlaylist.filter(p => p.url !== lastTrack.url);
           track = cands.length ? pick(cands) : lastTrack;
-        } else {
-          track = lastTrack;
+        }
+        const bgmChanged = track.url !== lastTrack.url;
+        lastTrack = track;
+        blocks[0].fadeOut = bgmChanged ? 0.15 : 0.0;
+        blocks.push({
+          start: t,
+          mode: 'bgm',
+          track,
+          delay: 0,
+          fadeIn: bgmChanged ? 0.35 : 0.0,
+          playSfx: bgmChanged,
+          sfxDelay: 0,
+          sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
+        });
+        beat = 60 / (track.bpm || 90);
+        blkLen = range(28, 52);
+      }
+
+      let prevEvent = null, lastTextIdx = -9, prevCls = '', run = 0;
+      assets.forEach((a, i) => {
+        const cur = blocks[blocks.length - 1];
+        if (t - cur.start >= blkLen) {
+          const nxt = assets.slice(i, i + 6);
+          const vr = nxt.filter(x => x.m.type === 'video').length / nxt.length;
+          const original = vr >= 0.35 && cur.mode !== 'original' && rnd() < 0.45;
+          let track = null;
+          if (!original) {
+            const changeTrack = vlogPlaylist.length > 1 && rnd() < 0.75;
+            if (changeTrack) {
+              const cands = vlogPlaylist.filter(p => p.url !== (lastTrack ? lastTrack.url : ''));
+              track = cands.length ? pick(cands) : lastTrack;
+            } else {
+              track = lastTrack;
+            }
+          }
+          const bgmChanged = !original && track && (!lastTrack || track.url !== lastTrack.url);
+          if (track) lastTrack = track;
+
+          blocks.push({
+            start: t,
+            mode: original ? 'original' : 'bgm',
+            track,
+            playSfx: bgmChanged,
+            sfxDelay: 0,
+            sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
+          });
+          beat = original ? 0.5 : 60 / (track.bpm || 90);
+          blkLen = range(28, 52);
+        }
+
+        const ev = a.m.title, newEv = ev !== prevEvent, isVid = a.m.type === 'video';
+        prevEvent = ev;
+        let r = rnd();
+        let cls = r < 0.22 ? 'short' : (r < 0.76 ? 'mid' : 'long');
+        if (newEv && cls === 'short') cls = 'mid';
+        if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(x => x !== cls));
+        run = cls === prevCls ? run + 1 : 1; prevCls = cls;
+
+        const vlen = isVid ? a.vdur : 0, full = isVid && vlen <= 30;
+        const target = isVid
+          ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
+          : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
+        const extra = {};
+        if (newEv && i - lastTextIdx >= 2) {
+          lastTextIdx = i;
+          Object.assign(extra, { text: ev, tOff: range(0.1, 0.6), tDur: range(1.8, 2.6), tPos: pick(['bl', 'bc', 'ml']), tSize: ts.size, tW: ts.w });
+        }
+        if (full) extra.full = true;
+        push(clipSeg(a, full ? vlen : q(target), extra));
+      });
+
+      const firstMainVideoSeg = tl.find(s => s.start >= (tl.mainStart || 0) && s.a && s.a.m.type === 'video');
+      if (firstMainVideoSeg) firstMainVideoSeg._prewarmMain = true;
+
+      tl.tint = range(0.05, 0.11);
+      tl.blocks = blocks;
+      return { tl, total: t };
+    }
+
+    function prewarmMainVideoIfNeeded(tl, t) {
+      const mainStart = tl.mainStart || 0;
+      if (t >= mainStart - 2.5 && t < mainStart) {
+        const target = tl.find(s => s._prewarmMain);
+        if (target && !target.warm && target.a && target.a.el) {
+          target.warm = true;
+          setVideoAudio(target.a.el, !target.digest);
+          try {
+            target.a.el.currentTime = target.voff || 0;
+            if (target.a.el._ael) target.a.el._ael.currentTime = target.voff || 0;
+          } catch (e) {}
         }
       }
-      // BGMが別の曲に切り替わるときだけ効果音フラグをtrueにする
-      const bgmChanged = !original && track && (!lastTrack || track.url !== lastTrack.url);
-      if (track) lastTrack = track;
-
-      blocks.push({
-        start: t,
-        mode: original ? 'original' : 'bgm',
-        track,
-        playSfx: bgmChanged,
-        sfxDelay: 0,
-        sfxIndex: Math.floor(rnd() * VLOG_SFX_FILES.length)
-      });
-      beat = original ? 0.5 : 60 / (track.bpm || 90);
-      blkLen = range(28, 52);
     }
 
-    const ev = a.m.title, newEv = ev !== prevEvent, isVid = a.m.type === 'video';
-    prevEvent = ev;
-    let r = rnd();
-    let cls = r < 0.22 ? 'short' : (r < 0.76 ? 'mid' : 'long');
-    if (newEv && cls === 'short') cls = 'mid';
-    if (cls === prevCls && run >= 2) cls = pick(['short', 'mid', 'long'].filter(x => x !== cls));
-    run = cls === prevCls ? run + 1 : 1; prevCls = cls;
+    function renderFrame(t) {
+      const { ctx, tl, total } = vlog;
+      prewarmMainVideoIfNeeded(tl, t);
 
-    const vlen = isVid ? a.vdur : 0, full = isVid && vlen <= 30;
-    const target = isVid
-      ? (cls === 'short' ? range(3, 6) : cls === 'mid' ? range(6, 12) : range(12, 20))
-      : (cls === 'short' ? range(2, 3) : cls === 'mid' ? range(3, 4.5) : range(4.5, 6));
-    const extra = {};
-    if (newEv && i - lastTextIdx >= 2) {
-      lastTextIdx = i;
-      Object.assign(extra, { text: ev, tOff: range(0.1, 0.6), tDur: range(1.8, 2.6), tPos: pick(['bl', 'bc', 'ml']), tSize: ts.size, tW: ts.w });
-    }
-    if (full) extra.full = true;
-    push(clipSeg(a, full ? vlen : q(target), extra));
-  });
+      let i = tl.findIndex(s => t < s.start + s.dur);
+      if (i < 0) i = tl.length - 1;
+      const blocks = tl.blocks;
+      const bi = Math.min(tl[i].blk || 0, blocks.length - 1);
+      const blk = blocks[bi];
 
-  // 本編突入時のラグ軽減：本編開始直後の最初の動画クリップを事前にシーク準備できるようマーク
-  const firstMainVideoSeg = tl.find(s => s.start >= (tl.mainStart || 0) && s.a && s.a.m.type === 'video');
-  if (firstMainVideoSeg) firstMainVideoSeg._prewarmMain = true;
+      if (vlog.blkIdx !== bi) {
+        vlog.pendingPlay = null;
+        vlog.sfxPlayedForBlk = false;
 
-  tl.tint = range(0.05, 0.11);
-  tl.blocks = blocks;
-  return { tl, total: t };
-}
+        if (vlog.trackUrl === undefined) vlog.trackUrl = blocks[0].track.url;
+        if (blk.mode === 'bgm' && blk.track) {
+          vlogBaseVol = blk.track.vol || 0.28;
+          if (vlog.trackUrl !== blk.track.url) {
+            vlog.player.src = blk.track.url;
+            vlog.trackUrl = blk.track.url;
+            vlog.player.currentTime = 0;
+          }
+          if (blk.delay) {
+            vlog.player.pause();
+            vlog.pendingPlay = blk.start + blk.delay;
+          } else if (vlog.player.paused) {
+            vlog.player.play().catch(() => {});
+          }
+        } else {
+          vlog.player.pause();
+        }
 
-function prewarmMainVideoIfNeeded(tl, t) {
-  const mainStart = tl.mainStart || 0;
-  if (t >= mainStart - 2.5 && t < mainStart) {
-    const target = tl.find(s => s._prewarmMain);
-    if (target && !target.warm && target.a && target.a.el) {
-      target.warm = true;
-      setVideoAudio(target.a.el, !target.digest);
-      try {
-        target.a.el.currentTime = target.voff || 0;
-        if (target.a.el._ael) target.a.el._ael.currentTime = target.voff || 0;
-      } catch (e) {}
-    }
-  }
-}
-
-function renderFrame(t) {
-  const { ctx, tl, total } = vlog;
-  prewarmMainVideoIfNeeded(tl, t);
-
-  let i = tl.findIndex(s => t < s.start + s.dur);
-  if (i < 0) i = tl.length - 1;
-  const blocks = tl.blocks;
-  const bi = Math.min(tl[i].blk || 0, blocks.length - 1);
-  const blk = blocks[bi];
-
-  // ブロック切り替え時のBGM＆効果音制御（切り替わり瞬間に即座に鳴らす）
-  if (vlog.blkIdx !== bi) {
-    vlog.pendingPlay = null;
-    vlog.sfxPlayedForBlk = false;
-
-    if (vlog.trackUrl === undefined) vlog.trackUrl = blocks[0].track.url;
-    if (blk.mode === 'bgm' && blk.track) {
-      vlogBaseVol = blk.track.vol || 0.28;
-      if (vlog.trackUrl !== blk.track.url) {
-        vlog.player.src = blk.track.url;
-        vlog.trackUrl = blk.track.url;
-        vlog.player.currentTime = 0;
+        if (blk.playSfx && !vlog.sfxPlayedForBlk) {
+          vlog.sfxPlayedForBlk = true;
+          triggerRandomTransitionSfx(blk.sfxIndex);
+        }
+        vlog.blkIdx = bi;
       }
-      if (blk.delay) {
-        vlog.player.pause();
-        vlog.pendingPlay = blk.start + blk.delay;
-      } else if (vlog.player.paused) {
+
+      if (vlog.pendingPlay != null && t >= vlog.pendingPlay) {
+        vlog.pendingPlay = null;
+        vlog.player.currentTime = 0;
         vlog.player.play().catch(() => {});
       }
-    } else {
-      vlog.player.pause();
-    }
 
-    if (blk.playSfx && !vlog.sfxPlayedForBlk) {
-      vlog.sfxPlayedForBlk = true;
-      triggerRandomTransitionSfx(blk.sfxIndex);
-    }
-    vlog.blkIdx = bi;
-  }
+      const orig = blk.mode === 'original';
 
-  if (vlog.pendingPlay != null && t >= vlog.pendingPlay) {
-    vlog.pendingPlay = null;
-    vlog.player.currentTime = 0;
-    vlog.player.play().catch(() => {});
-  }
-
-  const orig = blk.mode === 'original';
-
-  // クリップ切り替え時の映像＋元動画音声（_ael）同期
-  if (i !== vlog.idx) {
-    const prev = tl[vlog.idx], cur = tl[i];
-    if (prev && prev.a && prev.a.m.type === 'video') {
-      prev.a.el.pause();
-      if (prev.a.el._ael) prev.a.el._ael.pause();
-    }
-    if (cur.a && cur.a.m.type === 'video') {
-      const startPos = cur.voff || 0;
-      const useAudio = !cur.digest;
-      setVideoAudio(cur.a.el, useAudio);
-      if (!cur.warm || Math.abs((cur.a.el.currentTime || 0) - startPos) > 0.35) {
-        try { cur.a.el.currentTime = startPos; } catch (e) {}
+      if (i !== vlog.idx) {
+        const prev = tl[vlog.idx], cur = tl[i];
+        if (prev && prev.a && prev.a.m.type === 'video') {
+          prev.a.el.pause();
+          if (prev.a.el._ael) prev.a.el._ael.pause();
+        }
+        if (cur.a && cur.a.m.type === 'video') {
+          const startPos = cur.voff || 0;
+          const useAudio = !cur.digest;
+          setVideoAudio(cur.a.el, useAudio);
+          if (!cur.warm || Math.abs((cur.a.el.currentTime || 0) - startPos) > 0.35) {
+            try { cur.a.el.currentTime = startPos; } catch (e) {}
+          }
+          cur.a.el.play().catch(() => {});
+          if (cur.a.el._ael) {
+            try { cur.a.el._ael.currentTime = cur.a.el.currentTime || startPos; } catch (e) {}
+            if (useAudio) cur.a.el._ael.play().catch(() => {});
+            else cur.a.el._ael.pause();
+          }
+        }
+        vlog.idx = i;
       }
-      cur.a.el.play().catch(() => {});
-      if (cur.a.el._ael) {
-        try { cur.a.el._ael.currentTime = cur.a.el.currentTime || startPos; } catch (e) {}
-        if (useAudio) cur.a.el._ael.play().catch(() => {});
-        else cur.a.el._ael.pause();
+
+      for (const nx of [tl[i + 1], tl[i + 2]]) {
+        if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
+          nx.warm = true;
+          setVideoAudio(nx.a.el, !nx.digest);
+          try {
+            nx.a.el.currentTime = nx.voff || 0;
+            if (nx.a.el._ael) nx.a.el._ael.currentTime = nx.voff || 0;
+          } catch (e) {}
+        }
+      }
+
+      const seg = tl[i], local = t - seg.start;
+      if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
+      if (i > 0 && seg.fade > 0 && local < seg.fade) {
+        drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
+        drawSegment(ctx, seg, local, local / seg.fade);
+      } else {
+        drawSegment(ctx, seg, local, 1);
+      }
+
+      if (seg.kind !== 'eyecatch') {
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
+        ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      drawOpeningTitle(ctx, tl.title, t);
+
+      let target = 1;
+      if (!orig && seg.a && seg.a.m.type === 'video' && !seg.digest) {
+        const el = seg.a.el;
+        if (local > 0.6 && typeof el.webkitAudioDecodedByteCount === 'number' && el.webkitAudioDecodedByteCount === 0) seg.silent = true;
+        if (!seg.silent) target = DUCK_VIDEO;
+      }
+      vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
+      const bEnd = blocks[bi + 1] ? blocks[bi + 1].start : total, isLast = bi >= blocks.length - 1;
+      const dly = blk.delay || 0;
+      const fi = blk.fadeIn || 0.01;
+      const fo = (blk.fadeOut != null) ? blk.fadeOut : (isLast ? 2 : 0.01);
+      const fadeInFactor = blk.fadeIn ? Math.min(1, (t - blk.start - dly) / fi) : 1;
+      const fadeOutFactor = (blk.fadeOut || isLast) ? Math.min(1, (bEnd - t) / fo) : 1;
+      const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, fadeInFactor, fadeOutFactor));
+      if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.005) {
+        vlog.lastLvl = lvl;
+        setBgmLevel(lvl);
       }
     }
-    vlog.idx = i;
-  }
 
-  for (const nx of [tl[i + 1], tl[i + 2]]) {
-    if (nx && nx.a && nx.a.m.type === 'video' && !nx.warm) {
-      nx.warm = true;
-      setVideoAudio(nx.a.el, !nx.digest);
+    function drawCaption(ctx, seg, local) {
+      if (!seg.text) return;
+      const t0 = seg.tOff, t1 = Math.min(seg.dur, seg.tOff + seg.tDur);
+      if (local < t0 || local > t1) return;
+      const a = Math.min(1, (local - t0) / 0.25, (t1 - local) / 0.25);
+      let txt = String(seg.text);
+      if (/^[\x00-\x7F]*$/.test(txt)) txt = txt.toLowerCase();
+      ctx.save();
+      ctx.globalAlpha *= Math.max(0, a);
+      ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 6;
+      fitText(ctx, txt, VLOG_W - 100, seg.tSize, seg.tW);
+      if (seg.tPos === 'bc') { ctx.textAlign = 'center'; ctx.fillText(txt, VLOG_W / 2, VLOG_H - 170); }
+      else if (seg.tPos === 'ml') { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H * 0.5); }
+      else { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H - 150); }
+      ctx.restore();
+    }
+
+    function drawSegment(ctx, seg, local, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (seg.kind === 'eyecatch') {
+        drawEyecatchCard(ctx, seg, local);
+      } else if (seg.kind === 'card') {
+        ctx.fillStyle = seg.bg; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+        fitText(ctx, seg.title, VLOG_W - 100, 60, '300');
+        ctx.fillText(seg.title, VLOG_W / 2, VLOG_H / 2);
+      } else {
+        const p = Math.min(1, local / seg.dur);
+        const s = seg.zoom > 0 ? 1 + seg.zoom * p : seg.zoom < 0 ? 1 - seg.zoom * (1 - p) : 1;
+        drawCover(ctx, seg.a.el, VLOG_W, VLOG_H, s);
+        drawCaption(ctx, seg, local);
+      }
+      ctx.restore();
+    }
+
+    function setBgmLevel(x) {
+      if (bgmGain) bgmGain.gain.value = x;
+      else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
+    }
+    function setVideoAudio(el, on) {
+      const ae = el._ael;
+      if (!ae) return;
+      if (ae._g) ae._g.gain.value = on ? 1 : 0; else ae.muted = !on;
+    }
+    function routeVideo(el) {
+      const ae = el._ael;
+      if (!ae || ae._g) return;
       try {
-        nx.a.el.currentTime = nx.voff || 0;
-        if (nx.a.el._ael) nx.a.el._ael.currentTime = nx.voff || 0;
-      } catch (e) {}
+        const s = bgmCtx.createMediaElementSource(ae), g = bgmCtx.createGain();
+        ae.muted = false; ae.volume = 1; g.gain.value = 0;
+        s.connect(g); g.connect(bgmDest); g.connect(bgmCtx.destination);
+        ae._g = g;
+      } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
     }
-  }
 
-  const seg = tl[i], local = t - seg.start;
-  if (seg.a && seg.a.m.type === 'video' && (seg.a.el.readyState < 2 || seg.a.el.seeking)) return;
-  if (i > 0 && seg.fade > 0 && local < seg.fade) {
-    drawSegment(ctx, tl[i - 1], tl[i - 1].dur, 1);
-    drawSegment(ctx, seg, local, local / seg.fade);
-  } else {
-    drawSegment(ctx, seg, local, 1);
-  }
-
-  if (seg.kind !== 'eyecatch') {
-    ctx.globalCompositeOperation = 'soft-light';
-    ctx.fillStyle = 'rgba(255,176,96,' + (tl.tint || 0.08) + ')';
-    ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-    ctx.globalCompositeOperation = 'source-over';
-  }
-  drawOpeningTitle(ctx, tl.title, t);
-
-  // BGM音量制御
-  let target = 1;
-  if (!orig && seg.a && seg.a.m.type === 'video' && !seg.digest) {
-    const el = seg.a.el;
-    if (local > 0.6 && typeof el.webkitAudioDecodedByteCount === 'number' && el.webkitAudioDecodedByteCount === 0) seg.silent = true;
-    if (!seg.silent) target = DUCK_VIDEO;
-  }
-  vlog.duck = (vlog.duck == null) ? target : vlog.duck + (target - vlog.duck) * 0.12;
-  const bEnd = blocks[bi + 1] ? blocks[bi + 1].start : total, isLast = bi >= blocks.length - 1;
-  const dly = blk.delay || 0;
-  const fi = blk.fadeIn || 0.01;
-  const fo = (blk.fadeOut != null) ? blk.fadeOut : (isLast ? 2 : 0.01);
-  const fadeInFactor = blk.fadeIn ? Math.min(1, (t - blk.start - dly) / fi) : 1;
-  const fadeOutFactor = (blk.fadeOut || isLast) ? Math.min(1, (bEnd - t) / fo) : 1;
-  const lvl = orig ? 0 : vlogBaseVol * vlog.duck * Math.max(0, Math.min(1, fadeInFactor, fadeOutFactor));
-  if (vlog.lastLvl == null || Math.abs(lvl - vlog.lastLvl) > 0.005) {
-    vlog.lastLvl = lvl;
-    setBgmLevel(lvl);
-  }
-}
-
-// ---------- 描画 ----------
-function drawCaption(ctx, seg, local) {
-  if (!seg.text) return;
-  const t0 = seg.tOff, t1 = Math.min(seg.dur, seg.tOff + seg.tDur);
-  if (local < t0 || local > t1) return;
-  const a = Math.min(1, (local - t0) / 0.25, (t1 - local) / 0.25);
-  let txt = String(seg.text);
-  if (/^[\x00-\x7F]*$/.test(txt)) txt = txt.toLowerCase();
-  ctx.save();
-  ctx.globalAlpha *= Math.max(0, a);
-  ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 6;
-  fitText(ctx, txt, VLOG_W - 100, seg.tSize, seg.tW);
-  if (seg.tPos === 'bc') { ctx.textAlign = 'center'; ctx.fillText(txt, VLOG_W / 2, VLOG_H - 170); }
-  else if (seg.tPos === 'ml') { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H * 0.5); }
-  else { ctx.textAlign = 'left'; ctx.fillText(txt, 50, VLOG_H - 150); }
-  ctx.restore();
-}
-
-function drawSegment(ctx, seg, local, alpha) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  if (seg.kind === 'eyecatch') {
-    drawEyecatchCard(ctx, seg, local);
-  } else if (seg.kind === 'card') {
-    ctx.fillStyle = seg.bg; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-    fitText(ctx, seg.title, VLOG_W - 100, 60, '300');
-    ctx.fillText(seg.title, VLOG_W / 2, VLOG_H / 2);
-  } else {
-    const p = Math.min(1, local / seg.dur);
-    const s = seg.zoom > 0 ? 1 + seg.zoom * p : seg.zoom < 0 ? 1 - seg.zoom * (1 - p) : 1;
-    drawCover(ctx, seg.a.el, VLOG_W, VLOG_H, s);
-    drawCaption(ctx, seg, local);
-  }
-  ctx.restore();
-}
-
-function setBgmLevel(x) {
-  if (bgmGain) bgmGain.gain.value = x;
-  else { const p = document.getElementById('bgm-player'); if (p) p.volume = Math.min(1, x); }
-}
-function setVideoAudio(el, on) {
-  const ae = el._ael;
-  if (!ae) return;
-  if (ae._g) ae._g.gain.value = on ? 1 : 0; else ae.muted = !on;
-}
-function routeVideo(el) {
-  const ae = el._ael;
-  if (!ae || ae._g) return;
-  try {
-    const s = bgmCtx.createMediaElementSource(ae), g = bgmCtx.createGain();
-    ae.muted = false; ae.volume = 1; g.gain.value = 0;
-    s.connect(g); g.connect(bgmDest); g.connect(bgmCtx.destination);
-    ae._g = g;
-  } catch (e) { console.warn('動画の音声を録音に混ぜられませんでした', e); }
-}
-
-let vlogPrevMade = 0;
-function vlogPeriodKey() {
-  const m = document.getElementById('recap-mode'), s = document.getElementById('recap-target-select');
-  return 'logsnap_made_' + (m ? m.value : '') + '_' + (s ? s.value : '');
-}
-function showVlogInfo(picked, assets) {
-  const el = document.getElementById('vlog-info');
-  if (!el) return;
-  const all = activeMovieMediaItems.length, failed = picked.length - assets.length;
-  const fresh = picked.filter(m => m.addedAt && m.addedAt > vlogPrevMade).length;
-  el.textContent = `使用 ${assets.length}/${all}件` + (fresh ? `（前回のあとに追加した${fresh}件を含む）` : '') + (failed > 0 ? `／読み込めなかった${failed}件` : '');
-}
-function pickHighlights(items, max) {
-  if (items.length <= max) return items;
-  const picked = new Set();
-  items.filter(m => m.addedAt && m.addedAt > vlogPrevMade)
-    .sort((a, b) => b.addedAt - a.addedAt).slice(0, Math.max(2, Math.floor(max / 2)))
-    .forEach(m => picked.add(m));
-  const byDate = new Map();
-  items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
-  while (picked.size < max) {
-    let added = false;
-    for (const list of byDate.values()) {
-      const m = list.find(x => !picked.has(x));
-      if (m && picked.size < max) { picked.add(m); added = true; }
+    let vlogPrevMade = 0;
+    function showVlogInfo(picked, assets) {
+      const el = document.getElementById('vlog-info');
+      if (!el) return;
+      const all = activeMovieMediaItems.length, failed = picked.length - assets.length;
+      el.textContent = `使用 ${assets.length}/${all}件` + (failed > 0 ? `／読み込めなかった${failed}件` : '');
     }
-    if (!added) break;
-  }
-  return items.filter(m => picked.has(m));
-}
-
-function replayMovie() {
-  if (activeMovieMediaItems.length) { vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(false); }
-}
-
-function drawCover(ctx, el, w, h, scale) {
-  const sw = el.videoWidth || el.naturalWidth, sh = el.videoHeight || el.naturalHeight;
-  if (!sw || !sh) return;
-  const r = Math.max(w / sw, h / sh) * scale;
-  ctx.drawImage(el, (w - sw * r) / 2, (h - sh * r) / 2, sw * r, sh * r);
-}
-function fitText(ctx, text, maxW, size, weight) {
-  let s = size;
-  do { ctx.font = `${weight} ${s}px sans-serif`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 18);
-}
-
-// ---------- 再生ループ ----------
-function vlogTick(now) {
-  if (!vlog) return;
-  const t = (now - vlog.t0) / 1000;
-  if (t >= vlog.total) { vlogEnd(now); return; }
-  renderFrame(t);
-  if (vlog.rec) updateRecUi(t);
-  vlog.raf = requestAnimationFrame(vlogTick);
-}
-function vlogEnd(now) {
-  const v = vlog;
-  if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
-  v.t0 = now;
-  v.idx = -1;
-  v.pendingPlay = null;
-  v.sfxPlayedForBlk = false;
-  v.tl.forEach(s => { s.warm = false; s.aOn = false; });
-  v.blkIdx = -1;
-  v.raf = requestAnimationFrame(vlogTick);
-}
-function stopVlog() {
-  vlogRunId++;
-  if (!vlog) { setDlBtn(false); return; }
-  cancelAnimationFrame(vlog.raf);
-  vlog.saveOnStop = false;
-  if (vlog.rec && vlog.rec.state !== 'inactive') vlog.rec.stop();
-  vlog.tl.forEach(s => {
-    if (s.a && s.a.m.type === 'video') {
-      s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load();
-      if (s.a.el._ael) { s.a.el._ael.pause(); s.a.el._ael.removeAttribute('src'); s.a.el._ael.load(); }
+    function pickHighlights(items, max) {
+      if (items.length <= max) return items;
+      const picked = new Set();
+      const byDate = new Map();
+      items.forEach(m => { if (!byDate.has(m.date)) byDate.set(m.date, []); byDate.get(m.date).push(m); });
+      while (picked.size < max) {
+        let added = false;
+        for (const list of byDate.values()) {
+          const m = list.find(x => !picked.has(x));
+          if (m && picked.size < max) { picked.add(m); added = true; }
+        }
+        if (!added) break;
+      }
+      return items.filter(m => picked.has(m));
     }
-  });
-  vlog.player.pause();
-  vlog = null;
-  setDlBtn(false);
-}
-function setDlBtn(rec) {
-  const b = document.getElementById('download-video-btn');
-  if (!b) return;
-  b.disabled = rec; showRecUi(rec); if (rec) holdScreenOn(); else releaseScreen();
-  b.innerHTML = rec ? '⏳ 書き出し中…' : `<i data-lucide="download" class="w-3.5 h-3.5"></i> <span>${t('downloadMovieBtn')}</span>`;
-  if (!rec && window.lucide) lucide.createIcons();
-}
 
-async function startVlog(record) {
-  stopVlog();
-  ensureSfxPool();
-  const run = vlogRunId;
-  lastSeed = takeSeed();
-  const bgmRnd = mulberry32(lastSeed ^ 0x9e3779b9);
-  const bgm = pickAutoBgm(bgmRnd);
-  lastBgmUrl = bgm.url;
+    function replayMovie() {
+      if (activeMovieMediaItems.length) { vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(false); }
+    }
 
-  const canvas = document.getElementById('movie-canvas'), ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
-  const picked = pickHighlights(activeMovieMediaItems, vlogMaxItems()).slice()
-    .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
-  const assets = (await Promise.all(picked.map(loadAsset))).filter(a => a.ok);
-  if (run !== vlogRunId) return;
-  if (!assets.length) { alert(t('noMediaMessage')); return; }
-  await vlogLoadFonts(); if (run !== vlogRunId) return;
+    function drawCover(ctx, el, w, h, scale) {
+      const sw = el.videoWidth || el.naturalWidth, sh = el.videoHeight || el.naturalHeight;
+      if (!sw || !sh) return;
+      const r = Math.max(w / sw, h / sh) * scale;
+      ctx.drawImage(el, (w - sw * r) / 2, (h - sh * r) / 2, sw * r, sh * r);
+    }
+    function fitText(ctx, text, maxW, size, weight) {
+      let s = size;
+      do { ctx.font = `${weight} ${s}px sans-serif`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 18);
+    }
 
-  showVlogInfo(picked, assets);
-  const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
-  const player = document.getElementById('bgm-player');
-  player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.28;
-  if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol;
-  player.currentTime = 0;
+    function vlogTick(now) {
+      if (!vlog) return;
+      const t = (now - vlog.t0) / 1000;
+      if (t >= vlog.total) { vlogEnd(now); return; }
+      renderFrame(t);
+      if (vlog.rec) updateRecUi(t);
+      vlog.raf = requestAnimationFrame(vlogTick);
+    }
+    function vlogEnd(now) {
+      const v = vlog;
+      if (v.rec) { v.saveOnStop = true; renderFrame(v.total - 0.01); v.rec.stop(); return; }
+      v.t0 = now;
+      v.idx = -1;
+      v.pendingPlay = null;
+      v.sfxPlayedForBlk = false;
+      v.tl.forEach(s => { s.warm = false; s.aOn = false; });
+      v.blkIdx = -1;
+      v.raf = requestAnimationFrame(vlogTick);
+    }
+    function stopVlog() {
+      vlogRunId++;
+      if (!vlog) { setDlBtn(false); return; }
+      cancelAnimationFrame(vlog.raf);
+      vlog.saveOnStop = false;
+      if (vlog.rec && vlog.rec.state !== 'inactive') vlog.rec.stop();
+      vlog.tl.forEach(s => {
+        if (s.a && s.a.m.type === 'video') {
+          s.a.el.pause(); s.a.el.removeAttribute('src'); s.a.el.load();
+          if (s.a.el._ael) { s.a.el._ael.pause(); s.a.el._ael.removeAttribute('src'); s.a.el._ael.load(); }
+        }
+      });
+      vlog.player.pause();
+      vlog = null;
+      setDlBtn(false);
+    }
+    function setDlBtn(rec) {
+      const b = document.getElementById('download-video-btn');
+      if (!b) return;
+      b.disabled = rec; showRecUi(rec); if (rec) holdScreenOn(); else releaseScreen();
+      b.innerHTML = rec ? '⏳ 書き出し中…' : `<i data-lucide="download" class="w-3.5 h-3.5"></i> <span>${t('downloadMovieBtn')}</span>`;
+      if (!rec && window.lucide) lucide.createIcons();
+    }
 
-  const v = { canvas, ctx, tl, total, player, idx: -1, blkIdx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
-  vlog = v;
-  if (record) startRecorder(v);
-  await player.play().catch(() => {});
-  if (run !== vlogRunId) return;
-  v.t0 = performance.now();
-  v.raf = requestAnimationFrame(vlogTick);
-}
+    async function startVlog(record) {
+      stopVlog();
+      ensureSfxPool();
+      const run = vlogRunId;
+      lastSeed = takeSeed();
+      const bgmRnd = mulberry32(lastSeed ^ 0x9e3779b9);
+      const bgm = pickAutoBgm(bgmRnd);
+      lastBgmUrl = bgm.url;
 
-// ---------- 録画（映像＋BGM＋効果音＋元動画音声を1本にして保存） ----------
-function startRecorder(v) {
-  if (!window.MediaRecorder) { alert('このブラウザは動画の書き出しに対応していません'); return; }
-  if (!bgmCtx) {
-    bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const src = bgmCtx.createMediaElementSource(v.player);
-    bgmDest = bgmCtx.createMediaStreamDestination();
-    bgmGain = bgmCtx.createGain(); src.connect(bgmGain); bgmGain.connect(bgmDest); bgmGain.connect(bgmCtx.destination); v.player.volume = 1;
-  }
-  bgmCtx.resume();
-  ensureSfxPool();
-  sfxAudioPool.forEach(routeSfxToRecorder);
-  v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
-  const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
-  const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
-    .find(m => MediaRecorder.isTypeSupported(m)) || '';
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined);
-  const chunks = [];
-  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-  rec.onstop = () => {
-    if (v.saveOnStop) saveRecording(new Blob(chunks, { type: rec.mimeType || mime || 'video/webm' }));
-  };
-  v.rec = rec;
-  setDlBtn(true);
-  rec.start(1000);
-}
-function saveRecording(blob) {
-  const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `LogSnap_Vlog_${Date.now()}.${ext}`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-  movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || 'Vlog Recap', createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems, seed: lastSeed, bgmUrl: lastBgmUrl, period: vlogPeriod });
-  saveMovieHistory();
-  renderMovieHistory();
-  setDlBtn(false);
-  setTimeout(() => replayMovie(), 300);
-}
+      const canvas = document.getElementById('movie-canvas'), ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VLOG_W, VLOG_H);
+      const picked = pickHighlights(activeMovieMediaItems, vlogMaxItems()).slice()
+        .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+      const assets = (await Promise.all(picked.map(loadAsset))).filter(a => a.ok);
+      if (run !== vlogRunId) return;
+      if (!assets.length) { alert(t('noMediaMessage')); return; }
+      await vlogLoadFonts(); if (run !== vlogRunId) return;
 
-// ---------- モーダル操作 ----------
-function openVlogModal() {
-  document.getElementById('movie-modal').classList.remove('hidden');
-  startVlog(false);
-}
-function playHighlightMovie() {
-  activeMovieMediaItems = getAllFilteredMediaItems();
-  if (activeMovieMediaItems.length === 0) { alert(t('noMediaMessage')); return; }
-  const sel = document.getElementById('recap-target-select');
-  currentMovieTitle = sel.options[sel.selectedIndex].text;
-  vlogPeriod = { mode: document.getElementById('recap-mode').value, value: sel.value };
-  { const k = vlogPeriodKey(); try { vlogPrevMade = Number(localStorage.getItem(k) || 0); localStorage.setItem(k, String(Date.now())); } catch (e) {} }
-  openVlogModal();
-}
-async function playArchivedMovie(historyId) {
-  const h = movieHistory.find(x => x.id === historyId);
-  if (!h || !h.mediaItems.length) return;
-  activeMovieMediaItems = h.mediaItems;
-  currentMovieTitle = h.title; vlogNext = { seed: h.seed, bgm: h.bgmUrl }; vlogPeriod = h.period || null;
-  openVlogModal();
-}
-function closeMovieModal() {
-  stopVlog();
-  document.getElementById('movie-modal').classList.add('hidden');
-}
-function recordAndDownloadMovie() {
-  if (!activeMovieMediaItems.length) return;
-  const sec = vlog ? Math.ceil(vlog.total) : 60;
-  if (!confirm(`書き出しには約${sec}秒かかります。完了するまで画面を開いたままにしてください。始めますか？`)) return;
-  vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(true);
-}
-function formatVlogTime(timeStr) {
-  if (!timeStr) return "9:45 am";
-  const parts = timeStr.split(":");
-  let h = parseInt(parts[0], 10);
-  const m = parts[1] || "00";
-  return `${h % 12 || 12}:${m} ${h >= 12 ? "pm" : "am"}`;
-}
+      showVlogInfo(picked, assets);
+      const { tl, total } = buildTimeline(assets, currentMovieTitle, bgm, lastSeed);
+      const player = document.getElementById('bgm-player');
+      player.src = bgm.url; player.loop = true; vlogBaseVol = bgm.vol || 0.28;
+      if (bgmGain) { player.volume = 1; setBgmLevel(vlogBaseVol); } else player.volume = vlogBaseVol;
+      player.currentTime = 0;
+
+      const v = { canvas, ctx, tl, total, player, idx: -1, blkIdx: -1, t0: 0, raf: 0, rec: null, saveOnStop: false };
+      vlog = v;
+      if (record) startRecorder(v);
+      await player.play().catch(() => {});
+      if (run !== vlogRunId) return;
+      v.t0 = performance.now();
+      v.raf = requestAnimationFrame(vlogTick);
+    }
+
+    function startRecorder(v) {
+      if (!window.MediaRecorder) { alert('このブラウザは動画の書き出しに対応していません'); return; }
+      if (!bgmCtx) {
+        bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = bgmCtx.createMediaElementSource(v.player);
+        bgmDest = bgmCtx.createMediaStreamDestination();
+        bgmGain = bgmCtx.createGain(); src.connect(bgmGain); bgmGain.connect(bgmDest); bgmGain.connect(bgmCtx.destination); v.player.volume = 1;
+      }
+      bgmCtx.resume();
+      ensureSfxPool();
+      sfxAudioPool.forEach(routeSfxToRecorder);
+      v.tl.forEach(s => { if (s.a && s.a.m.type === 'video') routeVideo(s.a.el); });
+      const stream = new MediaStream([...v.canvas.captureStream(30).getVideoTracks(), ...bgmDest.stream.getAudioTracks()]);
+      const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+        .find(m => MediaRecorder.isTypeSupported(m)) || '';
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined);
+      const chunks = [];
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        if (v.saveOnStop) saveRecording(new Blob(chunks, { type: rec.mimeType || mime || 'video/webm' }));
+      };
+      v.rec = rec;
+      setDlBtn(true);
+      rec.start(1000);
+    }
+    function saveRecording(blob) {
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `LogSnap_Vlog_${Date.now()}.${ext}`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      movieHistory.unshift({ id: 'mov_' + Date.now(), title: currentMovieTitle || 'Vlog Recap', createdAt: new Date().toLocaleString(), mediaCount: activeMovieMediaItems.length, mediaItems: activeMovieMediaItems, seed: lastSeed, bgmUrl: lastBgmUrl, period: vlogPeriod });
+      saveMovieHistory();
+      renderMovieHistory();
+      setDlBtn(false);
+      setTimeout(() => replayMovie(), 300);
+    }
+
+    function openVlogModal() {
+      document.getElementById('movie-modal').classList.remove('hidden');
+      startVlog(false);
+    }
+    async function playArchivedMovie(historyId) {
+      const h = movieHistory.find(x => x.id === historyId);
+      if (!h || !h.mediaItems.length) return;
+      activeMovieMediaItems = h.mediaItems;
+      currentMovieTitle = h.title; vlogNext = { seed: h.seed, bgm: h.bgmUrl }; vlogPeriod = h.period || null;
+      openVlogModal();
+    }
+    function closeMovieModal() {
+      stopVlog();
+      document.getElementById('movie-modal').classList.add('hidden');
+    }
+    function recordAndDownloadMovie() {
+      if (!activeMovieMediaItems.length) return;
+      const sec = vlog ? Math.ceil(vlog.total) : 60;
+      if (!confirm(`書き出しには約${sec}秒かかります。完了するまで画面を開いたままにしてください。始めますか？`)) return;
+      vlogNext = { seed: lastSeed, bgm: lastBgmUrl }; startVlog(true);
+    }
 
     // 🌍 i18n 辞書データ
     const i18n = {
@@ -2806,27 +3207,28 @@ function formatVlogTime(timeStr) {
         swipeHint: "左右スワイプで月移動",
         weekdays: ["日", "月", "火", "水", "木", "金", "土"],
         notificationsTitle: "お知らせ ＆ リマインダー",
-        newBadge: "新着",
         welcomeNoteTitle: "✨ LogSnapへようこそ！",
         todayLabel: "今日",
-        welcomeNoteDesc: "iOS対応・超高速サムネイル生成エンジン搭載済み。",
+        welcomeNoteDesc: "1日ごとの写真アルバム・繰り返し予定・まとめ動画作成に対応。",
         vlogStudioTitle: "まとめ動画の作成",
-        recapModeLabel: "対象期間モード",
-        modeWeek: "特定の一週間 (日曜〜土曜)",
-        modeMonth: "1ヶ月間 (Monthly)",
-        targetPeriodLabel: "対象週 / 月",
-        playMovieBtn: "選択した期間のまとめ動画を再生・作成",
+        vlogFlowHint: "使いたい日付をカレンダーで選んでそのまま動画を作成できます",
+        openDatePickerBtn: "まとめ動画を作成（日付を選ぶ）",
+        datePickerModalTitle: "まとめ動画にする日付を選択",
+        dragSelectHint: "タップで選択・解除、なぞる（ドラッグ）と連続する日付をまとめて選択できます",
+        clearSelectionBtn: "選択をクリア",
+        startSelectedVlogBtn: "選択した日付でまとめ動画を生成",
+        noDateSelectedAlert: "まとめ動画にする日付を1日以上選択してください。",
         movieHistoryTitle: "作成済みまとめ動画の履歴",
-        galleryTitle: "Gallery（複数メディア一覧）",
+        galleryTitle: "Gallery（写真・動画一覧）",
         authTitle: "アカウント認証 (ログイン / 新規登録)",
         emailPlaceholder: "メールアドレス",
         passwordPlaceholder: "パスワード（6文字以上）",
         signUpBtn: "新規登録",
         loginBtn: "ログイン",
-        loggedInAsLabel: "ログイン中",
         logoutBtn: "ログアウト",
         guestUser: "ゲストユーザー",
         offlineMode: "端末内保存モード",
+        cloudSyncedMode: "クラウド同期中 (Firestore)",
         settingsHeader: "アプリ設定 (Settings)",
         themeSettingTitle: "テーマカラー (Theme Color)",
         themeSettingDesc: "アプリ全体のベースカラーを選択します",
@@ -2849,14 +3251,26 @@ function formatVlogTime(timeStr) {
         modalEditEventTitle: "予定を編集",
         eventTitleLabel: "予定タイトル",
         eventTitlePlaceholder: "例: カフェで作業、ジムで筋トレ",
-        dateLabel: "日付",
+        allDayLabel: "終日",
+        dateLabel: "開始日",
+        endDateLabel: "終了日",
         timeLabel: "開始時間",
         endTimeLabel: "終了時間",
+        repeatLabel: "繰り返し",
+        repeatNone: "なし",
+        repeatWeekly: "毎週",
+        repeatMonthly: "毎月",
+        reminderLabel: "通知",
+        reminderNone: "なし",
+        reminder10m: "10分前",
+        reminder1h: "1時間前",
+        reminder1d: "前日",
+        colorLabel: "カラー",
         locationLabel: "場所（スポット）",
         locationPlaceholder: "例: お気に入りのカフェ",
         saveBtn: "保存する",
         updateBtn: "変更を保存",
-        addMediaModalTitle: "写真・動画を追加",
+        addMediaModalTitle: "この日の写真・動画を追加",
         selectFileLabel: "📁 写真・動画を選ぶ",
         fileLoadingHint: "※iOS対応・超高速リサイズ＆サムネイル自動生成に対応。",
         confirmSaveBtn: "決定して保存する",
@@ -2865,7 +3279,7 @@ function formatVlogTime(timeStr) {
         downloadMovieBtn: "動画をファイル保存",
         noEvents: "この日の予定はありません",
         addThisDayBtn: "この日に追加",
-        noMediaMessage: "選択した期間の写真・動画ログがありません。",
+        noMediaMessage: "選択した日付の写真・動画がありません。",
         noMovieHistory: "まだ保存されたまとめ動画の履歴はありません。",
         confirmReset: "すべての予定と保存データをリセットしますか？",
         confirmDeleteSchedule: "この予定を削除しますか？",
@@ -2876,12 +3290,16 @@ function formatVlogTime(timeStr) {
         loginSuccessAlert: "ログインしました！",
         loginErrorPrefix: "ログイン失敗: ",
         logoutSuccessAlert: "ログアウトしました",
-        albumLabel: "アルバム",
-        noMediaBadge: "メディアなし",
-        noPhotosYet: "写真・動画はまだありません",
+        dailyMemoryTitle: "の思い出",
+        noPhotosYet: "この日の写真・動画はまだありません",
         addBtnText: "追加",
         editBtnText: "編集",
-        todayEventsNotification: "本日の予定リマインダー"
+        todayEventsNotification: "本日の予定",
+        activeRemindersTitle: "設定中のリマインダー",
+        noSearchResults: "一致する予定が見つかりませんでした",
+        notifyUnsupported: "このブラウザは通知に対応していません。",
+        notifyGranted: "ブラウザ通知を有効にしました。",
+        notifyDenied: "通知が許可されませんでした。"
       },
       en: {
         photoAestheticMode: "Photo Mode",
@@ -2891,27 +3309,28 @@ function formatVlogTime(timeStr) {
         swipeHint: "Swipe left/right to change month",
         weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         notificationsTitle: "Notifications & Reminders",
-        newBadge: "New",
         welcomeNoteTitle: "✨ Welcome to LogSnap!",
         todayLabel: "Today",
-        welcomeNoteDesc: "iOS-compatible ultra-fast thumbnail generation engine active.",
+        welcomeNoteDesc: "Daily photo albums, recurring events & custom-date vlog recaps ready.",
         vlogStudioTitle: "Create Vlog Recap",
-        recapModeLabel: "Recap Range Mode",
-        modeWeek: "Specific Week (Sun - Sat)",
-        modeMonth: "Full Month (Monthly)",
-        targetPeriodLabel: "Target Week / Month",
-        playMovieBtn: "Play & Create Cinematic Vlog",
+        vlogFlowHint: "Pick the dates you want on the calendar and generate a vlog right away",
+        openDatePickerBtn: "Create Vlog (Pick Dates)",
+        datePickerModalTitle: "Select Dates for Vlog",
+        dragSelectHint: "Tap to toggle, or drag across dates to select consecutive days quickly",
+        clearSelectionBtn: "Clear",
+        startSelectedVlogBtn: "Generate Vlog from Selected Dates",
+        noDateSelectedAlert: "Please select at least one date.",
         movieHistoryTitle: "Saved Vlog History",
-        galleryTitle: "Gallery (All Media)",
+        galleryTitle: "Gallery (Photos & Videos)",
         authTitle: "Account Authentication (Sign In / Sign Up)",
         emailPlaceholder: "Email address",
         passwordPlaceholder: "Password (6+ characters)",
         signUpBtn: "Sign Up",
         loginBtn: "Log In",
-        loggedInAsLabel: "Signed in as",
         logoutBtn: "Log Out",
         guestUser: "Guest User",
         offlineMode: "On-device storage mode",
+        cloudSyncedMode: "Cloud synced (Firestore)",
         settingsHeader: "App Settings",
         themeSettingTitle: "Theme Color",
         themeSettingDesc: "Choose the base accent color for the app",
@@ -2934,14 +3353,26 @@ function formatVlogTime(timeStr) {
         modalEditEventTitle: "Edit Event",
         eventTitleLabel: "Event Title",
         eventTitlePlaceholder: "e.g., Study at cafe, Gym workout",
-        dateLabel: "Date",
+        allDayLabel: "All-day",
+        dateLabel: "Start Date",
+        endDateLabel: "End Date",
         timeLabel: "Start Time",
         endTimeLabel: "End Time",
+        repeatLabel: "Repeat",
+        repeatNone: "None",
+        repeatWeekly: "Weekly",
+        repeatMonthly: "Monthly",
+        reminderLabel: "Reminder",
+        reminderNone: "None",
+        reminder10m: "10 min before",
+        reminder1h: "1 hour before",
+        reminder1d: "1 day before",
+        colorLabel: "Color",
         locationLabel: "Location / Spot",
         locationPlaceholder: "e.g., Favorite coffee shop",
         saveBtn: "Save Event",
         updateBtn: "Save Changes",
-        addMediaModalTitle: "Add Photos & Videos",
+        addMediaModalTitle: "Add Photos & Videos for Day",
         selectFileLabel: "📁 Select Media Files",
         fileLoadingHint: "Images & videos are auto-optimized for maximum speed.",
         confirmSaveBtn: "Confirm & Save",
@@ -2950,7 +3381,7 @@ function formatVlogTime(timeStr) {
         downloadMovieBtn: "Save Video File",
         noEvents: "No events scheduled for this day",
         addThisDayBtn: "Add to this day",
-        noMediaMessage: "No media logs found for the selected period.",
+        noMediaMessage: "No photos or videos found for the selected dates.",
         noMovieHistory: "No saved vlog history yet.",
         confirmReset: "Are you sure you want to reset all data?",
         confirmDeleteSchedule: "Delete this event?",
@@ -2961,12 +3392,16 @@ function formatVlogTime(timeStr) {
         loginSuccessAlert: "Signed in successfully!",
         loginErrorPrefix: "Sign-in failed: ",
         logoutSuccessAlert: "Signed out",
-        albumLabel: "Album",
-        noMediaBadge: "No Media",
-        noPhotosYet: "No photos/videos yet",
+        dailyMemoryTitle: "Memories",
+        noPhotosYet: "No photos or videos for this day yet",
         addBtnText: "Add",
         editBtnText: "Edit",
-        todayEventsNotification: "Today's Schedule Reminder"
+        todayEventsNotification: "Today's Events",
+        activeRemindersTitle: "Active Reminders",
+        noSearchResults: "No matching events found",
+        notifyUnsupported: "Browser notifications are not supported.",
+        notifyGranted: "Browser notifications enabled.",
+        notifyDenied: "Notification permission denied."
       }
     };
 
@@ -2974,6 +3409,24 @@ function formatVlogTime(timeStr) {
 
     function t(key) {
       return i18n[currentLang][key] || key;
+    }
+
+    function updateProfileUI(user) {
+      const avatarEl = document.getElementById("profile-avatar");
+      const nameEl = document.getElementById("profile-display-name");
+      const statusEl = document.getElementById("profile-status-text");
+      if (!avatarEl || !nameEl || !statusEl) return;
+
+      if (user && user.email) {
+        const prefix = user.email.split('@')[0] || user.email;
+        avatarEl.innerText = prefix.charAt(0).toUpperCase();
+        nameEl.innerText = user.email;
+        statusEl.innerText = t('cloudSyncedMode');
+      } else {
+        avatarEl.innerText = "L";
+        nameEl.innerText = t('guestUser');
+        statusEl.innerText = t('offlineMode');
+      }
     }
 
     function updateUIStrings() {
@@ -2987,14 +3440,17 @@ function formatVlogTime(timeStr) {
       const passwordInput = document.getElementById("auth-password");
       const titleInput = document.getElementById("input-title");
       const locationInput = document.getElementById("input-location");
+      const searchInput = document.getElementById("schedule-search-input");
       if (emailInput) emailInput.placeholder = t('emailPlaceholder');
       if (passwordInput) passwordInput.placeholder = t('passwordPlaceholder');
       if (titleInput) titleInput.placeholder = t('eventTitlePlaceholder');
       if (locationInput) locationInput.placeholder = t('locationPlaceholder');
+      if (searchInput) searchInput.placeholder = currentLang === 'en' ? "Search title or location..." : "予定タイトルや場所で検索...";
 
       setScheduleModalMode(editingScheduleId !== null ? 'edit' : 'add');
       document.getElementById("selected-date-title").innerText = formatSelectedDateTitle(selectedDate);
       document.getElementById("language-select").value = currentLang;
+      updateProfileUI(firebase.auth().currentUser);
       updateWeekdayHeader();
       renderNotifications();
     }
@@ -3013,14 +3469,14 @@ function formatVlogTime(timeStr) {
       `;
     }
 
-    function changeLanguage(lang) {
+    async function changeLanguage(lang) {
       currentLang = lang;
       localStorage.setItem('logsnap_lang', lang);
       monthCellCache.clear();
       updateUIStrings();
-      renderAllPanels();
-      renderSchedules();
-      updateRecapOptions();
+      await renderAllPanels();
+      await renderDailyAlbum();
+      await renderSchedules();
     }
 
     function getEnglishHolidays(year) {
@@ -3074,31 +3530,43 @@ function formatVlogTime(timeStr) {
     let selectedDate = formatDateString(nowInit);
     let viewMode = 'photo';
     let editingScheduleId = null;
+    let selectedEventColor = 'indigo';
 
     let schedules = JSON.parse(localStorage.getItem('logsnap_user_schedules_v26')) || [
       { 
         id: 1, 
-        date: "2026-12-01", 
+        date: "2026-12-01",
+        endDate: "2026-12-01",
+        allDay: false,
         time: "10:00", 
         endTime: "12:00",
+        repeat: "none",
+        reminder: "10m",
+        color: "indigo",
         title: "カフェで作業", 
         location: "お気に入りのカフェ", 
         mediaList: [] 
       },
       { 
         id: 2, 
-        date: "2026-12-03", 
+        date: "2026-12-03",
+        endDate: "2026-12-03",
+        allDay: false,
         time: "14:00", 
         endTime: "16:00",
+        repeat: "none",
+        reminder: "none",
+        color: "emerald",
         title: "海沿いをドライブ", 
         location: "海岸通り", 
         mediaList: [] 
       }
     ];
 
+    let dailyMedia = JSON.parse(localStorage.getItem('logsnap_daily_media_v1')) || {};
     let movieHistory = JSON.parse(localStorage.getItem('logsnap_movie_history_v1')) || [];
 
-    let currentCheckinId = null;
+    let currentCheckinDate = null;
     let tempMediaList = []; 
 
     // ===== 🔥 メール/パスワード認証関連の処理 =====
@@ -3109,7 +3577,7 @@ function formatVlogTime(timeStr) {
       const password = document.getElementById("auth-password").value;
 
       auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
+        .then(() => {
           alert(t('signUpSuccessAlert'));
         })
         .catch((error) => {
@@ -3122,7 +3590,7 @@ function formatVlogTime(timeStr) {
       const password = document.getElementById("auth-password").value;
 
       auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
+        .then(() => {
           alert(t('loginSuccessAlert'));
         })
         .catch((error) => {
@@ -3133,6 +3601,7 @@ function formatVlogTime(timeStr) {
     function handleLogout() {
       auth.signOut().then(() => {
         localStorage.removeItem('logsnap_user_schedules_v26');
+        localStorage.removeItem('logsnap_daily_media_v1');
         localStorage.removeItem('logsnap_movie_history_v1');
         alert(t('logoutSuccessAlert'));
         location.reload();
@@ -3144,19 +3613,18 @@ function formatVlogTime(timeStr) {
     auth.onAuthStateChanged((user) => {
       const authContainer = document.getElementById("auth-container");
       const userInfoContainer = document.getElementById("user-info-container");
-      const userEmailSpan = document.getElementById("current-user-email");
+
+      updateProfileUI(user);
 
       if (user) {
         if (authContainer) authContainer.classList.add("hidden");
         if (userInfoContainer) userInfoContainer.classList.remove("hidden");
-        if (userEmailSpan) userEmailSpan.innerText = user.email;
         loadUserDataFromFirestore(user.uid);
       } else {
         if (authContainer) authContainer.classList.remove("hidden");
         if (userInfoContainer) userInfoContainer.classList.add("hidden");
       }
     });
-    // ===========================================
 
     document.addEventListener("DOMContentLoaded", async () => {
       applyThemeColor(currentTheme);
@@ -3176,9 +3644,9 @@ function formatVlogTime(timeStr) {
       updateUIStrings();
       await renderAllPanels();
       updateTrackPosition(false);
+      await renderDailyAlbum();
       await renderSchedules();
       renderNotifications();
-      updateRecapOptions();
       setupCarouselSwipe();
       setupCalendarClicks();
       runSplashAnimation();
